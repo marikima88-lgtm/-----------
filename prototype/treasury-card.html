@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Казначей · Карточка заявки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.role-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(241,90,37,.12); border:1px solid rgba(241,90,37,.3); border-radius:20px; font-size:11px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:.5px; }
+
+/* REQUEST META */
+.req-meta { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.req-meta-num { font-family:'Courier New',monospace; font-size:16px; font-weight:700; color:var(--text); }
+.req-meta-time { font-size:13px; color:var(--text-mid); }
+
+.info-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.info-cell { background:var(--surface-2); border-radius:10px; padding:12px 16px; }
+.info-cell-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:5px; }
+.info-cell-value { font-size:15px; font-weight:700; color:var(--text); }
+.info-cell-sub { font-size:11px; color:var(--text-mid); margin-top:2px; }
+
+/* RATE INPUT SECTION */
+.rate-input-card { border:1.5px solid var(--border); border-radius:14px; padding:22px; margin-bottom:16px; }
+.ric-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.rate-compare-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:20px; }
+.rate-box { background:var(--surface-2); border-radius:10px; padding:14px 16px; text-align:center; }
+.rate-box-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:8px; }
+.rate-box-value { font-size:22px; font-weight:800; color:var(--text); }
+.rate-box-sub { font-size:11px; color:var(--text-mid); margin-top:4px; }
+.rate-box.market { border:1.5px solid var(--info-border); background:var(--info-bg); }
+.rate-box.market .rate-box-value { color:var(--text); }
+
+.rate-input-row { display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; }
+.rate-input-group { flex:1; min-width:200px; }
+.rate-input-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:8px; }
+.rate-big-input { width:100%; padding:14px 50px 14px 16px; border:2px solid var(--border); border-radius:10px; font-family:inherit; font-size:22px; font-weight:800; color:var(--text); background:var(--surface); outline:none; transition:border-color .15s; }
+.rate-big-input:focus { border-color:var(--brand); }
+.rate-big-input.error { border-color:var(--danger); }
+.rate-big-input.ok { border-color:var(--success); }
+.rate-input-wrap { position:relative; }
+.rate-input-suffix { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:15px; font-weight:700; color:var(--text-mid); pointer-events:none; }
+.rate-feedback { margin-top:8px; font-size:12.5px; min-height:18px; }
+.rate-feedback.ok { color:var(--success); }
+.rate-feedback.err { color:var(--danger); font-weight:600; }
+.rate-feedback.info { color:var(--text-mid); }
+
+.comment-group { flex:1; min-width:200px; }
+
+/* DECISION BUTTONS */
+.decision-row { display:flex; gap:12px; }
+.btn-approve { flex:2; padding:15px 24px; border:none; background:var(--success); color:white; border-radius:10px; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:opacity .13s; }
+.btn-approve:hover { opacity:.88; }
+.btn-approve:disabled { background:var(--border); color:var(--text-mid); cursor:not-allowed; opacity:1; }
+.btn-reject-open { flex:1; padding:15px 24px; border:1.5px solid var(--danger); background:transparent; color:var(--danger); border-radius:10px; font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; transition:all .13s; }
+.btn-reject-open:hover { background:var(--danger); color:white; }
+
+/* REJECT PANEL */
+.reject-panel { display:none; border:1.5px solid var(--danger-border); background:var(--danger-bg); border-radius:12px; padding:18px; margin-top:14px; flex-direction:column; gap:14px; }
+.reject-panel.open { display:flex; }
+.reject-title { font-size:13px; font-weight:700; color:var(--danger); }
+.reject-actions { display:flex; gap:10px; }
+.btn-reject-confirm { padding:11px 22px; border:none; background:var(--danger); color:white; border-radius:9px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .13s; }
+.btn-reject-confirm:disabled { opacity:.4; cursor:not-allowed; }
+.btn-back-sm { padding:11px 22px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:9px; font-family:inherit; font-size:13px; font-weight:500; cursor:pointer; }
+
+/* HISTORY */
+.history-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 24px; }
+.history-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:18px; }
+.history-list { display:flex; flex-direction:column; gap:0; }
+.history-item { display:flex; gap:16px; position:relative; padding-bottom:20px; }
+.history-item:last-child { padding-bottom:0; }
+.history-item:last-child .hist-line { display:none; }
+.hist-dot-wrap { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.hist-dot { width:10px; height:10px; border-radius:50%; margin-top:3px; flex-shrink:0; }
+.hist-line { width:2px; background:var(--border); flex:1; margin-top:4px; }
+.hist-body { flex:1; }
+.hist-action { font-size:13px; font-weight:600; color:var(--text); }
+.hist-meta { font-size:11px; color:var(--text-mid); margin-top:2px; }
+.hist-detail { font-size:12px; color:var(--text-mid); margin-top:5px; background:var(--surface-2); border-radius:7px; padding:7px 10px; }
+
+/* DECISION RESULT (inline — replaces modal) */
+.decision-result { display:none; border-radius:14px; overflow:hidden; margin-bottom:16px; }
+.decision-result.show { display:block; animation:slideIn .3s ease; }
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.dr-header { padding:20px 24px; display:flex; align-items:center; gap:14px; }
+.dr-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; background:rgba(255,255,255,.2); }
+.dr-main-title { font-size:18px; font-weight:800; color:white; margin-bottom:3px; }
+.dr-main-sub { font-size:13px; color:rgba(255,255,255,.8); }
+.dr-body { background:var(--surface); padding:20px 24px; display:flex; flex-direction:column; gap:14px; }
+.dr-rate-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.dr-cell { background:var(--bg); border-radius:10px; padding:14px 16px; text-align:center; }
+.dr-cell-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:8px; }
+.dr-cell-val { font-size:22px; font-weight:800; color:var(--text); }
+.dr-cell-val.brand { color:var(--brand); }
+.dr-comment { background:var(--success-bg); border-left:3px solid var(--success); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--text); }
+.dr-rej-reason { background:var(--danger-bg); border-left:3px solid var(--danger); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--text); }
+.dr-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.dr-cashier-note { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:6px; }
+.dr-cashier-note strong { color:var(--success); }
+.dr-cashier-note-rej strong { color:var(--danger); }
+
+@media(max-width:767px){
+  .info-grid { grid-template-columns:1fr 1fr; }
+  .rate-compare-row { grid-template-columns:1fr; }
+  .rate-input-row { flex-direction:column; }
+  .decision-row { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='treasury.html'" style="color:rgba(255,255,255,.55)"><span class="nav-icon">←</span><span class="nav-label">Реестр заявок</span></div>
+    <div class="nav-item active" style="border-left-color:#1BA85D;background:rgba(27,168,93,.15);color:#fff"><span class="nav-icon">⚖</span><span class="nav-label">Карточка заявки</span></div>
+    <div class="nav-item" style="color:rgba(255,255,255,.45)"><span class="nav-icon">$</span><span class="nav-label">Курсы рынка</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Кассир</div>
+    <div class="nav-item" onclick="if(window.opener){window.opener.focus()}else{window.open('index.html','_self')}" style="color:rgba(241,90,37,.8)"><span class="nav-icon">←</span><span class="nav-label">Вернуться к кассе</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы · Головной офис</span>
+      <span class="header-cashier">Казначейство <span class="caret">▾</span></span>
+    </div>
+    <div class="role-chip">⚖ Казначей</div>
+    <div class="header-right">
+      <span class="header-meta">🕥 <strong id="hdr-time">—</strong></span>
+      <div class="h-div"></div>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar" style="background:var(--brand)">СН</div>
+        <div><div class="user-name">Сейткали Н.</div><div class="user-role">Казначей</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="back-link" onclick="location.href='treasury.html'">← Реестр заявок</div>
+
+    <!-- Request meta -->
+    <div class="req-meta">
+      <span class="req-meta-num" id="meta-num">—</span>
+      <span class="badge badge-pending" id="meta-status">На согласовании</span>
+      <span class="req-meta-time" id="meta-time">—</span>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-cell-label">Отделение</div>
+          <div class="info-cell-value" id="info-branch">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Касса</div>
+          <div class="info-cell-value" id="info-desk">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Кассир</div>
+          <div class="info-cell-value" id="info-cashier">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Дата и время</div>
+          <div class="info-cell-value" id="info-datetime">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Тип операции</div>
+          <div class="info-cell-value" id="info-type">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Валюта</div>
+          <div class="info-cell-value" id="info-cur">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Сумма сделки</div>
+          <div class="info-cell-value" id="info-amount">—</div>
+          <div class="info-cell-sub" id="info-kzt">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Текущий курс</div>
+          <div class="info-cell-value" id="info-rate">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rate Input (only for pending) -->
+    <div class="rate-input-card" id="rate-input-section">
+      <div class="ric-title">📊 Установить индивидуальный курс</div>
+
+      <div class="rate-compare-row">
+        <div class="rate-box">
+          <div class="rate-box-label">Текущий курс</div>
+          <div class="rate-box-value" id="box-std-rate">—</div>
+          <div class="rate-box-sub" id="box-std-label">—</div>
+        </div>
+        <div class="rate-box market">
+          <div class="rate-box-label">Среднерыночный</div>
+          <div class="rate-box-value" id="box-market-rate">—</div>
+          <div class="rate-box-sub" id="box-market-src">Reuters · 14.05.2025</div>
+        </div>
+        <div class="rate-box" id="box-ind-wrap">
+          <div class="rate-box-label">Индивидуальный</div>
+          <div class="rate-box-value" id="box-ind-rate" style="color:var(--brand)">—</div>
+          <div class="rate-box-sub" id="box-ind-diff">введите курс</div>
+        </div>
+      </div>
+
+      <div class="rate-input-row">
+        <div class="rate-input-group">
+          <div class="rate-input-label">Индивидуальный курс <span style="color:var(--brand)">*</span></div>
+          <div class="rate-input-wrap">
+            <input class="rate-big-input" id="inp-ind-rate" type="number" placeholder="0.00" oninput="validateRate()">
+            <span class="rate-input-suffix">₸</span>
+          </div>
+          <div class="rate-feedback" id="rate-feedback"></div>
+        </div>
+        <div class="comment-group">
+          <div class="rate-input-label">Комментарий (необязательно)</div>
+          <textarea class="form-input form-textarea" id="inp-comment" placeholder="Постоянный клиент, оптовая сумма..." style="min-height:82px;resize:none"></textarea>
+        </div>
+      </div>
+
+      <div class="decision-row" style="margin-top:20px">
+        <button class="btn-reject-open" onclick="openReject()">✕ Отклонить заявку</button>
+        <button class="btn-approve" id="btn-approve" disabled onclick="approveRequest()">✓ Согласовать курс</button>
+      </div>
+
+      <div class="reject-panel" id="reject-panel">
+        <div class="reject-title">⚠️ Причина отклонения</div>
+        <div class="form-group">
+          <label class="form-label">Выберите причину <span class="req">*</span></label>
+          <select class="form-select" id="rej-reason-sel" onchange="checkRejectReason()">
+            <option value="">— Выберите причину —</option>
+            <option>Курс превышает допустимые лимиты</option>
+            <option>Недостаточное обоснование</option>
+            <option>Нет доступной позиции по валюте</option>
+            <option>Ограничение по клиенту</option>
+            <option>Другое</option>
+          </select>
+        </div>
+        <div class="form-group" id="rej-other-wrap" style="display:none">
+          <label class="form-label">Уточните</label>
+          <input class="form-input" id="rej-other" type="text" placeholder="Опишите причину...">
+        </div>
+        <div class="reject-actions">
+          <button class="btn-back-sm" onclick="closeReject()">← Отмена</button>
+          <button class="btn-reject-confirm" id="btn-reject-confirm" disabled onclick="rejectRequest()">Подтвердить отклонение</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECISION RESULT (shown after approve/reject, replaces modal) -->
+    <div class="decision-result" id="decision-result">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- History -->
+    <div class="history-card" id="history-card">
+      <div class="history-title">История заявки</div>
+      <div class="history-list" id="history-list">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Back button (always visible at bottom) -->
+    <div style="margin-top:16px">
+      <button class="btn-secondary" onclick="location.href='treasury.html'" style="width:100%">← Вернуться к реестру заявок</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=t;
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+  document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+})();
+function toggleTheme(){ const d=document.documentElement.dataset.theme==='dark'; document.documentElement.dataset.theme=d?'light':'dark'; document.getElementById('btn-theme').textContent=d?'🌙':'☀️'; localStorage.setItem('ecash-theme',d?'light':'dark'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+
+const TYPE_LABELS={'buy-cur':'Покупаем валюту','sell-cur':'Продаём валюту','buy-gold':'Покупаем золото','sell-gold':'Продаём золото'};
+const MARKET_RATES={USD:505.5,EUR:642.3,RUB:4.2,CNY:77.8,GBP:628.4,CHF:558.2,TRY:15.1};
+
+function fmt(n){ return parseFloat(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtSign(n){ return (n>=0?'+':'')+n.toFixed(2); }
+
+let P={}, stdRate=0, opType='buy-cur', isLive=false, rateValid=false;
+
+// History log
+let historyLog=[];
+
+function addHistory(action, color, detail){
+  const now=new Date();
+  historyLog.push({
+    action, color,
+    detail: detail||'',
+    time: now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
+    user: 'Сейткали Н. (Казначей)'
+  });
+  renderHistory();
+}
+
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  list.innerHTML=historyLog.slice().reverse().map((h,i)=>`
+    <div class="history-item">
+      <div class="hist-dot-wrap">
+        <div class="hist-dot" style="background:${h.color}"></div>
+        <div class="hist-line"></div>
+      </div>
+      <div class="hist-body">
+        <div class="hist-action">${h.action}</div>
+        <div class="hist-meta">${h.time} · ${h.user}</div>
+        ${h.detail?`<div class="hist-detail">${h.detail}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function validateRate(){
+  const val=parseFloat(document.getElementById('inp-ind-rate').value);
+  const inp=document.getElementById('inp-ind-rate');
+  const fb=document.getElementById('rate-feedback');
+  const btn=document.getElementById('btn-approve');
+
+  if(!val||isNaN(val)){
+    inp.className='rate-big-input';
+    fb.className='rate-feedback info';
+    fb.textContent='';
+    document.getElementById('box-ind-rate').textContent='—';
+    document.getElementById('box-ind-diff').textContent='введите курс';
+    btn.disabled=true;
+    rateValid=false;
+    return;
+  }
+
+  document.getElementById('box-ind-rate').textContent=fmt(val)+' ₸';
+  const diff=val-stdRate;
+  const pct=((diff/stdRate)*100).toFixed(2);
+  document.getElementById('box-ind-diff').textContent=fmtSign(diff)+' ₸ ('+fmtSign(parseFloat(pct))+'%)';
+
+  // Validation rules
+  let ok=true, msg='';
+  if(opType==='buy-cur'){
+    if(val<stdRate){ ok=false; msg='Индивидуальный курс покупки не может быть ниже действующего курса ('+fmt(stdRate)+' ₸).'; }
+    else msg='✓ Допустимо — клиент получит '+fmt(val)+' ₸ за единицу '+P.cur;
+  } else if(opType==='sell-cur'){
+    if(val>stdRate){ ok=false; msg='Индивидуальный курс продажи не может превышать действующий курс ('+fmt(stdRate)+' ₸).'; }
+    else msg='✓ Допустимо — клиент заплатит '+fmt(val)+' ₸ за единицу '+P.cur;
+  } else {
+    msg='✓ Курс принят';
+  }
+
+  if(ok){
+    inp.className='rate-big-input ok';
+    fb.className='rate-feedback ok';
+    fb.textContent=msg;
+    btn.disabled=false;
+    rateValid=true;
+  } else {
+    inp.className='rate-big-input error';
+    fb.className='rate-feedback err';
+    fb.textContent=msg;
+    btn.disabled=true;
+    rateValid=false;
+  }
+}
+
+function approveRequest(){
+  const rate=parseFloat(document.getElementById('inp-ind-rate').value);
+  const comment=document.getElementById('inp-comment').value.trim();
+  if(!rateValid||!rate) return;
+
+  localStorage.setItem('ecash-rate-decision', JSON.stringify({action:'approve',rate:rate,comment:comment,reqNum:P.num}));
+
+  addHistory('Заявка согласована — курс '+fmt(rate)+' ₸','var(--success)', comment?'Комментарий: '+comment:'');
+
+  document.getElementById('rate-input-section').style.display='none';
+  document.getElementById('meta-status').className='badge badge-approved';
+  document.getElementById('meta-status').textContent='Согласовано';
+
+  const diff=rate-stdRate;
+  const sign=diff>=0?'+':'';
+  const pct=((diff/stdRate)*100).toFixed(2);
+
+  const dr=document.getElementById('decision-result');
+  dr.innerHTML=`
+    <div style="background:var(--success)"><div class="dr-header">
+      <div class="dr-icon">✅</div>
+      <div><div class="dr-main-title">Курс согласован</div>
+      <div class="dr-main-sub">Заявка ${P.num} — кассир уже видит решение и может провести сделку</div></div>
+    </div></div>
+    <div class="dr-body">
+      <div class="dr-rate-row">
+        <div class="dr-cell"><div class="dr-cell-lbl">Стандартный курс</div><div class="dr-cell-val">${fmt(stdRate)} ₸</div></div>
+        <div class="dr-cell" style="border:1.5px solid var(--brand)"><div class="dr-cell-lbl">Согласованный курс</div><div class="dr-cell-val brand">${fmt(rate)} ₸</div></div>
+        <div class="dr-cell"><div class="dr-cell-lbl">Отклонение</div><div class="dr-cell-val" style="font-size:16px">${sign}${Math.abs(diff).toFixed(2)} ₸<br><span style="font-size:12px;font-weight:500">${sign}${Math.abs(parseFloat(pct)).toFixed(2)}%</span></div></div>
+      </div>
+      ${comment?`<div class="dr-comment"><strong style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--success)">Ваш комментарий</strong><br>${comment}</div>`:''}
+      <div class="dr-cashier-note">📱 <span>Кассир <strong>автоматически увидит решение</strong> на своём экране — вернитесь на вкладку кассира</span></div>
+    </div>
+    <div class="dr-footer">
+      <span class="dr-cashier-note">✅ Решение зафиксировано · Кассир автоматически получит обновление статуса</span>
+      <button onclick="location.href='treasury.html'" class="btn-primary" style="font-size:13px;padding:10px 18px;border:none;cursor:pointer">← Вернуться к реестру заявок</button>
+    </div>`;
+  dr.classList.add('show');
+  dr.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function openReject(){ document.getElementById('reject-panel').classList.add('open'); }
+function closeReject(){ document.getElementById('reject-panel').classList.remove('open'); }
+function checkRejectReason(){
+  const v=document.getElementById('rej-reason-sel').value;
+  document.getElementById('rej-other-wrap').style.display=v==='Другое'?'block':'none';
+  document.getElementById('btn-reject-confirm').disabled=!v;
+}
+function rejectRequest(){
+  const reason=document.getElementById('rej-reason-sel').value;
+  const other=document.getElementById('rej-other').value;
+  const finalReason=reason==='Другое'?(other||reason):reason;
+
+  localStorage.setItem('ecash-rate-decision', JSON.stringify({action:'reject',reason:finalReason,reqNum:P.num}));
+
+  addHistory('Заявка отклонена','var(--danger)', 'Причина: '+finalReason);
+
+  document.getElementById('rate-input-section').style.display='none';
+  document.getElementById('meta-status').className='badge badge-rejected';
+  document.getElementById('meta-status').textContent='Отклонено';
+
+  const dr=document.getElementById('decision-result');
+  dr.innerHTML=`
+    <div style="background:var(--danger)"><div class="dr-header">
+      <div class="dr-icon">✕</div>
+      <div><div class="dr-main-title">Заявка отклонена</div>
+      <div class="dr-main-sub">Заявка ${P.num} — кассир получил уведомление об отклонении</div></div>
+    </div></div>
+    <div class="dr-body">
+      <div class="dr-rej-reason"><strong style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--danger)">Причина отклонения</strong><br>${finalReason}</div>
+      <div class="dr-cashier-note" style="color:var(--danger)">📱 <span>Кассир <strong>автоматически увидит отклонение</strong> — вернитесь на вкладку кассира</span></div>
+    </div>
+    <div class="dr-footer">
+      <span class="dr-cashier-note">Решение зафиксировано · Кассир автоматически получит обновление статуса</span>
+      <button onclick="location.href='treasury.html'" class="btn-secondary" style="font-size:13px;padding:10px 18px;cursor:pointer">← Вернуться к реестру заявок</button>
+    </div>`;
+  dr.classList.add('show');
+  dr.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function switchToCashier(){
+  if(window.opener && !window.opener.closed){
+    window.opener.focus();
+    window.close();
+  } else {
+    location.href='operation.html';
+  }
+}
+
+window.onload=function(){
+  const sp=new URLSearchParams(location.search);
+  isLive=sp.get('live')==='1';
+
+  // Get request data
+  if(isLive){
+    const reqStr=localStorage.getItem('ecash-rate-req');
+    if(reqStr){
+      try{
+        const r=JSON.parse(reqStr);
+        for(let k in r) sp.set(k,r[k]);
+        // ecash-rate-req stores stdRate, treasury-card expects 'rate'
+        if(r.stdRate) sp.set('rate', String(r.stdRate));
+      }catch(e){}
+    }
+  }
+
+  P={
+    num:sp.get('num')||'ЗАК-00000',
+    type:sp.get('type')||'buy-cur',
+    cur:sp.get('cur')||'USD',
+    amount:sp.get('amount')||'0',
+    kzt:sp.get('kzt')||'0',
+    rate:sp.get('rate')||sp.get('stdRate')||'0',
+    branch:sp.get('branch')||'—',
+    desk:sp.get('desk')||'—',
+    cashier:sp.get('cashier')||'—',
+    date:sp.get('date')||'—',
+    time:sp.get('time')||'—',
+    status:sp.get('status')||'pending'
+  };
+
+  opType=P.type;
+  stdRate=parseFloat(P.rate)||0;
+
+  // Fill header
+  document.getElementById('meta-num').textContent=P.num;
+  document.getElementById('meta-time').textContent=P.date+' '+P.time;
+
+  const sc={pending:{cls:'badge-pending',label:'На согласовании'},approved:{cls:'badge-approved',label:'Согласовано'},rejected:{cls:'badge-rejected',label:'Отклонено'},cancelled:{cls:'badge-cancelled',label:'Отменено'},executed:{cls:'badge-executed',label:'Исполнено'}};
+  const s=sc[P.status]||sc.pending;
+  document.getElementById('meta-status').className='badge '+s.cls;
+  document.getElementById('meta-status').textContent=s.label;
+
+  // Fill info grid
+  document.getElementById('info-branch').textContent=P.branch;
+  document.getElementById('info-desk').textContent=P.desk;
+  document.getElementById('info-cashier').textContent=P.cashier;
+  document.getElementById('info-datetime').textContent=P.date+' '+P.time;
+  document.getElementById('info-type').textContent=TYPE_LABELS[P.type]||P.type;
+  document.getElementById('info-cur').textContent=P.cur;
+
+  const amtNum=parseFloat(P.amount)||0;
+  const kztNum=parseFloat(P.kzt)||0;
+  document.getElementById('info-amount').textContent=amtNum.toLocaleString('ru-RU')+' '+P.cur;
+  document.getElementById('info-kzt').textContent=kztNum>0?fmt(kztNum)+' ₸':'—';
+  document.getElementById('info-rate').textContent=fmt(stdRate)+' ₸';
+
+  // Rate comparison boxes
+  const isBuy=P.type.includes('buy');
+  document.getElementById('box-std-rate').textContent=fmt(stdRate)+' ₸';
+  document.getElementById('box-std-label').textContent=isBuy?'Курс покупки':'Курс продажи';
+
+  const marketRate=MARKET_RATES[P.cur]||stdRate;
+  document.getElementById('box-market-rate').textContent=fmt(marketRate)+' ₸';
+
+  // Show/hide rate input
+  if(P.status!=='pending'){
+    document.getElementById('rate-input-section').style.display='none';
+  }
+
+  // Validation hint under rate input
+  if(P.status==='pending'){
+    const fb=document.getElementById('rate-feedback');
+    if(opType==='buy-cur'){
+      fb.className='rate-feedback info';
+      fb.textContent='Минимально допустимый курс: '+fmt(stdRate)+' ₸';
+    } else if(opType==='sell-cur'){
+      fb.className='rate-feedback info';
+      fb.textContent='Максимально допустимый курс: '+fmt(stdRate)+' ₸';
+    }
+  }
+
+  // Build initial history
+  historyLog=[
+    {action:'Заявка создана кассиром',color:'var(--text-mid)',detail:'Отделение: '+P.branch+' · '+P.desk+' · '+P.cashier,time:P.time,user:P.cashier+' (Кассир)'},
+    {action:'Заявка направлена казначею',color:'#F5C842',detail:'Тип: '+TYPE_LABELS[P.type]+' · Валюта: '+P.cur+' · Сумма: '+P.amount+' · Курс: '+fmt(stdRate)+' ₸',time:P.time,user:'Система'}
+  ];
+  renderHistory();
+};
+</script>
+</body>
+</html>

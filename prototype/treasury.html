@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Казначей · Индивидуальные курсы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.role-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(241,90,37,.12); border:1px solid rgba(241,90,37,.3); border-radius:20px; font-size:11px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:.5px; }
+
+.filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+.f-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); white-space:nowrap; }
+.f-sel { padding:7px 30px 7px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--bg); outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; transition:border-color .13s; }
+.f-sel:focus { border-color:var(--text); }
+.f-inp { padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--bg); outline:none; transition:border-color .13s; }
+.f-inp:focus { border-color:var(--text); }
+.f-sep { width:1px; height:24px; background:var(--border); }
+.btn-reset { padding:7px 14px; border:none; background:none; font-family:inherit; font-size:12.5px; color:var(--text-mid); cursor:pointer; border-radius:8px; transition:all .13s; }
+.btn-reset:hover { background:var(--surface-2); color:var(--text); }
+
+.stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
+.stat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.stat-label { font-size:12px; color:var(--text-mid); }
+.stat-val { font-size:18px; font-weight:800; color:var(--text); margin-left:auto; }
+.stat-card.highlight { border-color:var(--warning-border); background:var(--warning-bg); }
+.stat-card.highlight .stat-dot { animation:blink 1.5s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.stat-card.highlight .stat-label { color:var(--warning-text); }
+.stat-card.highlight .stat-val { color:var(--warning-text); }
+
+.new-badge { font-size:10px; font-weight:700; background:var(--brand); color:white; padding:2px 7px; border-radius:10px; margin-left:4px; }
+
+.tbl-actions { display:flex; gap:8px; }
+.btn-review { padding:6px 14px; border:1.5px solid var(--brand); background:transparent; color:var(--brand); border-radius:7px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all .13s; white-space:nowrap; }
+.btn-review:hover { background:var(--brand); color:white; }
+.btn-view { padding:6px 14px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:7px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all .13s; }
+.btn-view:hover { border-color:var(--text); color:var(--text); }
+
+.op-type-cell { display:flex; align-items:center; gap:8px; }
+.op-icon { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.op-buy-bg { background:#E8F5E9; }
+.op-sell-bg { background:#FFF3E0; }
+.req-num { font-family:'Courier New',monospace; font-size:12px; color:var(--text-mid); }
+
+.live-row { background:rgba(241,90,37,.04) !important; }
+.live-row td:first-child { border-left:3px solid var(--brand); }
+
+.pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-top:1px solid var(--border); }
+.pg-info { font-size:13px; color:var(--text-mid); }
+.pg-btns { display:flex; gap:6px; }
+.pg-btn { width:34px; height:34px; border:1.5px solid var(--border); background:var(--surface); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .13s; }
+.pg-btn.active { background:var(--brand); border-color:var(--brand); color:white; font-weight:700; }
+.pg-btn:hover:not(.active) { border-color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item active" style="border-left-color:#1BA85D;background:rgba(27,168,93,.15);color:#fff"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span><span class="nav-badge" id="pending-badge" style="background:#1BA85D">1</span></div>
+    <div class="nav-item" style="color:rgba(255,255,255,.45)"><span class="nav-icon">$</span><span class="nav-label">Курсы рынка</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Кассир</div>
+    <div class="nav-item" onclick="if(window.opener){window.opener.focus()}else{window.open('index.html','_self')}" style="color:rgba(241,90,37,.8)"><span class="nav-icon">←</span><span class="nav-label">Вернуться к кассе</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы · Головной офис</span>
+      <span class="header-cashier">Казначейство <span class="caret">▾</span></span>
+    </div>
+    <div class="role-chip">⚖ Казначей</div>
+    <div class="header-right">
+      <span class="header-meta">🕥 <strong id="hdr-time">10:30</strong></span>
+      <span class="header-meta">📅 <strong>14.05.2025</strong></span>
+      <div class="h-div"></div>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar" style="background:var(--brand)">СН</div>
+        <div><div class="user-name">Сейткали Н.</div><div class="user-role">Казначей</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-head">
+      <h1 class="page-title">Индивидуальные курсы</h1>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card highlight">
+        <div class="stat-dot" style="background:#F5C842"></div>
+        <span class="stat-label">На согласовании</span>
+        <span class="stat-val" id="cnt-pending">—</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-dot" style="background:var(--success)"></div>
+        <span class="stat-label">Согласовано сегодня</span>
+        <span class="stat-val" id="cnt-approved">—</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-dot" style="background:var(--danger)"></div>
+        <span class="stat-label">Отклонено</span>
+        <span class="stat-val" id="cnt-rejected">—</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-dot" style="background:var(--text-light)"></div>
+        <span class="stat-label">Всего за день</span>
+        <span class="stat-val" id="cnt-total">—</span>
+      </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="filters">
+      <span class="f-label">Фильтры:</span>
+      <input class="f-inp" type="date" id="f-from" value="2025-05-14">
+      <span style="color:var(--text-mid);font-size:13px">—</span>
+      <input class="f-inp" type="date" id="f-to" value="2025-05-14">
+      <div class="f-sep"></div>
+      <select class="f-sel" id="f-status" onchange="applyFilters()">
+        <option value="">Все статусы</option>
+        <option value="pending">На согласовании</option>
+        <option value="approved">Согласовано</option>
+        <option value="rejected">Отклонено</option>
+        <option value="cancelled">Отменено</option>
+        <option value="executed">Исполнено</option>
+      </select>
+      <select class="f-sel" id="f-branch" onchange="applyFilters()">
+        <option value="">Все отделения</option>
+        <option>АПОРТ</option>
+        <option>Мега Алматы</option>
+        <option>Достык Плаза</option>
+      </select>
+      <select class="f-sel" id="f-cur" onchange="applyFilters()">
+        <option value="">Все валюты</option>
+        <option>USD</option><option>EUR</option><option>RUB</option>
+        <option>CNY</option><option>GBP</option>
+      </select>
+      <select class="f-sel" id="f-cashier" onchange="applyFilters()">
+        <option value="">Все кассиры</option>
+        <option>Иванова А.</option>
+        <option>Петров С.</option>
+        <option>Смирнова Е.</option>
+      </select>
+      <button class="btn-reset" onclick="resetFilters()">↺ Сбросить</button>
+    </div>
+
+    <!-- Таблица -->
+    <div class="table-wrap">
+      <table class="data-table" style="min-width:900px">
+        <thead>
+          <tr>
+            <th>№ заявки</th>
+            <th>Дата и время</th>
+            <th>Отделение / Касса</th>
+            <th>Кассир</th>
+            <th>Тип операции</th>
+            <th>Валюта</th>
+            <th>Сумма</th>
+            <th>Текущий курс</th>
+            <th>Статус</th>
+            <th style="text-align:right">Действия</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body">
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span class="pg-info" id="pg-info">—</span>
+        <div class="pg-btns">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn active">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=t;
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+  document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+})();
+function toggleTheme(){ const d=document.documentElement.dataset.theme==='dark'; document.documentElement.dataset.theme=d?'light':'dark'; document.getElementById('btn-theme').textContent=d?'🌙':'☀️'; localStorage.setItem('ecash-theme',d?'light':'dark'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+
+const STATUS_CFG={
+  pending:{cls:'badge-pending',label:'На согласовании'},
+  approved:{cls:'badge-approved',label:'Согласовано'},
+  rejected:{cls:'badge-rejected',label:'Отклонено'},
+  cancelled:{cls:'badge-cancelled',label:'Отменено'},
+  executed:{cls:'badge-executed',label:'Исполнено'}
+};
+const TYPE_ICONS={'buy-cur':'💵','sell-cur':'💸','buy-gold':'🥇','sell-gold':'🏅'};
+const TYPE_CLS={'buy-cur':'op-buy-bg','sell-cur':'op-sell-bg','buy-gold':'op-buy-bg','sell-gold':'op-sell-bg'};
+const TYPE_LABELS={'buy-cur':'Покупаем','sell-cur':'Продаём','buy-gold':'Покупаем золото','sell-gold':'Продаём золото'};
+
+function fmt(n){ return parseFloat(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// Static sample data
+const SAMPLE=[
+  {num:'ЗАК-77201',date:'14.05.2025',time:'10:18',branch:'Мега Алматы',desk:'Касса №2',cashier:'Петров С.',type:'sell-cur',cur:'EUR',amount:'1 200',rate:'650.00',status:'approved',isLive:false},
+  {num:'ЗАК-77198',date:'14.05.2025',time:'09:55',branch:'Достык Плаза',desk:'Касса №1',cashier:'Смирнова Е.',type:'buy-cur',cur:'USD',amount:'5 000',rate:'503.00',status:'executed',isLive:false},
+  {num:'ЗАК-77191',date:'14.05.2025',time:'09:33',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',type:'buy-cur',cur:'GBP',amount:'800',rate:'625.00',status:'rejected',isLive:false},
+  {num:'ЗАК-77185',date:'14.05.2025',time:'09:10',branch:'Мега Алматы',desk:'Касса №3',cashier:'Петров С.',type:'sell-cur',cur:'USD',amount:'3 000',rate:'510.00',status:'cancelled',isLive:false},
+  {num:'ЗАК-77170',date:'14.05.2025',time:'08:47',branch:'АПОРТ',desk:'Касса №2',cashier:'Иванова А.',type:'buy-cur',cur:'EUR',amount:'2 000',rate:'640.00',status:'approved',isLive:false},
+];
+
+let allData=[];
+let filtered=[];
+
+function buildData(){
+  allData=[];
+  // Live request from localStorage
+  const reqStr=localStorage.getItem('ecash-rate-req');
+  if(reqStr){
+    try{
+      const r=JSON.parse(reqStr);
+      let liveStatus='pending';
+      const decStr=localStorage.getItem('ecash-rate-decision');
+      if(decStr){
+        try{
+          const dec=JSON.parse(decStr);
+          liveStatus=dec.action==='approve'?'approved':'rejected';
+        }catch(e){}
+      }
+      allData.push({
+        num:r.num, date:r.date, time:r.time,
+        branch:r.branch, desk:r.desk, cashier:r.cashier,
+        type:r.type, cur:r.cur, amount:r.amount,
+        rate:parseFloat(r.stdRate||0).toFixed(2),
+        status:liveStatus, isLive:true
+      });
+    }catch(e){}
+  }
+  allData=[...allData,...SAMPLE];
+}
+
+function renderTable(data){
+  const body=document.getElementById('tbl-body');
+  if(!data.length){
+    body.innerHTML='<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-mid)">Заявки не найдены</td></tr>';
+    return;
+  }
+  body.innerHTML=data.map(r=>{
+    const sc=STATUS_CFG[r.status]||STATUS_CFG.pending;
+    const canReview=r.status==='pending';
+    const params=r.isLive?'?from=treasury&live=1':'?num='+r.num+'&type='+r.type+'&cur='+r.cur+'&amount='+r.amount+'&rate='+r.rate+'&branch='+encodeURIComponent(r.branch)+'&cashier='+encodeURIComponent(r.cashier)+'&desk='+encodeURIComponent(r.desk)+'&date='+r.date+'&time='+r.time+'&status='+r.status;
+    return `<tr class="${r.isLive?'live-row':''}">
+      <td>
+        <span class="req-num">${r.num}</span>
+        ${r.isLive?'<span class="new-badge">NEW</span>':''}
+      </td>
+      <td style="font-size:12px;color:var(--text-mid)">${r.date}<br><strong style="color:var(--text)">${r.time}</strong></td>
+      <td style="font-size:13px">${r.branch}<br><span style="color:var(--text-mid);font-size:11px">${r.desk}</span></td>
+      <td style="font-size:13px">${r.cashier}</td>
+      <td><div class="op-type-cell"><div class="op-icon ${TYPE_CLS[r.type]||''}">${TYPE_ICONS[r.type]||'↔'}</div><span style="font-size:13px">${TYPE_LABELS[r.type]||r.type}</span></div></td>
+      <td style="font-weight:700">${r.cur}</td>
+      <td style="font-weight:600">${r.amount}</td>
+      <td>${r.rate} ₸</td>
+      <td><span class="badge ${sc.cls}">${sc.label}</span></td>
+      <td style="text-align:right">
+        <div class="tbl-actions" style="justify-content:flex-end">
+          ${canReview?`<button class="btn-review" onclick="openCard('${params}')">Рассмотреть →</button>`:''}
+          ${!canReview?`<button class="btn-view" onclick="openCard('${params}')">Просмотр</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openCard(params){
+  location.href='treasury-card.html'+params;
+}
+
+function updateStats(data){
+  document.getElementById('cnt-pending').textContent=data.filter(r=>r.status==='pending').length;
+  document.getElementById('cnt-approved').textContent=data.filter(r=>r.status==='approved').length;
+  document.getElementById('cnt-rejected').textContent=data.filter(r=>r.status==='rejected').length;
+  document.getElementById('cnt-total').textContent=data.length;
+  const pendingCount=data.filter(r=>r.status==='pending').length;
+  document.getElementById('pending-badge').textContent=pendingCount;
+  document.getElementById('pending-badge').style.display=pendingCount>0?'':'none';
+}
+
+function applyFilters(){
+  const st=document.getElementById('f-status').value;
+  const br=document.getElementById('f-branch').value;
+  const cur=document.getElementById('f-cur').value;
+  const cs=document.getElementById('f-cashier').value;
+  filtered=allData.filter(r=>{
+    if(st && r.status!==st) return false;
+    if(br && r.branch!==br) return false;
+    if(cur && r.cur!==cur) return false;
+    if(cs && r.cashier!==cs) return false;
+    return true;
+  });
+  renderTable(filtered);
+  updateStats(allData);
+  document.getElementById('pg-info').textContent='Показано 1–'+Math.min(10,filtered.length)+' из '+filtered.length;
+}
+
+function resetFilters(){
+  document.getElementById('f-status').value='';
+  document.getElementById('f-branch').value='';
+  document.getElementById('f-cur').value='';
+  document.getElementById('f-cashier').value='';
+  filtered=[...allData];
+  renderTable(filtered);
+  document.getElementById('pg-info').textContent='Показано 1–'+Math.min(10,filtered.length)+' из '+filtered.length;
+}
+
+window.onload=function(){
+  buildData();
+  filtered=[...allData];
+  renderTable(filtered);
+  updateStats(allData);
+  document.getElementById('pg-info').textContent='Показано 1–'+Math.min(10,filtered.length)+' из '+filtered.length;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Операция</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.op-tabs { display:flex; gap:0; border:1.5px solid var(--border); border-radius:11px; overflow:hidden; width:fit-content; margin-bottom:20px; flex-wrap:wrap; }
+.op-tab { padding:11px 24px; border:none; border-right:1.5px solid var(--border); background:var(--surface); color:var(--text-mid); font-family:inherit; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .13s; white-space:nowrap; }
+.op-tab:last-child { border-right:none; }
+.op-tab.active { background:var(--brand); color:#fff; font-weight:600; border-right-color:var(--brand); }
+.op-tab:not(.active):hover { background:var(--surface-2); color:var(--text); }
+
+.rate-block { display:flex; flex-direction:column; gap:8px; }
+.rate-row { display:flex; align-items:center; gap:10px; }
+.rate-row .input-wrap { flex:1; }
+.btn-req-rate { white-space:nowrap; border:1.5px solid var(--brand); background:transparent; color:var(--brand); font-family:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:8px; cursor:pointer; transition:all .13s; flex-shrink:0; }
+.btn-req-rate:hover { background:var(--brand); color:white; }
+.btn-req-rate:disabled { border-color:var(--border); color:var(--text-light); cursor:not-allowed; background:transparent; }
+
+.result-block { background:var(--info-bg); border:1.5px solid var(--info-border); border-radius:11px; padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+.result-label { font-size:13px; color:var(--text-mid); font-weight:500; }
+.result-value { font-size:26px; font-weight:800; color:var(--text); letter-spacing:-.5px; }
+
+/* STEP TRACKER */
+.step-tracker { display:flex; align-items:center; gap:0; margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.step { flex:1; display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:13px; color:var(--text-mid); border-right:1px solid var(--border); position:relative; }
+.step:last-child { border-right:none; }
+.step.done { color:var(--success); }
+.step.active { color:var(--brand); font-weight:700; background:rgba(241,90,37,.05); }
+.step-num { width:24px; height:24px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+.step.done .step-num { background:var(--success); border-color:var(--success); color:white; }
+.step.active .step-num { background:var(--brand); border-color:var(--brand); color:white; }
+
+/* PENDING FULLSCREEN */
+.rate-pending-screen { display:none; flex-direction:column; gap:16px; }
+.rate-pending-screen.show { display:flex; }
+
+.pend-header-card { background:#F5C842; border-radius:14px; padding:20px 24px; display:flex; align-items:center; gap:16px; }
+.pend-pulse-wrap { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pend-pulse { width:18px; height:18px; border-radius:50%; background:white; animation:blink 1.4s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.pend-main { flex:1; }
+.pend-title { font-size:18px; font-weight:800; color:#4a2e00; margin-bottom:3px; }
+.pend-subtitle { font-size:13px; color:#7a5000; }
+.pend-reqnum-badge { background:rgba(0,0,0,.12); color:#4a2e00; font-family:'Courier New',monospace; font-size:13px; font-weight:700; padding:6px 14px; border-radius:20px; white-space:nowrap; }
+
+.pend-details-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 24px; }
+.pend-details-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-mid); margin-bottom:14px; }
+.pend-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.pend-cell { background:var(--bg); border-radius:9px; padding:12px 14px; }
+.pend-cell-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); margin-bottom:5px; }
+.pend-cell-value { font-size:15px; font-weight:700; color:var(--text); }
+
+.pend-info-card { background:var(--pending-bg); border:1.5px solid var(--pending-border); border-radius:12px; padding:16px 20px; display:flex; align-items:flex-start; gap:12px; font-size:13px; color:var(--warning-text); line-height:1.7; }
+.pend-lock { background:var(--surface); border:2px dashed var(--pending-border); border-radius:12px; padding:16px; display:flex; align-items:center; justify-content:center; gap:10px; font-size:14px; font-weight:600; color:var(--warning-text); }
+
+/* APPROVAL FULLSCREEN */
+.rate-approval-screen { display:none; flex-direction:column; gap:16px; }
+.rate-approval-screen.show { display:flex; }
+
+.appr-header-card { background:var(--success); border-radius:14px; padding:20px 24px; display:flex; align-items:center; gap:16px; }
+.appr-icon { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.appr-main { flex:1; }
+.appr-title { font-size:18px; font-weight:800; color:white; margin-bottom:3px; }
+.appr-subtitle { font-size:13px; color:rgba(255,255,255,.8); }
+.appr-reqnum { background:rgba(255,255,255,.2); color:white; font-family:'Courier New',monospace; font-size:13px; font-weight:700; padding:6px 14px; border-radius:20px; white-space:nowrap; }
+
+.appr-compare-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.appr-compare-title { padding:14px 20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-mid); border-bottom:1px solid var(--border); }
+.appr-compare-grid { display:grid; grid-template-columns:1fr 1fr 1fr; }
+.cmp-cell { padding:20px; text-align:center; border-right:1px solid var(--border); }
+.cmp-cell:last-child { border-right:none; }
+.cmp-cell.featured { background:rgba(241,90,37,.04); }
+.cmp-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-mid); margin-bottom:10px; }
+.cmp-value { font-size:28px; font-weight:800; letter-spacing:-1px; color:var(--text); }
+.cmp-value.brand { color:var(--brand); }
+.cmp-value.good { color:var(--success); }
+.cmp-value.bad { color:var(--danger); }
+.cmp-sub { font-size:11px; color:var(--text-mid); margin-top:5px; }
+
+.appr-comment-card { background:var(--success-bg); border:1.5px solid var(--success-border); border-radius:12px; padding:14px 18px; display:flex; align-items:flex-start; gap:10px; }
+.appr-comment-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--success); margin-bottom:4px; }
+.appr-comment-txt { font-size:13.5px; color:var(--text); line-height:1.5; }
+
+.appr-action-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 24px; }
+.appr-action-title { font-size:13px; color:var(--text-mid); margin-bottom:14px; }
+.appr-btns { display:flex; gap:12px; }
+
+/* REJECTION FULLSCREEN */
+.rate-rejection-screen { display:none; flex-direction:column; gap:16px; }
+.rate-rejection-screen.show { display:flex; }
+.rej-header-card { background:var(--danger); border-radius:14px; padding:20px 24px; display:flex; align-items:center; gap:16px; }
+.rej-icon { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.rej-main { flex:1; }
+.rej-title { font-size:18px; font-weight:800; color:white; margin-bottom:3px; }
+.rej-subtitle { font-size:13px; color:rgba(255,255,255,.8); }
+.rej-reason-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 22px; border-left:4px solid var(--danger); }
+.rej-reason-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--danger); margin-bottom:8px; }
+.rej-reason-txt { font-size:14px; color:var(--text); line-height:1.5; }
+.rej-action-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 24px; }
+.rej-btns { display:flex; gap:12px; }
+
+/* CANCEL PANEL */
+.cancel-panel { display:none; border:2px solid var(--danger-border); background:var(--danger-bg); border-radius:14px; padding:20px; margin-bottom:16px; flex-direction:column; gap:14px; animation:slideIn .25s ease; }
+.cancel-panel.show { display:flex; }
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.cancel-panel-title { font-size:14px; font-weight:700; color:var(--danger); }
+.cancel-actions { display:flex; gap:10px; }
+.btn-cancel-confirm { padding:12px 22px; border:none; background:var(--danger); color:white; border-radius:9px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.btn-cancel-confirm:disabled { opacity:.4; cursor:not-allowed; }
+.btn-back-sm { padding:12px 22px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:9px; font-family:inherit; font-size:13px; cursor:pointer; }
+
+/* TOAST */
+.toast-wrap { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+.toast { display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:12px; font-size:13.5px; min-width:300px; max-width:400px; box-shadow:0 8px 30px rgba(0,0,0,.18); opacity:0; transform:translateX(30px); transition:all .28s cubic-bezier(.4,0,.2,1); pointer-events:auto; }
+.toast.show { opacity:1; transform:translateX(0); }
+.toast-success { background:#1BA85D; color:white; }
+.toast-warn { background:#F5C842; color:#5c3d00; }
+.toast-error { background:#D93025; color:white; }
+.toast-body { flex:1; line-height:1.5; font-weight:600; }
+.toast-close { background:none; border:none; color:inherit; opacity:.7; font-size:16px; cursor:pointer; padding:0 2px; flex-shrink:0; margin-top:-1px; }
+
+/* FORM GRAYED */
+.form-locked { opacity:.4; pointer-events:none; user-select:none; transition:opacity .3s; }
+
+@media(max-width:767px){
+  .step-tracker { display:none; }
+  .pend-grid { grid-template-columns:1fr 1fr; }
+  .appr-compare-grid { grid-template-columns:1fr; }
+  .appr-btns, .rej-btns, .cancel-actions { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item active"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
+    <div class="nav-item"><span class="nav-icon">◈</span><span class="nav-label">Золото</span></div>
+    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span><span class="nav-badge">14</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы, АПОРТ</span>
+      <span class="header-cashier">Касса №1 <span class="caret">▾</span></span>
+    </div>
+    <div class="status-pill"><span class="status-dot"></span><span>Касса открыта</span></div>
+    <div class="header-right">
+      <span class="header-meta">🕥 <strong id="hdr-time">10:30</strong></span>
+      <div class="h-div"></div>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar">ИИ</div>
+        <div><div class="user-name">Иванова А.</div><div class="user-role">Кассир</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content" id="main-content">
+    <div class="back-link" onclick="location.href='index.html'">← Назад к кассе</div>
+
+    <!-- STEP TRACKER -->
+    <div class="step-tracker" id="step-tracker">
+      <div class="step active" id="step1"><div class="step-num" id="sn1">1</div><span id="sl1">Параметры сделки</span></div>
+      <div class="step" id="step2"><div class="step-num" id="sn2">2</div><span id="sl2">Согласование курса</span></div>
+      <div class="step" id="step3"><div class="step-num" id="sn3">3</div><span id="sl3">Данные клиента</span></div>
+      <div class="step" id="step4"><div class="step-num" id="sn4">4</div><span id="sl4">Сделка завершена</span></div>
+    </div>
+
+    <!-- PENDING SCREEN (shown instead of form while waiting) -->
+    <div class="rate-pending-screen" id="screen-pending">
+      <div class="pend-header-card">
+        <div class="pend-pulse-wrap"><div class="pend-pulse"></div></div>
+        <div class="pend-main">
+          <div class="pend-title">Ожидание решения казначея</div>
+          <div class="pend-subtitle">Заявка передана — экран обновится автоматически</div>
+        </div>
+        <div class="pend-reqnum-badge" id="pend-reqnum">—</div>
+      </div>
+
+      <div class="pend-details-card">
+        <div class="pend-details-title">Параметры переданной заявки</div>
+        <div class="pend-grid">
+          <div class="pend-cell"><div class="pend-cell-label">Тип операции</div><div class="pend-cell-value" id="pd-type">—</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Валюта</div><div class="pend-cell-value" id="pd-cur">—</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Сумма</div><div class="pend-cell-value" id="pd-amount">—</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Текущий курс</div><div class="pend-cell-value" id="pd-rate">—</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Отделение</div><div class="pend-cell-value">АПОРТ</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Касса</div><div class="pend-cell-value">Касса №1</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Кассир</div><div class="pend-cell-value">Иванова А.</div></div>
+          <div class="pend-cell"><div class="pend-cell-label">Время отправки</div><div class="pend-cell-value" id="pd-time">—</div></div>
+        </div>
+      </div>
+
+      <div class="pend-info-card">
+        <span style="font-size:20px;flex-shrink:0">⏳</span>
+        <span>Заявка <strong id="pend-reqnum2">—</strong> направлена казначею на рассмотрение. Дождитесь решения — когда казначей установит индивидуальный курс, этот экран <strong>автоматически обновится</strong> и вы сразу увидите согласованный курс и следующий шаг.</span>
+      </div>
+
+      <div class="pend-lock">🔒 Проведение сделки заблокировано до получения ответа казначея</div>
+      <div style="text-align:right;margin-top:6px">
+        <button onclick="cancelPendingAndNew()" style="background:none;border:none;color:var(--text-mid);font-family:inherit;font-size:12.5px;cursor:pointer;padding:8px 0;text-decoration:underline">Отменить эту заявку и начать новую сделку</button>
+      </div>
+    </div>
+
+    <!-- CANCEL PANEL (shows above approval when cancelling) -->
+    <div class="cancel-panel" id="cancel-panel">
+      <div class="cancel-panel-title">⚠️ Укажите причину отмены сделки</div>
+      <div class="form-group">
+        <label class="form-label">Причина отмены <span class="req">*</span></label>
+        <select class="form-select" id="cancel-reason" onchange="checkCancelReason()">
+          <option value="">— Выберите причину —</option>
+          <option>Клиент отказался от сделки</option>
+          <option>Клиента не устроил согласованный курс</option>
+          <option>Ошибка в параметрах сделки</option>
+          <option>Другое</option>
+        </select>
+      </div>
+      <div class="form-group" id="cancel-other-wrap" style="display:none">
+        <label class="form-label">Уточните причину</label>
+        <input class="form-input" id="cancel-other" type="text" placeholder="Опишите...">
+      </div>
+      <div class="cancel-actions">
+        <button class="btn-back-sm" onclick="hideCancel()">← Отмена</button>
+        <button class="btn-cancel-confirm" id="btn-cancel-confirm" disabled onclick="confirmCancel()">Подтвердить отмену сделки</button>
+      </div>
+    </div>
+
+    <!-- APPROVAL SCREEN -->
+    <div class="rate-approval-screen" id="screen-approval">
+      <div class="appr-header-card">
+        <div class="appr-icon">✅</div>
+        <div class="appr-main">
+          <div class="appr-title">Казначей согласовал индивидуальный курс</div>
+          <div class="appr-subtitle">Проверьте условия и перейдите к оформлению клиента</div>
+        </div>
+        <div class="appr-reqnum" id="appr-reqnum">—</div>
+      </div>
+
+      <div class="appr-compare-card">
+        <div class="appr-compare-title">Сравнение курсов</div>
+        <div class="appr-compare-grid">
+          <div class="cmp-cell">
+            <div class="cmp-label">Стандартный курс</div>
+            <div class="cmp-value" id="cmp-std">—</div>
+            <div class="cmp-sub">Текущий рыночный</div>
+          </div>
+          <div class="cmp-cell featured">
+            <div class="cmp-label">Индивидуальный курс</div>
+            <div class="cmp-value brand" id="cmp-ind">—</div>
+            <div class="cmp-sub">Согласован казначеем</div>
+          </div>
+          <div class="cmp-cell">
+            <div class="cmp-label">Разница</div>
+            <div class="cmp-value" id="cmp-diff">—</div>
+            <div class="cmp-sub" id="cmp-diff-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="appr-comment-card" id="appr-comment-block" style="display:none">
+        <span style="font-size:20px">💬</span>
+        <div>
+          <div class="appr-comment-lbl">Комментарий казначея</div>
+          <div class="appr-comment-txt" id="appr-comment-txt">—</div>
+        </div>
+      </div>
+
+      <div class="appr-action-card">
+        <div class="appr-action-title">Выберите действие:</div>
+        <div class="appr-btns">
+          <button class="btn-danger" onclick="startCancel()" style="flex:1">✕ Отменить сделку</button>
+          <button class="btn-primary" id="btn-confirm-deal" onclick="goClient()" style="flex:2;font-size:15px;padding:16px 24px">
+            ✓ Подтвердить курс и перейти к данным клиента →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REJECTION SCREEN -->
+    <div class="rate-rejection-screen" id="screen-rejection">
+      <div class="rej-header-card">
+        <div class="rej-icon">✕</div>
+        <div class="rej-main">
+          <div class="rej-title">Заявка отклонена казначеем</div>
+          <div class="rej-subtitle" id="rej-reqnum-sub">—</div>
+        </div>
+      </div>
+      <div class="rej-reason-card">
+        <div class="rej-reason-lbl">Причина отклонения</div>
+        <div class="rej-reason-txt" id="rej-reason-txt">—</div>
+      </div>
+      <div class="rej-action-card">
+        <div class="rej-btns">
+          <button class="btn-secondary" onclick="resetRateState()" style="flex:1">↻ Отправить новый запрос на курс</button>
+          <button class="btn-primary" onclick="handleSubmit()" style="flex:1">Провести сделку по стандартному курсу</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OP TABS -->
+    <div class="op-tabs" id="op-tabs">
+      <button class="op-tab" id="tab-buy-cur" onclick="setType('buy-cur')">Покупаем валюту</button>
+      <button class="op-tab" id="tab-sell-cur" onclick="setType('sell-cur')">Продаём валюту</button>
+      <button class="op-tab" id="tab-buy-gold" onclick="setType('buy-gold')">Покупаем золото</button>
+      <button class="op-tab" id="tab-sell-gold" onclick="setType('sell-gold')">Продаём золото</button>
+    </div>
+
+    <!-- DEAL FORM -->
+    <div class="card" id="deal-form">
+      <div id="sec-cur">
+        <div class="form-grid-2" id="fields-cur">
+          <div class="form-group">
+            <label class="form-label">Валюта</label>
+            <select class="form-select" id="sel-cur" onchange="recalc()">
+              <option value="USD" data-buy="503" data-sell="510" data-sym="$">🇺🇸 USD — Доллар США</option>
+              <option value="EUR" data-buy="640" data-sell="650" data-sym="€">🇪🇺 EUR — Евро</option>
+              <option value="RUB" data-buy="4" data-sell="6.5" data-sym="₽">🇷🇺 RUB — Российский рубль</option>
+              <option value="CNY" data-buy="77.10" data-sell="78" data-sym="¥">🇨🇳 CNY — Китайский юань</option>
+              <option value="KGS" data-buy="5.50" data-sell="5.90" data-sym="с">🇰🇬 KGS — Кыргызский сом</option>
+              <option value="GBP" data-buy="625" data-sell="635" data-sym="£">🇬🇧 GBP — Британский фунт</option>
+              <option value="CHF" data-buy="555" data-sell="565" data-sym="Fr">🇨🇭 CHF — Швейцарский франк</option>
+              <option value="TRY" data-buy="14.80" data-sell="15.50" data-sym="₺">🇹🇷 TRY — Турецкая лира</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="rate-lbl">Курс покупки</label>
+            <div class="rate-block">
+              <div class="rate-row">
+                <div class="input-wrap">
+                  <input class="form-input" id="inp-rate" readonly>
+                  <span class="input-suffix">₸</span>
+                </div>
+                <button class="btn-req-rate" id="btn-req" onclick="sendRateRequest()">⊕ Индивидуальный курс</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid-2" id="amount-fields">
+          <div class="form-group">
+            <label class="form-label" id="lbl-cur">Сумма в валюте</label>
+            <div class="input-wrap">
+              <input class="form-input" id="inp-cur" type="number" placeholder="0" oninput="calcFromCur()">
+              <span class="input-suffix" id="sym-cur">$</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сумма в тенге</label>
+            <div class="input-wrap">
+              <input class="form-input" id="inp-kzt" type="number" placeholder="0" oninput="calcFromKzt()">
+              <span class="input-suffix">₸</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sec-gold" style="display:none">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Золотой слиток</label>
+            <select class="form-select" id="sel-gold" onchange="recalcGold()">
+              <option value="GOLD1" data-buy="56991" data-sell="58992">🥇 1 грамм</option>
+              <option value="GOLD5" data-buy="284955" data-sell="294960">🥇 5 грамм</option>
+              <option value="GOLD10" data-buy="569910" data-sell="589920">🥇 10 грамм</option>
+              <option value="GOLD20" data-buy="1139820" data-sell="1179840">🥇 20 грамм</option>
+              <option value="GOLD50" data-buy="2849550" data-sell="2949600">🥇 50 грамм</option>
+              <option value="GOLD100" data-buy="5699100" data-sell="5899200">🥇 100 грамм</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="gold-rate-lbl">Цена покупки</label>
+            <div class="input-wrap">
+              <input class="form-input" id="inp-gold-rate" readonly>
+              <span class="input-suffix">₸</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Количество, шт.</label>
+            <input class="form-input" id="inp-gold-qty" type="number" min="1" placeholder="1" oninput="recalcGold()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Итого</label>
+            <div class="input-wrap">
+              <input class="form-input" id="inp-gold-total" readonly>
+              <span class="input-suffix">₸</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-sep"></div>
+      <div class="result-block">
+        <div class="result-label" id="result-lbl">Итого</div>
+        <div class="result-value" id="result-val">—</div>
+      </div>
+      <div id="submit-area">
+        <button class="btn-primary" style="width:100%" id="btn-submit" onclick="handleSubmit()">✓ Провести сделку</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <button class="btn-foot">↓ Приход</button>
+    <button class="btn-foot">↑ Расход</button>
+    <button class="btn-foot">⎙ Х-отчёт</button>
+    <div class="footer-space"></div>
+    <button class="btn-close-cashier">🔒 Закрыть кассу</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=t;
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+  document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+})();
+function toggleTheme(){ const d=document.documentElement.dataset.theme==='dark'; document.documentElement.dataset.theme=d?'light':'dark'; document.getElementById('btn-theme').textContent=d?'🌙':'☀️'; localStorage.setItem('ecash-theme',d?'light':'dark'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+
+/* TOAST */
+function toast(icon, msg, type, dur){
+  dur=dur||4500;
+  const w=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast toast-'+type;
+  el.innerHTML='<span style="font-size:18px;flex-shrink:0">'+icon+'</span><span class="toast-body">'+msg+'</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
+  w.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),350);},dur);
+}
+
+/* STEP TRACKER */
+function setStep(n){
+  for(let i=1;i<=4;i++){
+    const s=document.getElementById('step'+i);
+    s.className='step'+(i<n?' done':i===n?' active':'');
+    if(i<n) document.getElementById('sn'+i).textContent='✓';
+    else document.getElementById('sn'+i).textContent=i;
+  }
+}
+
+/* DATA */
+const RATES={USD:{buy:503,sell:510,sym:'$'},EUR:{buy:640,sell:650,sym:'€'},RUB:{buy:4,sell:6.5,sym:'₽'},CNY:{buy:77.10,sell:78,sym:'¥'},KGS:{buy:5.50,sell:5.90,sym:'с'},GBP:{buy:625,sell:635,sym:'£'},CHF:{buy:555,sell:565,sym:'Fr'},TRY:{buy:14.80,sell:15.50,sym:'₺'}};
+const GOLD_RATES={GOLD1:{buy:56991,sell:58992},GOLD5:{buy:284955,sell:294960},GOLD10:{buy:569910,sell:589920},GOLD20:{buy:1139820,sell:1179840},GOLD50:{buy:2849550,sell:2949600},GOLD100:{buy:5699100,sell:5899200}};
+const TYPE_LABEL={'buy-cur':'Покупаем','sell-cur':'Продаём','buy-gold':'Покупаем золото','sell-gold':'Продаём золото'};
+const LS_REQ='ecash-rate-req';
+const LS_DECISION='ecash-rate-decision';
+
+let curType='buy-cur', stdRate=503, customRate=null, rateState='idle', _poll=null;
+
+function fmt(n){ return parseFloat(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* CALC */
+function setType(t){
+  curType=t;
+  document.querySelectorAll('.op-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  const isGold=t.includes('gold'), isBuy=t.includes('buy');
+  document.getElementById('sec-cur').style.display=isGold?'none':'block';
+  document.getElementById('sec-gold').style.display=isGold?'block':'none';
+  if(!isGold){ document.getElementById('rate-lbl').textContent=isBuy?'Курс покупки':'Курс продажи'; document.getElementById('result-lbl').textContent=isBuy?'Кассир выдаёт клиенту':'Кассир принимает от клиента'; }
+  else { document.getElementById('gold-rate-lbl').textContent=isBuy?'Цена покупки':'Цена продажи'; document.getElementById('result-lbl').textContent=isBuy?'Кассир платит клиенту':'Итого к получению'; }
+  resetRateState();
+  if(isGold) recalcGold(); else recalc();
+}
+function recalc(){
+  const sel=document.getElementById('sel-cur'), opt=sel.options[sel.selectedIndex];
+  stdRate=curType==='buy-cur'?parseFloat(opt.dataset.buy):parseFloat(opt.dataset.sell);
+  document.getElementById('sym-cur').textContent=opt.dataset.sym;
+  if(customRate===null) document.getElementById('inp-rate').value=fmt(stdRate);
+  calcFromCur();
+}
+function calcFromCur(){
+  const rate=customRate!==null?customRate:stdRate, a=parseFloat(document.getElementById('inp-cur').value)||0, kzt=a*rate;
+  document.getElementById('inp-kzt').value=kzt>0?kzt.toFixed(2):'';
+  document.getElementById('result-val').textContent=kzt>0?fmt(kzt)+' ₸':'—';
+}
+function calcFromKzt(){
+  const rate=(customRate!==null?customRate:stdRate)||1, kzt=parseFloat(document.getElementById('inp-kzt').value)||0, a=kzt/rate;
+  document.getElementById('inp-cur').value=a>0?a.toFixed(2):'';
+  document.getElementById('result-val').textContent=kzt>0?fmt(kzt)+' ₸':'—';
+}
+function recalcGold(){
+  const sel=document.getElementById('sel-gold'), opt=sel.options[sel.selectedIndex];
+  const price=curType==='buy-gold'?parseFloat(opt.dataset.buy):parseFloat(opt.dataset.sell);
+  stdRate=price; document.getElementById('inp-gold-rate').value=fmt(price);
+  const qty=parseInt(document.getElementById('inp-gold-qty').value)||0, total=qty*price;
+  document.getElementById('inp-gold-total').value=total>0?fmt(total):'';
+  document.getElementById('result-val').textContent=total>0?fmt(total)+' ₸':'—';
+}
+
+/* SHOW / HIDE screens */
+function showScreen(name){
+  document.getElementById('screen-pending').classList.toggle('show', name==='pending');
+  document.getElementById('screen-approval').classList.toggle('show', name==='approval');
+  document.getElementById('screen-rejection').classList.toggle('show', name==='rejection');
+  // Hide tabs + form when not idle
+  const isIdle=name==='idle';
+  document.getElementById('op-tabs').style.display=isIdle?'':'none';
+  document.getElementById('deal-form').style.display=isIdle?'':'none';
+  if(!isIdle) window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* POLLING */
+function startPolling(){
+  _poll=setInterval(function(){
+    const dec=localStorage.getItem(LS_DECISION);
+    if(!dec) return;
+    const d=JSON.parse(dec);
+    localStorage.removeItem(LS_DECISION);
+    stopPolling();
+    if(d.action==='approve') showApproval(parseFloat(d.rate),d.comment,d.reqNum);
+    else showRejection(d.reason,d.reqNum);
+  },1500);
+}
+function stopPolling(){ if(_poll){clearInterval(_poll);_poll=null;} }
+
+/* RATE REQUEST */
+function sendRateRequest(){
+  const amount=document.getElementById('inp-cur').value;
+  if(!amount||parseFloat(amount)===0){ toast('⚠️','Введите сумму сделки','warn',4000); return; }
+
+  const now=new Date();
+  const timeStr=now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const dateStr=now.toLocaleDateString('ru-RU');
+  const reqNum='ЗАК-'+String(Math.floor(Math.random()*90000+10000));
+  const cur=document.getElementById('sel-cur').value;
+  const kzt=document.getElementById('inp-kzt').value;
+
+  const req={num:reqNum,date:dateStr,time:timeStr,type:curType,cur:cur,amount:amount,kzt:kzt,stdRate:stdRate,branch:'АПОРТ',cashier:'Иванова А.',desk:'Касса №1'};
+  localStorage.setItem(LS_REQ,JSON.stringify(req));
+  localStorage.removeItem(LS_DECISION);
+
+  rateState='pending';
+  setStep(2);
+  fillPendingScreen(req);
+  showScreen('pending');
+  toast('📤','Заявка <strong>'+reqNum+'</strong> отправлена казначею','warn',5000);
+  startPolling();
+}
+
+function fillPendingScreen(req){
+  document.getElementById('pend-reqnum').textContent=req.num;
+  document.getElementById('pend-reqnum2').textContent=req.num;
+  document.getElementById('pd-type').textContent=TYPE_LABEL[req.type]||req.type;
+  document.getElementById('pd-cur').textContent=req.cur;
+  document.getElementById('pd-amount').textContent=(parseFloat(req.amount)||0).toLocaleString('ru-RU')+' '+req.cur;
+  document.getElementById('pd-rate').textContent=fmt(parseFloat(req.stdRate))+' ₸';
+  document.getElementById('pd-time').textContent=req.date+' '+req.time;
+}
+
+function showApproval(approvedRate,comment,reqNum){
+  stopPolling();
+  customRate=approvedRate; rateState='approved';
+
+  const diff=approvedRate-stdRate;
+  const pct=((diff/stdRate)*100).toFixed(2);
+  const sign=diff>=0?'+':'';
+  const diffCls=diff>0?'good':diff<0?'bad':'';
+
+  document.getElementById('appr-reqnum').textContent=reqNum||'';
+  document.getElementById('cmp-std').textContent=fmt(stdRate)+' ₸';
+  document.getElementById('cmp-ind').textContent=fmt(approvedRate)+' ₸';
+  const diffEl=document.getElementById('cmp-diff');
+  diffEl.textContent=sign+Math.abs(diff).toFixed(2)+' ₸';
+  diffEl.className='cmp-value '+diffCls;
+  document.getElementById('cmp-diff-sub').textContent=sign+Math.abs(parseFloat(pct)).toFixed(2)+'% от стандартного';
+
+  if(comment){
+    document.getElementById('appr-comment-block').style.display='flex';
+    document.getElementById('appr-comment-txt').textContent=comment;
+  }
+
+  setStep(3);
+  showScreen('approval');
+  toast('✅','Казначей согласовал курс <strong>'+fmt(approvedRate)+' ₸</strong> — подтвердите сделку','success',7000);
+}
+
+function showRejection(reason,reqNum){
+  stopPolling(); rateState='rejected';
+  document.getElementById('rej-reqnum-sub').textContent='Заявка '+( reqNum||'');
+  document.getElementById('rej-reason-txt').textContent=reason||'Причина не указана';
+  setStep(1);
+  showScreen('rejection');
+  localStorage.removeItem(LS_REQ);
+  toast('✕','Заявка отклонена казначеем','error',6000);
+}
+
+/* CANCEL */
+function startCancel(){ document.getElementById('cancel-panel').classList.add('show'); window.scrollTo({top:0,behavior:'smooth'}); }
+function hideCancel(){ document.getElementById('cancel-panel').classList.remove('show'); document.getElementById('cancel-reason').value=''; document.getElementById('btn-cancel-confirm').disabled=true; document.getElementById('cancel-other-wrap').style.display='none'; }
+function checkCancelReason(){
+  const v=document.getElementById('cancel-reason').value;
+  document.getElementById('cancel-other-wrap').style.display=v==='Другое'?'block':'none';
+  document.getElementById('btn-cancel-confirm').disabled=!v;
+}
+function confirmCancel(){
+  hideCancel(); stopPolling();
+  localStorage.removeItem(LS_REQ); localStorage.removeItem(LS_DECISION);
+  toast('↩','Сделка отменена','warn',4000);
+  resetRateState();
+}
+
+function cancelPendingAndNew(){
+  stopPolling();
+  localStorage.removeItem(LS_REQ); localStorage.removeItem(LS_DECISION);
+  rateState='idle'; customRate=null;
+  setStep(1); showScreen('idle');
+  document.getElementById('cancel-panel').classList.remove('show');
+  document.getElementById('btn-req').disabled=false;
+  document.getElementById('btn-submit').textContent='✓ Провести сделку';
+  document.getElementById('btn-submit').onclick=handleSubmit;
+  recalc();
+  toast('↩','Заявка отменена — можно начать новую сделку','warn',3500);
+}
+
+function resetRateState(){
+  stopPolling(); rateState='idle'; customRate=null;
+  setStep(1); showScreen('idle');
+  localStorage.removeItem(LS_REQ); localStorage.removeItem(LS_DECISION);
+  document.getElementById('cancel-panel').classList.remove('show');
+  document.getElementById('btn-req').disabled=false;
+  document.getElementById('btn-submit').textContent='✓ Провести сделку';
+  document.getElementById('btn-submit').onclick=handleSubmit;
+  recalc();
+}
+
+function handleSubmit(){
+  if(rateState==='pending') return;
+  goClient();
+}
+function goClient(){
+  const isGold=curType.includes('gold');
+  let total=0,cur='',amount='',rate=customRate||stdRate;
+  if(isGold){ total=parseFloat((document.getElementById('inp-gold-total').value||'0').replace(/\s/g,''))||0; cur=document.getElementById('sel-gold').value; amount=document.getElementById('inp-gold-qty').value; }
+  else { total=parseFloat(document.getElementById('inp-kzt').value||'0')||0; cur=document.getElementById('sel-cur').value; amount=document.getElementById('inp-cur').value; }
+  if(!amount||total===0){ toast('⚠️','Укажите сумму операции','warn',4000); return; }
+  setStep(3);
+  location.href='client-card.html?t='+curType+'&c='+cur+'&a='+amount+'&rate='+rate+'&total='+Math.round(total)+'&custom='+(customRate?1:0);
+}
+
+/* INIT */
+window.onload=function(){
+  const urlParams=new URLSearchParams(location.search);
+  // ?new=1 means explicitly starting a new operation — clear any pending state
+  if(urlParams.get('new')==='1'){
+    localStorage.removeItem(LS_REQ); localStorage.removeItem(LS_DECISION);
+  }
+
+  const decStr=localStorage.getItem(LS_DECISION);
+  const reqStr=localStorage.getItem(LS_REQ);
+
+  const restoreReq=function(req){
+    curType=req.type||'buy-cur';
+    document.querySelectorAll('.op-tab').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+curType).classList.add('active');
+    const sel=document.getElementById('sel-cur');
+    for(let o of sel.options) if(o.value===req.cur){sel.value=req.cur;break;}
+    stdRate=parseFloat(req.stdRate)||503;
+    document.getElementById('inp-rate').value=fmt(stdRate);
+    document.getElementById('inp-cur').value=req.amount||'';
+    document.getElementById('inp-kzt').value=req.kzt||'';
+    document.getElementById('sym-cur').textContent=(RATES[req.cur]||{sym:'$'}).sym;
+    if(req.amount) calcFromCur();
+  };
+
+  if(reqStr && decStr){
+    const req=JSON.parse(reqStr), dec=JSON.parse(decStr);
+    localStorage.removeItem(LS_DECISION);
+    restoreReq(req);
+    if(dec.action==='approve') showApproval(parseFloat(dec.rate),dec.comment,req.num);
+    else showRejection(dec.reason,req.num);
+    return;
+  }
+
+  if(reqStr && !decStr){
+    const req=JSON.parse(reqStr);
+    restoreReq(req);
+    rateState='pending';
+    setStep(2); fillPendingScreen(req);
+    showScreen('pending');
+    startPolling();
+    return;
+  }
+
+  // Normal URL init
+  const t=urlParams.get('t')||'buy-cur', c=urlParams.get('c')||'USD';
+  setType(t);
+  if(!t.includes('gold')){ const sel=document.getElementById('sel-cur'); for(let o of sel.options) if(o.value===c){sel.value=c;break;} recalc(); }
+  else { const sel=document.getElementById('sel-gold'); for(let o of sel.options) if(o.value===c){sel.value=c;break;} recalcGold(); }
+  setStep(1);
+};
+</script>
+</body>
+</html>

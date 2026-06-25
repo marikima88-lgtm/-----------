@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Касса</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <span class="logo-mark">E</span><span class="logo-name">cash</span>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
+    <div class="nav-item"><span class="nav-icon">◈</span><span class="nav-label">Золото</span></div>
+    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span><span class="nav-badge">14</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">☰</span><span class="nav-label">Документы</span></div>
+    <div class="nav-item"><span class="nav-icon">⚇</span><span class="nav-label">Сотрудники</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы, АПОРТ</span>
+      <span class="header-cashier">Касса №1 <span class="caret">▾</span></span>
+    </div>
+    <div class="status-pill"><span class="status-dot"></span><span>Касса открыта · с 09:00</span></div>
+    <div class="header-right">
+      <span class="header-meta">🕥 <strong>10:30</strong></span>
+      <span class="header-meta">📅 <strong>14.05.2025</strong></span>
+      <div class="h-div"></div>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar">ИИ</div>
+        <div><div class="user-name">Иванова А.</div><div class="user-role">Кассир</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-head">
+      <h1 class="page-title">Курсы валют и остатки</h1>
+      <button class="btn-icon-sm">↻ Обновить</button>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-card"><div class="card-label">KZT в кассе</div><div class="card-value">76 855 872 ₸</div></div>
+      <div class="summary-card"><div class="card-label">Остаток (эквивалент)</div><div class="card-value">128 416 854 ₸</div></div>
+      <div class="summary-card"><div class="card-label">Всего в кассе</div><div class="card-value">129 420 854 ₸</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('currency',this)">Валюта</button>
+      <button class="tab" onclick="switchTab('gold',this)">Золото</button>
+    </div>
+
+    <!-- ВАЛЮТА -->
+    <div id="tab-currency" class="tab-pane active">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Валюта</th>
+              <th>Покупаем</th>
+              <th>Продаём</th>
+              <th>Остаток</th>
+              <th>В тенге</th>
+              <th style="text-align:right">Операция</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🇺🇸</div><div><div class="cur-code">USD</div><div class="cur-name">Доллар США</div></div></div></td><td><span class="rate">503.00</span></td><td><span class="rate">510.00</span></td><td>48 853 $</td><td>25 000 530 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','USD')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','USD')">Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🇪🇺</div><div><div class="cur-code">EUR</div><div class="cur-name">Евро</div></div></div></td><td><span class="rate">640.00</span></td><td><span class="rate">650.00</span></td><td>97 664 €</td><td>63 482 600 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','EUR')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','EUR')">Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🇷🇺</div><div><div class="cur-code">RUB</div><div class="cur-name">Российский рубль</div></div></div></td><td><span class="rate">4.00</span></td><td><span class="rate">6.50</span></td><td>50 100 ₽</td><td>255 510 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','RUB')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','RUB')">Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🇨🇳</div><div><div class="cur-code">CNY</div><div class="cur-name">Китайский юань</div></div></div></td><td><span class="rate">77.10</span></td><td><span class="rate">78.00</span></td><td>12 350 ¥</td><td>963 570 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','CNY')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','CNY')">Продаём</button></div></td></tr>
+            <!-- Hidden extra currencies -->
+            <tr class="hidden-row" id="ex-KGS"><td><div class="cur-cell"><div class="cur-flag">🇰🇬</div><div><div class="cur-code">KGS</div><div class="cur-name">Кыргызский сом</div></div></div></td><td><span class="rate">5.50</span></td><td><span class="rate">5.90</span></td><td>320 000 с</td><td>1 760 000 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','KGS')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','KGS')">Продаём</button></div></td></tr>
+            <tr class="hidden-row" id="ex-GBP"><td><div class="cur-cell"><div class="cur-flag">🇬🇧</div><div><div class="cur-code">GBP</div><div class="cur-name">Британский фунт</div></div></div></td><td><span class="rate">625.00</span></td><td><span class="rate">635.00</span></td><td>8 200 £</td><td>5 127 000 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','GBP')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','GBP')">Продаём</button></div></td></tr>
+            <tr class="hidden-row" id="ex-CHF"><td><div class="cur-cell"><div class="cur-flag">🇨🇭</div><div><div class="cur-code">CHF</div><div class="cur-name">Швейцарский франк</div></div></div></td><td><span class="rate">555.00</span></td><td><span class="rate">565.00</span></td><td>4 500 Fr</td><td>2 497 500 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','CHF')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','CHF')">Продаём</button></div></td></tr>
+            <tr class="hidden-row" id="ex-TRY"><td><div class="cur-cell"><div class="cur-flag">🇹🇷</div><div><div class="cur-code">TRY</div><div class="cur-name">Турецкая лира</div></div></div></td><td><span class="rate">14.80</span></td><td><span class="rate">15.50</span></td><td>95 000 ₺</td><td>1 406 000 ₸</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-cur','TRY')">Покупаем</button><button class="btn-sell" onclick="go('sell-cur','TRY')">Продаём</button></div></td></tr>
+            <tr><td colspan="6" style="padding:0"><button class="btn-expand" onclick="toggleExtra()"><span class="expand-icon" id="exp-icon">▼</span><span id="exp-text">Показать ещё 4 валюты</span></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ЗОЛОТО -->
+    <div id="tab-gold" class="tab-pane">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Актив</th><th>Покупаем</th><th>Продаём</th><th>Остаток</th><th style="text-align:right">Операция</th></tr></thead>
+          <tbody>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🥇</div><div><div class="cur-code">1 г</div><div class="cur-name">Золотой слиток</div></div></div></td><td><span class="rate">56 991 ₸</span></td><td><span class="rate">58 992 ₸</span></td><td>—</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-gold','GOLD1')">Покупаем</button><button class="btn-sell" disabled>Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🥇</div><div><div class="cur-code">5 г</div><div class="cur-name">Золотой слиток</div></div></div></td><td><span class="rate">284 955 ₸</span></td><td><span class="rate">294 960 ₸</span></td><td>0 шт.</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-gold','GOLD5')">Покупаем</button><button class="btn-sell" disabled>Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🥇</div><div><div class="cur-code">10 г</div><div class="cur-name">Золотой слиток</div></div></div></td><td><span class="rate">569 910 ₸</span></td><td><span class="rate">589 920 ₸</span></td><td>1 шт.</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-gold','GOLD10')">Покупаем</button><button class="btn-sell" onclick="go('sell-gold','GOLD10')">Продаём</button></div></td></tr>
+            <tr><td><div class="cur-cell"><div class="cur-flag">🥇</div><div><div class="cur-code">20 г</div><div class="cur-name">Золотой слиток</div></div></div></td><td><span class="rate">1 139 820 ₸</span></td><td><span class="rate">1 179 840 ₸</span></td><td>0 шт.</td><td><div class="act-btns"><button class="btn-buy" onclick="go('buy-gold','GOLD20')">Покупаем</button><button class="btn-sell" disabled>Продаём</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <button class="btn-foot">↓ Приход</button>
+    <button class="btn-foot">↑ Расход</button>
+    <button class="btn-foot">⎙ Х-отчёт</button>
+    <div class="footer-space"></div>
+    <button class="btn-close-cashier">🔒 Закрыть кассу</button>
+  </footer>
+</div>
+
+<script>
+// Theme
+(function(){
+  const t = localStorage.getItem('ecash-theme') || 'light';
+  document.documentElement.dataset.theme = t;
+  document.getElementById('btn-theme').textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+function toggleTheme(){
+  const d = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = d ? 'light' : 'dark';
+  document.getElementById('btn-theme').textContent = d ? '🌙' : '☀️';
+  localStorage.setItem('ecash-theme', d ? 'light' : 'dark');
+}
+
+// Sidebar mobile
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// Tabs
+function switchTab(n,el){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+n).classList.add('active');
+}
+
+// Expand currencies
+let extraOpen=false;
+function toggleExtra(){
+  extraOpen=!extraOpen;
+  ['KGS','GBP','CHF','TRY'].forEach(c=>document.getElementById('ex-'+c).classList.toggle('visible',extraOpen));
+  document.getElementById('exp-icon').classList.toggle('open',extraOpen);
+  document.getElementById('exp-text').textContent=extraOpen?'Свернуть':'Показать ещё 4 валюты';
+}
+
+function go(t,c){ location.href='operation.html?t='+t+'&c='+c+'&new=1'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Журнал операций</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* FILTERS */
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+.filter-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-mid); white-space: nowrap; }
+.filter-select { padding: 7px 30px 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: border-color 0.13s; }
+.filter-select:focus { border-color: var(--text); }
+.filter-input { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.13s; }
+.filter-input:focus { border-color: var(--text); }
+.filter-sep { width: 1px; height: 24px; background: var(--border); }
+.btn-reset { padding: 7px 14px; border: none; background: none; font-family: inherit; font-size: 12.5px; color: var(--text-mid); cursor: pointer; border-radius: 8px; transition: all 0.13s; }
+.btn-reset:hover { background: var(--surface-2); color: var(--text); }
+
+/* STATS ROW */
+.stats-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-pill { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.stat-label { color: var(--text-mid); }
+.stat-val { font-weight: 700; color: var(--text); }
+
+/* TABLE */
+.op-table { min-width: 900px; }
+.op-type-cell { display: flex; align-items: center; gap: 8px; }
+.op-type-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.op-buy { background: #E8F5E9; }
+.op-sell { background: #FFF3E0; }
+.op-num { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-mid); }
+.amount-cell { font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+
+/* PAGINATION */
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-top: 1px solid var(--border); }
+.pagination-info { font-size: 13px; color: var(--text-mid); }
+.pagination-btns { display: flex; gap: 6px; }
+.pg-btn { width: 34px; height: 34px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.13s; }
+.pg-btn:hover { border-color: var(--text); }
+.pg-btn.active { background: var(--brand); border-color: var(--brand); color: white; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item active"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
+    <div class="nav-item"><span class="nav-icon">◈</span><span class="nav-label">Золото</span></div>
+    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span><span class="nav-badge">14</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">☰</span><span class="nav-label">Документы</span></div>
+    <div class="nav-item"><span class="nav-icon">⚇</span><span class="nav-label">Сотрудники</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы, АПОРТ</span>
+      <span class="header-cashier">Касса №1 <span class="caret">▾</span></span>
+    </div>
+    <div class="status-pill"><span class="status-dot"></span><span>Касса открыта</span></div>
+    <div class="header-right">
+      <span class="header-meta">🕥 <strong>10:30</strong></span>
+      <span class="header-meta">📅 <strong>14.05.2025</strong></span>
+      <div class="h-div"></div>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar">ИИ</div>
+        <div><div class="user-name">Иванова А.</div><div class="user-role">Кассир</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-head">
+      <h1 class="page-title">Журнал операций</h1>
+      <button class="btn-icon-sm" onclick="location.href='operation.html?new=1'">+ Новая операция</button>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="filters">
+      <span class="filter-label">Фильтры:</span>
+      <input class="filter-input" type="date" id="f-from" value="2025-05-14">
+      <span style="color:var(--text-mid);font-size:13px">—</span>
+      <input class="filter-input" type="date" id="f-to" value="2025-05-14">
+      <div class="filter-sep"></div>
+      <select class="filter-select" id="f-status" onchange="applyFilters()">
+        <option value="">Все статусы</option>
+        <option value="executed">Исполнено</option>
+        <option value="pending">На согласовании</option>
+        <option value="approved">Согласовано</option>
+        <option value="rejected">Отклонено</option>
+        <option value="cancelled">Отменено</option>
+      </select>
+      <select class="filter-select" id="f-currency" onchange="applyFilters()">
+        <option value="">Все валюты</option>
+        <option>USD</option><option>EUR</option><option>RUB</option>
+        <option>CNY</option><option>KGS</option><option>GBP</option>
+        <option>GOLD 10г</option>
+      </select>
+      <select class="filter-select" id="f-cashier" onchange="applyFilters()">
+        <option value="">Все кассиры</option>
+        <option>Иванова А.</option>
+        <option>Петров С.</option>
+        <option>Смирнова Е.</option>
+      </select>
+      <select class="filter-select" id="f-branch" onchange="applyFilters()">
+        <option value="">Все отделения</option>
+        <option>АПОРТ</option>
+        <option>Мега Алматы</option>
+        <option>Достык Плаза</option>
+      </select>
+      <button class="btn-reset" onclick="resetFilters()">↺ Сбросить</button>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-pill"><span class="stat-dot" style="background:var(--success)"></span><span class="stat-label">Исполнено:</span><span class="stat-val" id="cnt-executed">—</span></div>
+      <div class="stat-pill"><span class="stat-dot" style="background:#F5C842"></span><span class="stat-label">На согласовании:</span><span class="stat-val" id="cnt-pending">—</span></div>
+      <div class="stat-pill"><span class="stat-dot" style="background:var(--danger)"></span><span class="stat-label">Отклонено:</span><span class="stat-val" id="cnt-rejected">—</span></div>
+      <div class="stat-pill"><span class="stat-dot" style="background:var(--text-light)"></span><span class="stat-label">Отменено:</span><span class="stat-val" id="cnt-cancelled">—</span></div>
+    </div>
+
+    <!-- Таблица -->
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="data-table op-table" id="ops-table">
+          <thead>
+            <tr>
+              <th>Дата и время</th>
+              <th>№ операции</th>
+              <th>Тип</th>
+              <th>Валюта</th>
+              <th>Сумма</th>
+              <th>Курс</th>
+              <th>Кассир</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="ops-body">
+            <!-- Generated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span class="pagination-info" id="pg-info">Показано 1–10 из 47</span>
+        <div class="pagination-btns">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn active">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">4</button>
+          <button class="pg-btn">5</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <button class="btn-foot">↓ Экспорт</button>
+    <button class="btn-foot">⎙ Печать</button>
+    <div class="footer-space"></div>
+    <button class="btn-close-cashier">🔒 Закрыть кассу</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=t;
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+})();
+function toggleTheme(){
+  const d=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=d?'light':'dark';
+  document.getElementById('btn-theme').textContent=d?'🌙':'☀️';
+  localStorage.setItem('ecash-theme',d?'light':'dark');
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+
+// Sample data
+const OPS = [
+  {dt:'14.05.2025 10:24',num:'EC-48271',type:'buy-cur',cur:'USD',amount:'2 500',rate:'503.00',cashier:'Иванова А.',status:'executed'},
+  {dt:'14.05.2025 10:18',num:'EC-48270',type:'sell-cur',cur:'EUR',amount:'800',rate:'650.00',cashier:'Иванова А.',status:'executed'},
+  {dt:'14.05.2025 09:55',num:'EC-48269',type:'buy-cur',cur:'USD',amount:'10 000',rate:'495.00',cashier:'Иванова А.',status:'pending'},
+  {dt:'14.05.2025 09:41',num:'EC-48268',type:'sell-gold',cur:'GOLD 10г',amount:'1 шт.',rate:'589 920',cashier:'Петров С.',status:'executed'},
+  {dt:'14.05.2025 09:33',num:'EC-48267',type:'buy-cur',cur:'RUB',amount:'150 000',rate:'4.00',cashier:'Петров С.',status:'cancelled'},
+  {dt:'14.05.2025 09:20',num:'EC-48266',type:'sell-cur',cur:'CNY',amount:'5 000',rate:'78.00',cashier:'Смирнова Е.',status:'executed'},
+  {dt:'14.05.2025 09:11',num:'EC-48265',type:'buy-cur',cur:'GBP',amount:'500',rate:'625.00',cashier:'Иванова А.',status:'approved'},
+  {dt:'14.05.2025 08:58',num:'EC-48264',type:'sell-cur',cur:'USD',amount:'3 200',rate:'510.00',cashier:'Иванова А.',status:'executed'},
+  {dt:'14.05.2025 08:44',num:'EC-48263',type:'buy-gold',cur:'GOLD 1г',amount:'5 шт.',rate:'56 991',cashier:'Петров С.',status:'rejected'},
+  {dt:'14.05.2025 08:30',num:'EC-48262',type:'sell-cur',cur:'EUR',amount:'1 200',rate:'650.00',cashier:'Смирнова Е.',status:'executed'},
+];
+
+const STATUS_CFG = {
+  pending:   {cls:'badge-pending',   label:'На согласовании'},
+  approved:  {cls:'badge-approved',  label:'Согласовано'},
+  executed:  {cls:'badge-executed',  label:'Исполнено'},
+  rejected:  {cls:'badge-rejected',  label:'Отклонено'},
+  cancelled: {cls:'badge-cancelled', label:'Отменено'},
+};
+
+const TYPE_LABEL = {
+  'buy-cur':'Покупка валюты',
+  'sell-cur':'Продажа валюты',
+  'buy-gold':'Покупка золота',
+  'sell-gold':'Продажа золота',
+};
+const TYPE_ICON = {
+  'buy-cur':'💵','sell-cur':'💸','buy-gold':'🥇','sell-gold':'🏅'
+};
+const TYPE_CLS = {
+  'buy-cur':'op-buy','sell-cur':'op-sell','buy-gold':'op-buy','sell-gold':'op-sell'
+};
+
+let ALL_OPS=[];
+let filtered=[];
+
+function fmt(n){ return parseFloat(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function buildAllOps(){
+  // Live operations from localStorage (logged by client-card.html)
+  let liveOps=[];
+  try{
+    const log=JSON.parse(localStorage.getItem('ecash-ops-log')||'[]');
+    liveOps=log.map(op=>({
+      dt:op.dt,
+      num:op.id,
+      type:op.type,
+      cur:op.cur,
+      amount:parseFloat(op.amount||0).toLocaleString('ru-RU',{maximumFractionDigits:2}),
+      rate:fmt(parseFloat(op.rate||0)),
+      total:fmt(parseFloat(op.total||0)),
+      cashier:op.cashier||'Иванова А.',
+      status:op.status||'executed',
+      custom:op.custom,
+      isLive:true
+    }));
+  }catch(e){}
+  ALL_OPS=[...liveOps,...OPS];
+}
+
+function renderTable(data){
+  const body=document.getElementById('ops-body');
+  if(!data.length){
+    body.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-mid)">Операции не найдены</td></tr>`;
+    return;
+  }
+  body.innerHTML=data.map(op=>{
+    const sc=STATUS_CFG[op.status]||STATUS_CFG.executed;
+    const totalRaw=parseFloat((op.amount||'0').replace(/\s/g,'').replace(',','.'))||0;
+    const rateRaw=parseFloat((op.rate||'0').replace(/\s/g,'').replace(',','.'))||1;
+    const total=op.total||(totalRaw*rateRaw).toLocaleString('ru-RU',{maximumFractionDigits:0});
+    const liveRow=op.isLive?'background:rgba(241,90,37,.03);border-left:3px solid var(--brand);':'';
+    return `<tr style="${liveRow}">
+      <td style="font-size:12px;color:var(--text-mid)">${op.dt}${op.isLive?'<br><span style="font-size:10px;background:var(--brand);color:white;padding:1px 6px;border-radius:8px">NEW</span>':''}</td>
+      <td><span class="op-num">${op.num}</span></td>
+      <td><div class="op-type-cell"><div class="op-type-icon ${TYPE_CLS[op.type]||''}">${TYPE_ICON[op.type]||'↔'}</div><span style="font-size:13px">${TYPE_LABEL[op.type]||op.type}${op.custom?'<span style="font-size:10px;margin-left:4px;color:var(--brand);font-weight:700">★инд.</span>':''}</span></div></td>
+      <td style="font-weight:600">${op.cur}</td>
+      <td class="amount-cell">${op.amount}</td>
+      <td>${op.rate} ₸</td>
+      <td style="font-size:13px">${op.cashier}</td>
+      <td><span class="badge ${sc.cls}">${sc.label}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pg-info').textContent=`Показано 1–${Math.min(10,data.length)} из ${data.length}`;
+}
+
+function updateStats(data){
+  document.getElementById('cnt-executed').textContent=data.filter(o=>o.status==='executed').length;
+  document.getElementById('cnt-pending').textContent=data.filter(o=>o.status==='pending').length;
+  document.getElementById('cnt-rejected').textContent=data.filter(o=>o.status==='rejected').length;
+  document.getElementById('cnt-cancelled').textContent=data.filter(o=>o.status==='cancelled').length;
+}
+
+function applyFilters(){
+  const st=document.getElementById('f-status').value;
+  const cur=document.getElementById('f-currency').value;
+  const cashier=document.getElementById('f-cashier').value;
+  filtered=ALL_OPS.filter(op=>{
+    if(st && op.status!==st) return false;
+    if(cur && op.cur!==cur) return false;
+    if(cashier && op.cashier!==cashier) return false;
+    return true;
+  });
+  renderTable(filtered);
+  updateStats(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('f-status').value='';
+  document.getElementById('f-currency').value='';
+  document.getElementById('f-cashier').value='';
+  document.getElementById('f-branch').value='';
+  filtered=[...ALL_OPS];
+  renderTable(filtered);
+  updateStats(filtered);
+}
+
+window.onload=function(){
+  buildAllOps();
+  filtered=[...ALL_OPS];
+  renderTable(filtered);
+  updateStats(ALL_OPS);
+};
+</script>
+</body>
+</html>

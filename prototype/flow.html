@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Сценарий согласования индивидуального курса</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+body { background: var(--bg); }
+
+/* HERO */
+.flow-hero { background: var(--sidebar-bg); color: white; padding: 36px 40px; margin-bottom: 32px; border-radius: 0 0 20px 20px; }
+.flow-hero-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+.flow-hero-sub { font-size: 15px; color: rgba(255,255,255,.65); max-width: 600px; line-height: 1.6; }
+.flow-hero-chips { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.chip-cashier { background: rgba(241,90,37,.2); border: 1px solid var(--brand); color: var(--brand); }
+.chip-treasury { background: rgba(27,168,93,.18); border: 1px solid #1BA85D; color: #1BA85D; }
+.chip-system { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.7); }
+
+/* QUICK LINKS */
+.quick-links { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+.ql-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-decoration: none; color: var(--text); min-width: 140px; transition: all .15s; }
+.ql-card:hover { border-color: var(--brand); box-shadow: 0 4px 16px rgba(241,90,37,.1); }
+.ql-icon { font-size: 28px; }
+.ql-label { font-size: 12px; font-weight: 600; text-align: center; }
+.ql-role { font-size: 10px; color: var(--text-mid); }
+
+/* SECTION HEADER */
+.section-hd { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; margin-top: 8px; }
+.section-hd-line { flex: 1; height: 1px; background: var(--border); }
+.section-hd-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mid); white-space: nowrap; }
+
+/* ROLE CARDS */
+.roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.role-card { border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.role-header { padding: 20px 24px; }
+.role-header.cashier { background: linear-gradient(135deg, #F15A25 0%, #d94d1a 100%); }
+.role-header.treasury { background: linear-gradient(135deg, #1BA85D 0%, #158a4c 100%); }
+.role-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 4px; }
+.role-module { font-size: 12px; color: rgba(255,255,255,.75); }
+.role-body { background: var(--surface); padding: 20px 24px; }
+.role-actions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.role-action { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); line-height: 1.5; }
+.role-action-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.cashier-dot { background: var(--brand); }
+.treasury-dot { background: #1BA85D; }
+.role-forbid { margin-top: 14px; padding: 10px 14px; background: var(--danger-bg); border-radius: 8px; border: 1px solid var(--danger-border); font-size: 12px; color: var(--danger); display: flex; align-items: flex-start; gap: 6px; }
+
+/* FLOW STEPS */
+.flow-steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 28px; }
+.flow-step { display: flex; gap: 0; }
+.step-connector { display: flex; flex-direction: column; align-items: center; width: 48px; flex-shrink: 0; }
+.step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; flex-shrink: 0; z-index: 1; }
+.step-line { width: 2px; flex: 1; min-height: 24px; }
+.flow-step:last-child .step-line { display: none; }
+.step-content { flex: 1; padding: 0 0 28px 16px; }
+.step-role-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.step-role-cashier { background: rgba(241,90,37,.12); color: var(--brand); border: 1px solid rgba(241,90,37,.3); }
+.step-role-treasury { background: rgba(27,168,93,.12); color: #1BA85D; border: 1px solid rgba(27,168,93,.3); }
+.step-role-system { background: var(--surface-2); color: var(--text-mid); border: 1px solid var(--border); }
+.step-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.step-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+.step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-top: 12px; }
+.step-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid); margin-bottom: 10px; }
+.step-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+.step-field { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; color: var(--text); }
+.step-field.req { border-color: var(--brand); color: var(--brand); }
+.step-statuses { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.step-screen { background: var(--bg); border-radius: 10px; padding: 14px 16px; margin-top: 12px; border: 1px solid var(--border); }
+.step-screen-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-mid); margin-bottom: 10px; }
+.mock-pending { background: #F5C842; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; color: #4a2e00; }
+.mock-approved { background: #E8F5EE; border: 1.5px solid #1BA85D; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
+.mock-rejected { background: #FEF2F2; border: 1.5px solid #D93025; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
+.mock-pulse { width: 8px; height: 8px; border-radius: 50%; background: white; animation: blink 1.4s infinite; flex-shrink: 0; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.mock-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+.mock-btn { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; border: none; cursor: default; }
+.mock-btn-primary { background: var(--brand); color: white; }
+.mock-btn-danger { background: #D93025; color: white; }
+.mock-btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+
+/* STATUS MAP */
+.status-map { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 28px; }
+.status-map-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid); margin-bottom: 16px; }
+.status-flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+.status-node { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; }
+.status-arrow { font-size: 18px; color: var(--border); padding: 0 4px; }
+.status-end { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+/* SCREENS GRID */
+.screens-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.screen-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.screen-top { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.screen-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.screen-url { font-size: 10px; font-family: 'Courier New', monospace; color: var(--text-mid); }
+.screen-preview { padding: 16px 18px; min-height: 140px; background: var(--bg); }
+.screen-action { padding: 12px 18px; border-top: 1px solid var(--border); }
+.screen-action a { font-size: 12px; font-weight: 600; color: var(--brand); text-decoration: none; }
+.screen-action a:hover { text-decoration: underline; }
+
+/* SEPARATION RULES */
+.sep-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+.sep-table th { background: var(--surface-2); padding: 10px 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid); font-weight: 700; border-bottom: 2px solid var(--border); }
+.sep-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+.sep-table tr:last-child td { border-bottom: none; }
+.sep-yes { color: #1BA85D; font-weight: 700; }
+.sep-no { color: #D93025; font-weight: 700; }
+
+@media(max-width:900px){
+  .roles-grid { grid-template-columns: 1fr; }
+  .screens-grid { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:600px){
+  .screens-grid { grid-template-columns: 1fr; }
+  .flow-hero { padding: 24px 20px; }
+  .status-flow { gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-section">Документация</div>
+    <div class="nav-item active"><span class="nav-icon">◎</span><span class="nav-label">Сценарий</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch"><span class="header-location">Ecash — Прототип</span></div>
+    <div class="header-right">
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+    </div>
+  </header>
+
+  <div class="flow-hero">
+    <div class="flow-hero-title">Согласование индивидуального курса</div>
+    <div class="flow-hero-sub">Полный сценарий движения заявки — от создания сделки кассиром до финального проведения операции. Роли полностью разделены: кассир и казначей работают в отдельных интерфейсах.</div>
+    <div class="flow-hero-chips">
+      <span class="chip chip-cashier">👤 Кассир — модуль «Операции»</span>
+      <span class="chip chip-treasury">⚖ Казначей — модуль «Инд. курсы»</span>
+      <span class="chip chip-system">⚙ Система — автообновление</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- QUICK LINKS -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Открыть интерфейсы</div><div class="section-hd-line"></div></div>
+    <div class="quick-links">
+      <a class="ql-card" href="index.html">
+        <div class="ql-icon">⊞</div>
+        <div class="ql-label">Главная касса</div>
+        <div class="ql-role" style="color:var(--brand)">Рабочее место кассира</div>
+      </a>
+      <a class="ql-card" href="operation.html?new=1">
+        <div class="ql-icon">↔</div>
+        <div class="ql-label">Новая операция</div>
+        <div class="ql-role" style="color:var(--brand)">Кассир</div>
+      </a>
+      <a class="ql-card" href="operations.html">
+        <div class="ql-icon">▤</div>
+        <div class="ql-label">Журнал операций</div>
+        <div class="ql-role" style="color:var(--brand)">Кассир</div>
+      </a>
+      <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
+      <a class="ql-card" href="treasury.html" target="_blank">
+        <div class="ql-icon">⚖</div>
+        <div class="ql-label">Реестр заявок</div>
+        <div class="ql-role" style="color:#1BA85D">Рабочее место казначея ↗</div>
+      </a>
+      <a class="ql-card" href="client-card.html" target="_blank">
+        <div class="ql-icon">👤</div>
+        <div class="ql-label">Карточка клиента</div>
+        <div class="ql-role" style="color:var(--brand)">Кассир — шаг 3</div>
+      </a>
+    </div>
+
+    <!-- ROLE SEPARATION -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Разделение ролей</div><div class="section-hd-line"></div></div>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-header cashier">
+          <div class="role-title">👤 Кассир</div>
+          <div class="role-module">Модуль: «Операции»</div>
+        </div>
+        <div class="role-body">
+          <ul class="role-actions">
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Создаёт сделку, вводит параметры</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Выбирает валюту, тип операции, сумму</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Отправляет запрос на индивидуальный курс</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Ожидает ответа — остаётся в своём модуле</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>После согласования: Подтверждает или Отменяет</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Заполняет карточку клиента</li>
+            <li class="role-action"><span class="role-action-dot cashier-dot"></span>Проводит сделку и формирует чек</li>
+          </ul>
+          <div class="role-forbid">⛔ Не имеет доступа к модулю «Инд. курсы» и реестру заявок казначея</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-header treasury">
+          <div class="role-title">⚖ Казначей</div>
+          <div class="role-module">Модуль: «Индивидуальные курсы»</div>
+        </div>
+        <div class="role-body">
+          <ul class="role-actions">
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Получает уведомление о новой заявке</li>
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Открывает карточку заявки с параметрами сделки</li>
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Просматривает текущий и рыночный курсы</li>
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Устанавливает индивидуальный курс</li>
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Согласовывает или отклоняет с комментарием</li>
+            <li class="role-action"><span class="role-action-dot treasury-dot"></span>Видит историю всех своих решений</li>
+          </ul>
+          <div class="role-forbid" style="color:#7a0000;background:#FEF2F2;border-color:#FECACA">⛔ Не имеет доступа к операциям кассира и карточкам клиентов</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS MAP -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Жизненный цикл заявки</div><div class="section-hd-line"></div></div>
+    <div class="status-map">
+      <div class="status-map-title">Статусы заявки на индивидуальный курс</div>
+      <div class="status-flow">
+        <div class="status-node"><span class="badge badge-pending">На согласовании</span></div>
+        <div class="status-arrow">→</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="status-arrow" style="color:#1BA85D">↘</div>
+            <div class="status-node"><span class="badge badge-approved">Согласовано</span></div>
+            <div class="status-arrow">→</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="status-arrow" style="color:#1BA85D">↘</div>
+                <span class="badge badge-executed">Исполнено</span>
+                <span style="font-size:11px;color:var(--text-mid)">(кассир подтвердил + заполнил карточку)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="status-arrow" style="color:var(--danger)">↗</div>
+                <span class="badge badge-cancelled">Отменено</span>
+                <span style="font-size:11px;color:var(--text-mid)">(кассир нажал «Отменить» + указал причину)</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="status-arrow" style="color:var(--danger)">↗</div>
+            <span class="badge badge-rejected">Отклонено</span>
+            <span style="font-size:11px;color:var(--text-mid)">(казначей отклонил)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOW STEPS -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Полный сценарий — шаг за шагом</div><div class="section-hd-line"></div></div>
+    <div class="flow-steps">
+
+      <!-- STEP 1 -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:var(--brand)">1</div>
+          <div class="step-line" style="background:rgba(241,90,37,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-cashier">👤 Кассир</div>
+          <div class="step-title">Создание сделки</div>
+          <div class="step-desc">Кассир открывает модуль «Операции», выбирает тип сделки, валюту и вводит сумму. Система показывает текущий курс.</div>
+          <div class="step-card">
+            <div class="step-card-title">Заполняет поля</div>
+            <div class="step-fields">
+              <span class="step-field req">Тип операции *</span>
+              <span class="step-field req">Валюта *</span>
+              <span class="step-field req">Сумма в валюте *</span>
+              <span class="step-field">Текущий курс (авто)</span>
+              <span class="step-field">Сумма в тенге (авто)</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-mid)">📍 Экран: <a href="operation.html?new=1" style="color:var(--brand)">operation.html</a></div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:var(--brand)">2</div>
+          <div class="step-line" style="background:rgba(241,90,37,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-cashier">👤 Кассир</div>
+          <div class="step-title">Запрос на индивидуальный курс</div>
+          <div class="step-desc">Кассир нажимает «Запросить индивидуальный курс». Система генерирует номер заявки (ЗАК-XXXXX) и отправляет её казначею. Кассир остаётся в своём экране.</div>
+          <div class="step-screen">
+            <div class="step-screen-label">Что видит кассир сразу после отправки</div>
+            <div class="mock-pending">
+              <div class="mock-pulse"></div>
+              <div>
+                <div style="font-size:13px">Ожидание решения казначея</div>
+                <div style="font-size:11px;opacity:.7;margin-top:2px">ЗАК-87367 · Передана казначею · Экран обновится автоматически</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">
+              <div style="background:var(--bg);border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:var(--text-mid);margin-bottom:3px">Операция</div><strong>Продаём</strong></div>
+              <div style="background:var(--bg);border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:var(--text-mid);margin-bottom:3px">Валюта</div><strong>CHF</strong></div>
+              <div style="background:var(--bg);border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:var(--text-mid);margin-bottom:3px">Сумма</div><strong>5 000 CHF</strong></div>
+              <div style="background:var(--bg);border-radius:7px;padding:8px 10px;font-size:11px"><div style="color:var(--text-mid);margin-bottom:3px">Курс</div><strong>565,00 ₸</strong></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-mid)">⛔ Кассир НЕ видит интерфейс казначея — не переходит никуда</div>
+        </div>
+      </div>
+
+      <!-- STEP 3 (SYSTEM) -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:#787878">⚙</div>
+          <div class="step-line" style="background:var(--border)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-system">⚙ Система</div>
+          <div class="step-title">Автоматическая передача заявки</div>
+          <div class="step-desc">Заявка получает статус «На согласовании» и появляется в реестре казначея в режиме реального времени. У казначея в сайдбаре загорается счётчик новых заявок.</div>
+          <div class="step-statuses">
+            <span class="badge badge-pending">На согласовании</span>
+            <span style="font-size:12px;color:var(--text-mid);align-self:center">→ отображается у казначея с меткой NEW</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:#1BA85D">4</div>
+          <div class="step-line" style="background:rgba(27,168,93,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-treasury">⚖ Казначей</div>
+          <div class="step-title">Просмотр реестра заявок</div>
+          <div class="step-desc">Казначей открывает свой модуль «Индивидуальные курсы». Видит все поступившие заявки. Живая заявка выделена оранжевой полосой и меткой NEW. Нажимает «Рассмотреть →».</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-mid)">📍 Экран: <a href="treasury.html" target="_blank" style="color:#1BA85D">treasury.html ↗</a></div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:#1BA85D">5</div>
+          <div class="step-line" style="background:rgba(27,168,93,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-treasury">⚖ Казначей</div>
+          <div class="step-title">Рассмотрение заявки</div>
+          <div class="step-desc">В карточке заявки казначей видит все параметры сделки, текущий и рыночный курсы. Вводит индивидуальный курс с валидацией. Добавляет комментарий и принимает решение.</div>
+          <div class="step-card">
+            <div class="step-card-title">Действия казначея</div>
+            <div class="step-fields">
+              <span class="step-field">Просмотр параметров сделки</span>
+              <span class="step-field">Сравнение: текущий / рыночный курс</span>
+              <span class="step-field req">Ввод индивидуального курса *</span>
+              <span class="step-field">Комментарий (необязательно)</span>
+            </div>
+            <div class="mock-btn-row" style="margin-top:12px">
+              <button class="mock-btn mock-btn-danger">✕ Отклонить</button>
+              <button class="mock-btn mock-btn-primary">✓ Согласовать курс</button>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-mid)">📍 Экран: <a href="treasury.html" target="_blank" style="color:#1BA85D">treasury-card.html ↗</a></div>
+          <div style="margin-top:8px;font-size:12px;color:var(--text-mid)">⛔ Казначей НЕ переходит в модуль кассира после решения</div>
+        </div>
+      </div>
+
+      <!-- STEP 6 (SYSTEM) -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:#787878">⚙</div>
+          <div class="step-line" style="background:var(--border)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-system">⚙ Система</div>
+          <div class="step-title">Автоматическое обновление статуса</div>
+          <div class="step-desc">Экран кассира автоматически обновляется в течение 1–2 секунд. Никаких действий от кассира не требуется — он не обновляет страницу вручную.</div>
+          <div class="step-statuses">
+            <span class="badge badge-approved">Согласовано</span>
+            <span style="font-size:12px;color:var(--text-mid);align-self:center">или</span>
+            <span class="badge badge-rejected">Отклонено</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7a (Approved) -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:var(--brand)">7</div>
+          <div class="step-line" style="background:rgba(241,90,37,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-cashier">👤 Кассир — если согласовано</div>
+          <div class="step-title">Получение решения и подтверждение</div>
+          <div class="step-desc">На экране кассира появляется зелёный блок с согласованным курсом, сравнением и комментарием казначея. Кассир выбирает действие.</div>
+          <div class="step-screen">
+            <div class="step-screen-label">Что видит кассир после согласования</div>
+            <div class="mock-approved">
+              <div style="font-size:13px;font-weight:700;color:#1BA85D;margin-bottom:8px">✅ Казначей согласовал индивидуальный курс · ЗАК-87367</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+                <div style="background:white;border-radius:6px;padding:8px;text-align:center;font-size:11px"><div style="color:#666;margin-bottom:3px">Стандартный</div><strong>565,00 ₸</strong></div>
+                <div style="background:white;border:1.5px solid var(--brand);border-radius:6px;padding:8px;text-align:center;font-size:11px"><div style="color:#666;margin-bottom:3px">Индивидуальный</div><strong style="color:var(--brand)">555,00 ₸</strong></div>
+                <div style="background:white;border-radius:6px;padding:8px;text-align:center;font-size:11px"><div style="color:#666;margin-bottom:3px">Разница</div><strong style="color:#D93025">−10,00 ₸</strong></div>
+              </div>
+            </div>
+            <div class="mock-btn-row">
+              <button class="mock-btn mock-btn-danger">✕ Отменить сделку</button>
+              <button class="mock-btn mock-btn-primary" style="flex:2">✓ Подтвердить и перейти к данным клиента →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:var(--brand)">8</div>
+          <div class="step-line" style="background:rgba(241,90,37,.3)"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-cashier">👤 Кассир</div>
+          <div class="step-title">Заполнение карточки клиента</div>
+          <div class="step-desc">После нажатия «Подтвердить» кассир заполняет карточку клиента. Параметры сделки и согласованный курс уже подставлены автоматически.</div>
+          <div class="step-card">
+            <div class="step-card-title">Обязательные поля</div>
+            <div class="step-fields">
+              <span class="step-field req">ФИО *</span>
+              <span class="step-field req">ИИН (12 цифр) *</span>
+              <span class="step-field req">Дата рождения *</span>
+              <span class="step-field req">Тип документа *</span>
+              <span class="step-field req">Номер документа *</span>
+              <span class="step-field req">Орган выдачи *</span>
+              <span class="step-field req">Телефон *</span>
+              <span class="step-field">Адрес (если сумма ≥ 500 000 ₸)</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-mid)">📍 Экран: <a href="client-card.html" style="color:var(--brand)">client-card.html</a></div>
+        </div>
+      </div>
+
+      <!-- STEP 9 (FINAL) -->
+      <div class="flow-step">
+        <div class="step-connector">
+          <div class="step-circle" style="background:#1BA85D">✓</div>
+        </div>
+        <div class="step-content">
+          <div class="step-role-chip step-role-system">⚙ Система</div>
+          <div class="step-title">Проведение операции</div>
+          <div class="step-desc">После подтверждения кассиром: проводится операция, формируется фискальный чек, операция появляется в журнале со статусом «Исполнено».</div>
+          <div class="step-statuses">
+            <span class="badge badge-executed">Исполнено</span>
+            <span style="font-size:12px;color:var(--text-mid);align-self:center">· Фискальный чек сформирован · Запись в журнале операций</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SCREENS OVERVIEW -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Макеты экранов</div><div class="section-hd-line"></div></div>
+    <div class="screens-grid">
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">1. Рабочее место кассира</div>
+            <div style="font-size:10px;color:var(--brand);font-weight:600;margin-top:2px">👤 Кассир</div>
+          </div>
+          <span class="screen-url">index.html</span>
+        </div>
+        <div class="screen-preview">
+          <div style="font-size:11px;color:var(--text-mid);margin-bottom:10px">Главный экран: таблица валют, кнопки операций</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;display:flex;justify-content:space-between"><span>🇺🇸 USD</span><span style="color:var(--brand);font-weight:700">503 / 510 ₸</span></div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;display:flex;justify-content:space-between"><span>🇪🇺 EUR</span><span style="color:var(--brand);font-weight:700">640 / 650 ₸</span></div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;display:flex;justify-content:space-between"><span>🇨🇭 CHF</span><span style="color:var(--brand);font-weight:700">555 / 565 ₸</span></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <div style="flex:1;padding:8px;background:var(--brand);color:white;border-radius:7px;font-size:11px;font-weight:700;text-align:center">Покупаем</div>
+            <div style="flex:1;padding:8px;background:var(--surface-2);border-radius:7px;font-size:11px;text-align:center">Продаём</div>
+          </div>
+        </div>
+        <div class="screen-action"><a href="index.html">Открыть →</a></div>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">2. Запрос на инд. курс</div>
+            <div style="font-size:10px;color:var(--brand);font-weight:600;margin-top:2px">👤 Кассир — шаг 2</div>
+          </div>
+          <span class="screen-url">operation.html</span>
+        </div>
+        <div class="screen-preview">
+          <div class="mock-pending" style="border-radius:8px;font-size:11px;margin-bottom:8px">
+            <div class="mock-pulse"></div>
+            <div><strong>Ожидание казначея</strong><br>ЗАК-87367 · Автообновление</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:var(--bg);border-radius:6px;padding:7px 10px;font-size:10px"><div style="color:var(--text-mid)">Тип</div><strong>Продаём</strong></div>
+            <div style="background:var(--bg);border-radius:6px;padding:7px 10px;font-size:10px"><div style="color:var(--text-mid)">Валюта</div><strong>CHF</strong></div>
+            <div style="background:var(--bg);border-radius:6px;padding:7px 10px;font-size:10px"><div style="color:var(--text-mid)">Сумма</div><strong>5 000</strong></div>
+            <div style="background:var(--bg);border-radius:6px;padding:7px 10px;font-size:10px"><div style="color:var(--text-mid)">Курс</div><strong>565,00 ₸</strong></div>
+          </div>
+          <div style="margin-top:8px;font-size:10px;color:var(--danger);background:var(--danger-bg);padding:6px 10px;border-radius:6px">🔒 Сделка заблокирована до ответа</div>
+        </div>
+        <div class="screen-action"><a href="operation.html?new=1">Открыть →</a></div>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">3. После согласования</div>
+            <div style="font-size:10px;color:var(--brand);font-weight:600;margin-top:2px">👤 Кассир — шаг 7</div>
+          </div>
+          <span class="screen-url">operation.html</span>
+        </div>
+        <div class="screen-preview">
+          <div style="background:var(--success);border-radius:8px;padding:10px 12px;color:white;font-size:11px;font-weight:700;margin-bottom:8px">✅ Курс согласован · ЗАК-87367</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px">
+            <div style="background:var(--bg);border-radius:6px;padding:7px;text-align:center;font-size:10px"><div style="color:var(--text-mid)">Стандарт</div><strong>565 ₸</strong></div>
+            <div style="background:var(--bg);border:1.5px solid var(--brand);border-radius:6px;padding:7px;text-align:center;font-size:10px"><div style="color:var(--brand)">Инд. курс</div><strong style="color:var(--brand)">555 ₸</strong></div>
+            <div style="background:var(--bg);border-radius:6px;padding:7px;text-align:center;font-size:10px"><div style="color:var(--text-mid)">Разница</div><strong style="color:var(--danger)">−10 ₸</strong></div>
+          </div>
+          <div class="mock-btn-row">
+            <button class="mock-btn mock-btn-danger" style="font-size:10px;padding:6px 10px">✕ Отменить</button>
+            <button class="mock-btn mock-btn-primary" style="font-size:10px;padding:6px 10px;flex:2">✓ Подтвердить →</button>
+          </div>
+        </div>
+        <div class="screen-action"><a href="operation.html?new=1">Открыть →</a></div>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">4. Реестр заявок казначея</div>
+            <div style="font-size:10px;color:#1BA85D;font-weight:600;margin-top:2px">⚖ Казначей</div>
+          </div>
+          <span class="screen-url">treasury.html</span>
+        </div>
+        <div class="screen-preview">
+          <div style="font-size:10px;font-weight:700;color:var(--text-mid);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Инд. курсы · Реестр заявок</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="background:rgba(241,90,37,.05);border:1px solid var(--border);border-left:3px solid var(--brand);border-radius:6px;padding:7px 10px;font-size:11px;display:flex;justify-content:space-between;align-items:center">
+              <div><strong>ЗАК-87367</strong> <span style="font-size:9px;background:var(--brand);color:white;padding:1px 5px;border-radius:8px">NEW</span><br><span style="color:var(--text-mid);font-size:10px">Иванова А. · CHF · 5 000</span></div>
+              <span class="badge badge-pending" style="font-size:10px">На согл.</span>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;display:flex;justify-content:space-between">
+              <span style="color:var(--text-mid)">ЗАК-77201 · Петров С. · EUR</span>
+              <span class="badge badge-approved" style="font-size:10px">Согл.</span>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;display:flex;justify-content:space-between">
+              <span style="color:var(--text-mid)">ЗАК-77198 · Смирнова Е. · USD</span>
+              <span class="badge badge-rejected" style="font-size:10px">Откл.</span>
+            </div>
+          </div>
+        </div>
+        <div class="screen-action"><a href="treasury.html" target="_blank">Открыть ↗</a></div>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">5. Карточка заявки</div>
+            <div style="font-size:10px;color:#1BA85D;font-weight:600;margin-top:2px">⚖ Казначей</div>
+          </div>
+          <span class="screen-url">treasury-card.html</span>
+        </div>
+        <div class="screen-preview">
+          <div style="font-size:11px;font-weight:700;margin-bottom:8px">ЗАК-87367 <span class="badge badge-pending" style="font-size:10px">На согл.</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px">
+            <div style="background:var(--bg);border-radius:6px;padding:6px;text-align:center;font-size:10px"><div style="color:var(--text-mid)">Текущий</div><strong>565 ₸</strong></div>
+            <div style="background:var(--info-bg);border-radius:6px;padding:6px;text-align:center;font-size:10px"><div style="color:var(--text-mid)">Рыночный</div><strong>558 ₸</strong></div>
+            <div style="background:var(--bg);border:1px solid var(--brand);border-radius:6px;padding:6px;text-align:center;font-size:10px"><div style="color:var(--brand)">Инд.</div><strong style="color:var(--brand)">555 ₸</strong></div>
+          </div>
+          <div style="background:var(--bg);border-radius:6px;padding:6px 8px;font-size:10px;border:1px solid var(--border);margin-bottom:8px">Индивидуальный курс: <input type="text" value="555.00" style="border:none;background:none;font-size:12px;font-weight:700;width:60px;color:var(--brand)"> ₸</div>
+          <div class="mock-btn-row">
+            <button class="mock-btn mock-btn-danger" style="font-size:10px;padding:5px 8px">✕ Отклонить</button>
+            <button class="mock-btn mock-btn-primary" style="font-size:10px;padding:5px 8px;flex:2">✓ Согласовать</button>
+          </div>
+        </div>
+        <div class="screen-action"><a href="treasury.html" target="_blank">Открыть через реестр ↗</a></div>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-top">
+          <div>
+            <div class="screen-name">6. Карточка клиента</div>
+            <div style="font-size:10px;color:var(--brand);font-weight:600;margin-top:2px">👤 Кассир — шаг 8</div>
+          </div>
+          <span class="screen-url">client-card.html</span>
+        </div>
+        <div class="screen-preview">
+          <div style="background:var(--sidebar-bg);color:white;border-radius:8px;padding:8px 12px;font-size:11px;margin-bottom:8px;display:flex;justify-content:space-between">
+            <span>Продаём CHF · 555,00 ₸ <span style="font-size:9px;background:rgba(241,90,37,.4);padding:1px 6px;border-radius:8px">★ Инд.</span></span>
+            <strong>2 775 000 ₸</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--text-mid)">ФИО клиента</div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--text-mid)">ИИН (12 цифр)</div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--text-mid)">Документ · Номер</div>
+          </div>
+          <div style="margin-top:8px">
+            <button class="mock-btn mock-btn-primary" style="font-size:10px;padding:7px;width:100%">✓ Подтвердить сделку</button>
+          </div>
+        </div>
+        <div class="screen-action"><a href="client-card.html">Открыть →</a></div>
+      </div>
+
+    </div>
+
+    <!-- SEPARATION TABLE -->
+    <div class="section-hd"><div class="section-hd-line"></div><div class="section-hd-label">Матрица доступа</div><div class="section-hd-line"></div></div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:32px">
+      <table class="sep-table">
+        <thead>
+          <tr>
+            <th>Функция / Экран</th>
+            <th>👤 Кассир</th>
+            <th>⚖ Казначей</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Создание сделки (валюта, тип, сумма)</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr><td>Запрос на индивидуальный курс</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr><td>Просмотр статуса своей заявки</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr><td>Карточка клиента</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr><td>Проведение сделки / Фискальный чек</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr><td>Журнал операций кассы</td><td class="sep-yes">✓ Да</td><td class="sep-no">✕ Нет</td></tr>
+          <tr style="background:var(--border-light)"><td colspan="3" style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-mid);padding:8px 16px">Казначейские функции</td></tr>
+          <tr><td>Реестр всех заявок от кассиров</td><td class="sep-no">✕ Нет</td><td class="sep-yes">✓ Да</td></tr>
+          <tr><td>Просмотр параметров сделки в заявке</td><td class="sep-no">✕ Нет</td><td class="sep-yes">✓ Да</td></tr>
+          <tr><td>Установка индивидуального курса</td><td class="sep-no">✕ Нет</td><td class="sep-yes">✓ Да</td></tr>
+          <tr><td>Согласование / Отклонение заявки</td><td class="sep-no">✕ Нет</td><td class="sep-yes">✓ Да</td></tr>
+          <tr><td>История решений по заявке</td><td class="sep-no">✕ Нет</td><td class="sep-yes">✓ Да</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span style="font-size:13px;color:var(--text-mid)">Ecash — Прототип для демонстрации руководству</span>
+    <div class="footer-space"></div>
+    <button class="btn-close-cashier" onclick="window.print()">⎙ Печать</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=t;
+  document.getElementById('btn-theme').textContent=t==='dark'?'☀️':'🌙';
+})();
+function toggleTheme(){
+  const d=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=d?'light':'dark';
+  document.getElementById('btn-theme').textContent=d?'🌙':'☀️';
+  localStorage.setItem('ecash-theme',d?'light':'dark');
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+</script>
+</body>
+</html>
