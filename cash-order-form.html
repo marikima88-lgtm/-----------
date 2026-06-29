@@ -7,127 +7,123 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 .doc-shell { max-width: 860px; margin: 0 auto; }
 
-/* OP TYPE CARDS */
-.op-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
-.op-card { border:2px solid var(--border); border-radius:14px; padding:18px 16px; cursor:pointer; transition:all .15s; text-align:center; background:var(--surface); user-select:none; }
-.op-card:hover { border-color:var(--brand); box-shadow:0 4px 16px rgba(241,90,37,.08); }
-.op-card.active { border-color:var(--brand); background:rgba(241,90,37,.05); }
-.op-card .oc-icon { font-size:28px; margin-bottom:8px; }
-.op-card .oc-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
-.op-card .oc-sub { font-size:11px; color:var(--text-mid); line-height:1.4; }
-.op-card.active .oc-title { color:var(--brand); }
-
-/* DIRECTION TOGGLE */
-.dir-toggle { display:flex; gap:0; border:2px solid var(--border); border-radius:10px; overflow:hidden; }
-.dir-btn { flex:1; padding:10px 8px; border:none; background:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all .13s; color:var(--text-mid); display:flex; align-items:center; justify-content:center; gap:6px; }
-.dir-btn.active-in { background:#1BA85D; color:white; }
-.dir-btn.active-out { background:#D93025; color:white; }
-
-/* FORM */
-.form-section { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:14px; }
-.form-section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-mid); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-.fs-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; }
-.fs-auto { background:rgba(27,111,186,.1); color:#1B6FBA; border:1px solid rgba(27,111,186,.25); }
-.form-row { display:grid; gap:14px; margin-bottom:14px; }
-.form-row.r2 { grid-template-columns:1fr 1fr; }
-.form-row.r3 { grid-template-columns:1fr 1fr 1fr; }
-.form-row.r4 { grid-template-columns:1fr 1fr 1fr 1fr; }
-.form-row.r1 { grid-template-columns:1fr; }
-.form-row:last-child { margin-bottom:0; }
-.form-group { display:flex; flex-direction:column; gap:5px; }
-.form-label { font-size:12px; font-weight:600; color:var(--text-mid); }
-.req { color:var(--brand); }
-.form-inp,.form-sel,.form-textarea { padding:10px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:13.5px; color:var(--text); background:var(--bg); outline:none; transition:border-color .13s; }
-.form-inp:focus,.form-sel:focus,.form-textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(241,90,37,.07); }
-.form-inp.auto-filled { background:var(--surface-2); color:var(--text-mid); }
-.form-inp.error { border-color:var(--danger) !important; }
-.form-sel.error { border-color:var(--danger) !important; }
-.form-textarea { resize:vertical; min-height:76px; }
-.field-error { font-size:11px; color:var(--danger); margin-top:2px; display:none; }
-.field-error.show { display:block; }
-
-/* AMOUNT BLOCK */
-.amount-wrap { position:relative; }
-.amount-suffix { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:13px; font-weight:700; color:var(--text-mid); pointer-events:none; }
-.amount-words { font-size:11px; color:var(--text-mid); font-style:italic; margin-top:5px; min-height:15px; }
-
-/* AUTO-CALC FIELD */
-.calc-field { padding:10px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface-2); font-size:13.5px; font-weight:700; color:var(--text); min-height:44px; display:flex; align-items:center; gap:6px; }
-.calc-field .calc-val { color:var(--brand); }
-.calc-field.highlight { border-color:rgba(241,90,37,.4); background:rgba(241,90,37,.04); }
-
-/* CURRENCY LOCKED */
-.cur-locked { padding:10px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface-2); font-size:13.5px; font-weight:700; color:var(--text-mid); display:flex; align-items:center; gap:6px; }
+/* ROLE BANNER */
+.role-banner { background: var(--sidebar-bg); color: white; border-radius: 12px; padding: 14px 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+.rb-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rb-icon svg { stroke: white; }
+.rb-title { font-size: 15px; font-weight: 700; }
+.rb-sub { font-size: 12px; opacity: .65; margin-top: 2px; }
 
 /* STATUS TRACKER */
-.status-track { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:0; }
-.strack-item { display:flex; align-items:center; gap:7px; }
-.strack-dot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
-.strack-dot.done { background:#1BA85D; color:white; }
-.strack-dot.active { background:var(--brand); color:white; }
-.strack-dot.idle { background:var(--surface-2); color:var(--text-mid); border:2px solid var(--border); }
-.strack-label { font-size:12px; font-weight:600; white-space:nowrap; }
-.strack-label.active { color:var(--text); }
-.strack-label.idle { color:var(--text-mid); }
-.strack-line { flex:1; height:2px; background:var(--border); margin:0 8px; }
-.strack-line.done { background:#1BA85D; }
+.status-track { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 18px; display: flex; align-items: center; }
+.strack-item { display: flex; align-items: center; gap: 7px; }
+.strack-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.strack-dot.done { background: #1BA85D; color: white; }
+.strack-dot.active { background: var(--sidebar-bg); color: white; }
+.strack-dot.idle { background: var(--surface-2); color: var(--text-mid); border: 2px solid var(--border); }
+.strack-label { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.strack-label.active { color: var(--text); }
+.strack-label.idle { color: var(--text-mid); }
+.strack-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+.strack-line.done { background: #1BA85D; }
 
-/* ROLE BANNER */
-.role-banner { border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:12px; }
-.role-banner.accountant { background:linear-gradient(135deg,#1B6FBA,#1557a0); color:white; }
-.role-banner.cashier { background:linear-gradient(135deg,#F15A25,#d94d1a); color:white; }
-.rb-icon { font-size:26px; }
-.rb-title { font-size:15px; font-weight:700; }
-.rb-sub { font-size:12px; opacity:.75; margin-top:2px; }
+/* FORM SECTIONS */
+.form-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+.form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-mid); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.form-section-title svg { width: 14px; height: 14px; stroke: var(--text-mid); }
+.auto-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; background: var(--surface-2); color: var(--text-mid); border: 1px solid var(--border); }
+.auto-tag svg { width: 10px; height: 10px; stroke: var(--text-mid); }
+.form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+.form-row.r2 { grid-template-columns: 1fr 1fr; }
+.form-row.r3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.r4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-row.r1 { grid-template-columns: 1fr; }
+.form-row:last-child { margin-bottom: 0; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
+.form-label svg { width: 13px; height: 13px; stroke: var(--text-mid); }
+.req { color: #D93025; }
+.form-inp, .form-sel, .form-textarea {
+  padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 9px;
+  font-family: inherit; font-size: 13.5px; color: var(--text); background: var(--bg);
+  outline: none; transition: border-color .13s; width: 100%; box-sizing: border-box;
+}
+.form-inp:focus, .form-sel:focus, .form-textarea:focus { border-color: var(--sidebar-bg); box-shadow: 0 0 0 3px rgba(67,67,67,.06); }
+.form-inp.auto-filled, .form-sel.auto-filled { background: var(--surface-2); color: var(--text-mid); }
+.form-inp.error, .form-sel.error { border-color: #D93025 !important; }
+.form-textarea { resize: vertical; min-height: 76px; }
+.field-error { font-size: 11px; color: #D93025; margin-top: 2px; display: none; }
+.field-error.show { display: block; }
 
-/* EXEC SECTION (cashier) */
-.exec-detail { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:14px; }
-.detail-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-.detail-item { background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:12px 14px; }
-.detail-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); margin-bottom:4px; }
-.detail-value { font-size:14px; font-weight:600; color:var(--text); }
-.detail-value.big { font-size:20px; font-weight:800; }
-.detail-value.green { color:#1BA85D; }
-.detail-value.red { color:#D93025; }
+/* OP TYPE DROPDOWN */
+.op-type-group { display: flex; flex-direction: column; gap: 5px; }
+.op-type-sel-wrap { position: relative; }
+.op-type-sel-wrap svg.sel-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-mid); pointer-events: none; }
+.form-sel.op-type-sel { padding-left: 38px; }
 
-/* SUCCESS STATE (after exec) */
-.success-card { background:#E8F5EE; border:2px solid #1BA85D; border-radius:14px; padding:28px; text-align:center; margin-bottom:14px; }
-.success-card .s-icon { font-size:48px; margin-bottom:12px; }
-.success-card .s-title { font-size:20px; font-weight:800; color:#1BA85D; margin-bottom:6px; }
-.success-card .s-sub { font-size:14px; color:#1B5E2A; }
+/* DIR INDICATOR */
+.dir-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.dir-pill.in { background: rgba(27,168,93,.1); color: #1BA85D; border: 1px solid rgba(27,168,93,.3); }
+.dir-pill.out { background: rgba(217,48,37,.1); color: #D93025; border: 1px solid rgba(217,48,37,.3); }
+
+/* AMOUNT */
+.amount-wrap { position: relative; }
+.amount-suffix { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; color: var(--text-mid); pointer-events: none; }
+.amount-words { font-size: 11px; color: var(--text-mid); font-style: italic; margin-top: 5px; min-height: 15px; }
+
+/* CALC FIELDS */
+.calc-field { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 9px; background: var(--surface-2); font-size: 13.5px; color: var(--text); min-height: 44px; display: flex; align-items: center; gap: 6px; }
+.calc-field.hi { border-color: rgba(67,67,67,.3); background: var(--surface); font-weight: 700; }
+.cur-locked { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 9px; background: var(--surface-2); font-size: 13.5px; color: var(--text-mid); display: flex; align-items: center; gap: 8px; }
+
+/* EXEC SECTION */
+.exec-detail { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+.detail-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.detail-item { background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; }
+.detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--text-mid); margin-bottom: 4px; }
+.detail-value { font-size: 14px; font-weight: 600; color: var(--text); }
+.detail-value.big { font-size: 20px; font-weight: 800; }
+.detail-value.green { color: #1BA85D; }
+.detail-value.red { color: #D93025; }
+
+/* SUCCESS */
+.success-card { background: #E8F5EE; border: 2px solid #1BA85D; border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 14px; }
+.success-icon { width: 56px; height: 56px; background: #1BA85D; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+.success-icon svg { stroke: white; width: 28px; height: 28px; }
+.success-title { font-size: 20px; font-weight: 800; color: #1BA85D; margin-bottom: 6px; }
+.success-sub { font-size: 13px; color: #1B5E2A; }
 
 /* CANCEL DIALOG */
-.cancel-dialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9000; align-items:center; justify-content:center; }
-.cancel-dialog.open { display:flex; }
-.cancel-box { background:var(--surface); border-radius:16px; padding:28px; max-width:440px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,.2); }
-.cancel-box-title { font-size:18px; font-weight:800; margin-bottom:8px; }
-.cancel-box-sub { font-size:13px; color:var(--text-mid); margin-bottom:18px; line-height:1.6; }
-.cancel-reason { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:13px; resize:vertical; min-height:80px; background:var(--bg); color:var(--text); outline:none; margin-bottom:16px; box-sizing:border-box; }
-.cancel-reason:focus { border-color:var(--danger); }
-.cancel-btns { display:flex; gap:10px; justify-content:flex-end; }
-.btn-cancel-no { padding:10px 20px; background:none; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; cursor:pointer; }
-.btn-cancel-yes { padding:10px 20px; background:#D93025; color:white; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+.cancel-dialog { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9000; align-items: center; justify-content: center; }
+.cancel-dialog.open { display: flex; }
+.cancel-box { background: var(--surface); border-radius: 16px; padding: 28px; max-width: 440px; width: 90%; box-shadow: 0 24px 64px rgba(0,0,0,.2); }
+.cancel-box-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text); }
+.cancel-box-sub { font-size: 13px; color: var(--text-mid); margin-bottom: 18px; line-height: 1.6; }
+.cancel-reason { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: inherit; font-size: 13px; resize: vertical; min-height: 80px; background: var(--bg); color: var(--text); outline: none; margin-bottom: 16px; box-sizing: border-box; }
+.cancel-reason:focus { border-color: #D93025; }
+.cancel-btns { display: flex; gap: 10px; justify-content: flex-end; }
 
-/* ACTIONS */
-.form-actions { display:flex; gap:10px; align-items:center; padding:18px 0 0; border-top:1px solid var(--border); margin-top:6px; }
-.btn-act-cancel { padding:11px 22px; background:none; color:var(--danger); border:1.5px solid var(--danger-border); border-radius:9px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:all .13s; }
-.btn-act-cancel:hover { background:var(--danger-bg); }
-.btn-act-draft { padding:11px 22px; background:var(--surface-2); color:var(--text); border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; }
-.btn-act-draft:hover { border-color:var(--text); }
-.btn-act-send { padding:11px 28px; background:#1B6FBA; color:white; border:none; border-radius:9px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:opacity .13s; }
-.btn-act-send:hover { opacity:.88; }
-.btn-act-exec { padding:12px 32px; background:var(--brand); color:white; border:none; border-radius:9px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:opacity .13s; }
-.btn-act-exec:hover { opacity:.88; }
-.btn-act-print { padding:11px 22px; background:none; color:var(--text-mid); border:1.5px solid var(--border); border-radius:9px; font-family:inherit; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; }
-.btn-act-print:hover { color:var(--text); border-color:var(--text); }
+/* BUTTONS */
+.form-actions { display: flex; gap: 10px; align-items: center; padding: 18px 0 0; border-top: 1px solid var(--border); margin-top: 6px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; border-radius: 9px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .13s; white-space: nowrap; }
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-ghost { background: none; color: var(--text-mid); border: 1.5px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text); }
+.btn-danger { background: none; color: #D93025; border: 1.5px solid rgba(217,48,37,.3); }
+.btn-danger:hover { background: rgba(217,48,37,.05); border-color: #D93025; }
+.btn-dark { background: var(--sidebar-bg); color: white; }
+.btn-dark:hover { opacity: .88; }
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { opacity: .88; }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
 
 @media(max-width:700px){
-  .op-type-grid { grid-template-columns:1fr; }
-  .form-row.r2,.form-row.r3,.form-row.r4 { grid-template-columns:1fr; }
-  .detail-grid-3 { grid-template-columns:1fr 1fr; }
+  .form-row.r2,.form-row.r3,.form-row.r4 { grid-template-columns: 1fr; }
+  .detail-grid-3 { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -136,11 +132,11 @@
 <div class="cancel-dialog" id="cancel-dialog">
   <div class="cancel-box">
     <div class="cancel-box-title">Отменить операцию?</div>
-    <div class="cancel-box-sub">Укажите причину отмены. Изменений в остатках кассы не произойдёт. Операция получит статус «Отменена».</div>
+    <div class="cancel-box-sub">Укажите причину отмены. Изменений в остатках кассы не произойдёт, операция получит статус «Отменена».</div>
     <textarea class="cancel-reason" id="cancel-reason" placeholder="Причина отмены (обязательно)..."></textarea>
     <div class="cancel-btns">
-      <button class="btn-cancel-no" onclick="closeCancelDialog()">← Назад</button>
-      <button class="btn-cancel-yes" id="btn-cancel-confirm" disabled onclick="doCancel()">Подтвердить отмену</button>
+      <button class="btn btn-ghost" onclick="closeCancelDialog()">← Назад</button>
+      <button class="btn btn-danger" id="btn-cancel-confirm" disabled onclick="doCancel()">Подтвердить отмену</button>
     </div>
   </div>
 </div>
@@ -151,7 +147,7 @@
   <nav class="nav">
     <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
     <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
-    <div class="nav-item active" onclick="location.href='cash-orders.html'"><span class="nav-icon">📋</span><span class="nav-label">Кассовые ордера</span></div>
+    <div class="nav-item active" onclick="location.href='cash-orders.html'"><span class="nav-icon">◫</span><span class="nav-label">Кассовые ордера</span></div>
     <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
     <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span></div>
     <div class="nav-section">Управление</div>
@@ -180,91 +176,84 @@
   <div class="content">
     <div class="doc-shell">
 
-      <!-- BREADCRUMB -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--text-mid)">
         <span onclick="location.href='cash-orders.html'" style="cursor:pointer;color:var(--brand)">← Кассовые ордера</span>
         <span>/</span><span id="bc-label">Новый ордер</span>
       </div>
 
       <!-- STATUS TRACKER -->
-      <div class="status-track" id="status-track">
-        <div class="strack-item">
-          <div class="strack-dot" id="st1">1</div>
-          <span class="strack-label" id="sl1">Создана</span>
-        </div>
+      <div class="status-track">
+        <div class="strack-item"><div class="strack-dot" id="st1">1</div><span class="strack-label" id="sl1">Создана</span></div>
         <div class="strack-line" id="ln1"></div>
-        <div class="strack-item">
-          <div class="strack-dot" id="st2">2</div>
-          <span class="strack-label" id="sl2">На подтверждении</span>
-        </div>
+        <div class="strack-item"><div class="strack-dot" id="st2">2</div><span class="strack-label" id="sl2">На подтверждении</span></div>
         <div class="strack-line" id="ln2"></div>
-        <div class="strack-item">
-          <div class="strack-dot" id="st3">3</div>
-          <span class="strack-label" id="sl3">Проведена</span>
-        </div>
+        <div class="strack-item"><div class="strack-dot" id="st3">3</div><span class="strack-label" id="sl3">Проведена</span></div>
         <div style="margin-left:auto;padding-left:16px" id="st-badge-wrap"></div>
       </div>
 
       <!-- ===== ACCOUNTANT VIEW ===== -->
       <div id="view-accountant">
-        <div class="role-banner accountant">
-          <div class="rb-icon">📒</div>
+        <div class="role-banner">
+          <div class="rb-icon"><i data-lucide="calculator" style="width:20px;height:20px;stroke:white"></i></div>
           <div><div class="rb-title">Бухгалтер — создание кассового ордера</div><div class="rb-sub">Заполните форму и отправьте кассиру на исполнение</div></div>
         </div>
 
         <!-- OP TYPE -->
         <div class="form-section">
-          <div class="form-section-title">Тип операции</div>
-          <div class="op-type-grid">
-            <div class="op-card" id="oc-buh" onclick="selectOpType('buh')">
-              <div class="oc-icon">🏦</div>
-              <div class="oc-title">Касса бухгалтерии</div>
-              <div class="oc-sub">Получено / Выдано с кассы бухгалтерии</div>
-            </div>
-            <div class="op-card" id="oc-bank" onclick="selectOpType('bank')">
-              <div class="oc-icon">🏛</div>
-              <div class="oc-title">Банк (БВУ)</div>
-              <div class="oc-sub">Подкрепление кассы / Выдача через банк второго уровня</div>
-            </div>
-            <div class="op-card" id="oc-pod" onclick="selectOpType('pod')">
-              <div class="oc-icon">👤</div>
-              <div class="oc-title">Подотчётное лицо</div>
-              <div class="oc-sub">Возврат от / Выдача подотчётному лицу</div>
+          <div class="form-section-title">
+            <i data-lucide="layout-list"></i>
+            Тип операции
+          </div>
+          <div class="form-row r1">
+            <div class="form-group">
+              <label class="form-label"><i data-lucide="tag"></i> Выберите тип <span class="req">*</span></label>
+              <div class="op-type-sel-wrap">
+                <i data-lucide="list-filter" class="sel-icon"></i>
+                <select class="form-sel op-type-sel" id="op-type-sel" onchange="onOpTypeChange()">
+                  <option value="">— Выберите из справочника —</option>
+                  <optgroup label="Касса бухгалтерии">
+                    <option value="buh-in">Получено с кассы бухгалтерии</option>
+                    <option value="buh-out">Выдано с кассы бухгалтерии</option>
+                  </optgroup>
+                  <optgroup label="Банк (БВУ)">
+                    <option value="bank-in">Получено из Банка (БВУ) — подкрепление</option>
+                    <option value="bank-out">Выдано в Банк (БВУ)</option>
+                  </optgroup>
+                  <optgroup label="Подотчётное лицо">
+                    <option value="pod-in">Возврат от подотчётного лица</option>
+                    <option value="pod-out">Выдача подотчётному лицу</option>
+                  </optgroup>
+                </select>
+              </div>
             </div>
           </div>
-          <!-- Direction toggle -->
-          <div id="dir-wrap" style="display:none;margin-top:2px">
-            <div class="dir-toggle">
-              <button class="dir-btn active-in" id="dir-in" onclick="selectDir('in')">↓ Получено в кассу</button>
-              <button class="dir-btn" id="dir-out" onclick="selectDir('out')">↑ Выдано из кассы</button>
-            </div>
-          </div>
+          <div id="dir-pill-wrap" style="display:none"></div>
         </div>
 
-        <!-- DYNAMIC FORM SECTIONS -->
+        <!-- BUH FORM -->
         <div id="form-buh" style="display:none">
           <div class="form-section">
-            <div class="form-section-title">Сведения об операции</div>
+            <div class="form-section-title"><i data-lucide="file-text"></i> Сведения об операции</div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">От кого <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user"></i> От кого <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="b-from" value="Сидорова О.Н. (Бухгалтер)" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Дата операции <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="calendar"></i> Дата операции <span class="req">*</span></label>
                 <input class="form-inp" id="b-date" type="date">
                 <span class="field-error" id="err-b-date">Укажите дату</span>
               </div>
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Валюта</label>
-                <div class="cur-locked">🇰🇿 KZT — Тенге</div>
+                <label class="form-label"><i data-lucide="banknote"></i> Валюта</label>
+                <div class="cur-locked"><i data-lucide="flag" style="width:14px;height:14px;stroke:var(--text-mid)"></i> KZT — Тенге</div>
               </div>
               <div class="form-group">
-                <label class="form-label">Сумма <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="coins"></i> Сумма <span class="req">*</span></label>
                 <div class="amount-wrap">
-                  <input class="form-inp" id="b-amount" type="text" placeholder="0" oninput="recalcBuh()">
+                  <input class="form-inp" id="b-amount" type="text" placeholder="0" oninput="recalcBuh()" style="padding-right:40px">
                   <span class="amount-suffix">₸</span>
                 </div>
                 <div class="amount-words" id="b-words"></div>
@@ -273,70 +262,71 @@
             </div>
             <div class="form-row r1">
               <div class="form-group">
-                <label class="form-label">Комментарий / Примечание</label>
+                <label class="form-label"><i data-lucide="message-square"></i> Комментарий / Примечание</label>
                 <textarea class="form-textarea" id="b-note" placeholder="Дополнительная информация..."></textarea>
               </div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title">Реквизиты <span class="fs-badge fs-auto">автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="building-2"></i> Реквизиты <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Наименование отделения</label>
+                <label class="form-label"><i data-lucide="map-pin"></i> Отделение</label>
                 <select class="form-sel" id="b-branch"><option>АПОРТ</option><option>Мега Алматы</option><option>Достык Плаза</option></select>
               </div>
               <div class="form-group">
-                <label class="form-label">Касса</label>
+                <label class="form-label"><i data-lucide="monitor"></i> Касса</label>
                 <select class="form-sel" id="b-desk"><option>Касса №1</option><option>Касса №2</option><option>Касса №3</option></select>
               </div>
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">ФИО бухгалтера <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> ФИО бухгалтера <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Сидорова О.Н." disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">ФИО кассира <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> ФИО кассира <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Иванова А.Ю." disabled>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- BANK FORM -->
         <div id="form-bank" style="display:none">
           <div class="form-section">
-            <div class="form-section-title">Общие сведения <span class="fs-badge fs-auto">автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="info"></i> Общие сведения <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
             <div class="form-row r4">
               <div class="form-group">
-                <label class="form-label">Дата <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="calendar"></i> Дата <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-date-show" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Время <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="clock"></i> Время <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-time-show" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Обменный пункт <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="map-pin"></i> Обменный пункт <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="АПОРТ" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Номер операции <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="hash"></i> Номер операции <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-opnum" disabled>
               </div>
             </div>
             <div class="form-row r3">
               <div class="form-group">
-                <label class="form-label">Бухгалтер <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> Бухгалтер <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Сидорова О.Н." disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Кассир <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> Кассир <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Иванова А.Ю." disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Договор <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="file-signature"></i> Договор <span class="req">*</span></label>
                 <select class="form-sel" id="bk-contract" onchange="validateBank()">
-                  <option value="">— Выбрать договор —</option>
+                  <option value="">— Выбрать из реестра —</option>
                   <option value="ДОГ-2026-001">ДОГ-2026-001 · Народный Банк</option>
                   <option value="ДОГ-2026-002">ДОГ-2026-002 · Kaspi Bank</option>
                   <option value="ДОГ-2025-018">ДОГ-2025-018 · Казкоммерцбанк</option>
@@ -346,12 +336,12 @@
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title">Источник поступления</div>
+            <div class="form-section-title"><i data-lucide="landmark"></i> Источник поступления</div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Наименование банка (БВУ) <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="landmark"></i> Наименование банка (БВУ) <span class="req">*</span></label>
                 <select class="form-sel" id="bk-bank" onchange="onBankSelect()">
-                  <option value="">— Выбрать банк —</option>
+                  <option value="">— Выбрать банк из справочника —</option>
                   <option value="halyk">Народный Банк Казахстана</option>
                   <option value="kaspi">Kaspi Bank</option>
                   <option value="kkb">Казкоммерцбанк</option>
@@ -362,100 +352,101 @@
                 <span class="field-error" id="err-bk-bank">Выберите банк</span>
               </div>
               <div class="form-group">
-                <label class="form-label">Банковский счёт <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="credit-card"></i> Банковский счёт <span class="req">*</span></label>
                 <input class="form-inp" id="bk-account" placeholder="KZ00 0000 0000 0000 0000" oninput="validateBank()">
                 <span class="field-error" id="err-bk-account">Укажите банковский счёт</span>
               </div>
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">БИК банка <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="hash"></i> БИК банка <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-bik" disabled placeholder="Заполнится при выборе банка">
               </div>
               <div class="form-group">
-                <label class="form-label">БИН банка <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="hash"></i> БИН банка <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-bin" disabled placeholder="Заполнится при выборе банка">
               </div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title">Валюта и сумма</div>
+            <div class="form-section-title"><i data-lucide="coins"></i> Валюта и сумма</div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Валюта <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="globe"></i> Валюта <span class="req">*</span></label>
                 <select class="form-sel" id="bk-cur" onchange="recalcBank()">
-                  <option value="KZT">🇰🇿 KZT — Тенге</option>
-                  <option value="USD">🇺🇸 USD — Доллар</option>
-                  <option value="EUR">🇪🇺 EUR — Евро</option>
-                  <option value="RUB">🇷🇺 RUB — Рубль</option>
-                  <option value="CNY">🇨🇳 CNY — Юань</option>
-                  <option value="GBP">🇬🇧 GBP — Фунт</option>
+                  <option value="KZT">KZT — Тенге</option>
+                  <option value="USD">USD — Доллар США</option>
+                  <option value="EUR">EUR — Евро</option>
+                  <option value="RUB">RUB — Российский рубль</option>
+                  <option value="CNY">CNY — Юань</option>
+                  <option value="GBP">GBP — Фунт стерлингов</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Сумма в валюте <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="coins"></i> Сумма в валюте <span class="req">*</span></label>
                 <input class="form-inp" id="bk-amount" type="text" placeholder="0" oninput="recalcBank()">
                 <span class="field-error" id="err-bk-amount">Сумма должна быть больше 0</span>
               </div>
             </div>
             <div class="form-row r3">
               <div class="form-group">
-                <label class="form-label">Курс приобретения <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="trending-up"></i> Курс приобретения <span class="req">*</span></label>
                 <div class="amount-wrap">
-                  <input class="form-inp" id="bk-rate-buy" type="text" placeholder="0.00" oninput="recalcBank()">
+                  <input class="form-inp" id="bk-rate-buy" type="text" placeholder="0.00" oninput="recalcBank()" style="padding-right:44px">
                   <span class="amount-suffix" style="font-size:11px">₸/1</span>
                 </div>
                 <span class="field-error" id="err-bk-rate">Курс должен быть больше 0</span>
               </div>
               <div class="form-group">
-                <label class="form-label">Курс НБРК на дату <span class="fs-badge fs-auto">авто</span></label>
-                <div class="calc-field"><span id="bk-rate-nbrk">503,40</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
+                <label class="form-label"><i data-lucide="bar-chart-2"></i> Курс НБРК на дату <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <div class="calc-field"><span id="bk-rate-nbrk">503.40</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
               </div>
               <div class="form-group">
-                <label class="form-label">Средний курс кассы (WAC) <span class="fs-badge fs-auto">авто</span></label>
-                <div class="calc-field"><span id="bk-rate-wac">498,75</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
+                <label class="form-label"><i data-lucide="activity"></i> Средний курс кассы (WAC) <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <div class="calc-field"><span id="bk-rate-wac">498.75</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
               </div>
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Эквивалент в тенге <span class="fs-badge fs-auto">авто</span></label>
-                <div class="calc-field highlight"><span class="calc-val" id="bk-equiv">—</span></div>
+                <label class="form-label"><i data-lucide="calculator"></i> Эквивалент в тенге <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <div class="calc-field hi"><span id="bk-equiv">—</span></div>
               </div>
               <div class="form-group">
-                <label class="form-label">Комментарий</label>
+                <label class="form-label"><i data-lucide="message-square"></i> Комментарий</label>
                 <input class="form-inp" id="bk-note" placeholder="Необязательно...">
               </div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title">Реквизиты <span class="fs-badge fs-auto">автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="building-2"></i> Реквизиты <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
             <div class="form-row r3">
               <div class="form-group">
-                <label class="form-label">Наименование отделения</label>
+                <label class="form-label"><i data-lucide="map-pin"></i> Отделение</label>
                 <select class="form-sel" id="bk-branch"><option>АПОРТ</option><option>Мега Алматы</option><option>Достык Плаза</option></select>
               </div>
               <div class="form-group">
-                <label class="form-label">Касса</label>
+                <label class="form-label"><i data-lucide="monitor"></i> Касса</label>
                 <select class="form-sel" id="bk-desk"><option>Касса №1</option><option>Касса №2</option><option>Касса №3</option></select>
               </div>
               <div class="form-group">
-                <label class="form-label">ФИО кассира <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> ФИО кассира <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Иванова А.Ю." disabled>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- POD FORM -->
         <div id="form-pod" style="display:none">
           <div class="form-section">
-            <div class="form-section-title">Сведения об операции</div>
+            <div class="form-section-title"><i data-lucide="file-text"></i> Сведения об операции</div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">От кого <span class="fs-badge fs-auto">авто</span></label>
-                <input class="form-inp auto-filled" id="p-from" value="Сидорова О.Н. (Бухгалтер)" disabled>
+                <label class="form-label"><i data-lucide="user"></i> От кого <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <input class="form-inp auto-filled" value="Сидорова О.Н. (Бухгалтер)" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">Подотчётное лицо <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="users"></i> Подотчётное лицо <span class="req">*</span></label>
                 <select class="form-sel" id="p-person" onchange="validatePod()">
                   <option value="">— Выбрать из справочника —</option>
                   <option>Петров С.И.</option>
@@ -469,20 +460,20 @@
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Дата операции <span class="req">*</span></label>
+                <label class="form-label"><i data-lucide="calendar"></i> Дата операции <span class="req">*</span></label>
                 <input class="form-inp" id="p-date" type="date">
                 <span class="field-error" id="err-p-date">Укажите дату</span>
               </div>
               <div class="form-group">
-                <label class="form-label">Валюта</label>
-                <div class="cur-locked">🇰🇿 KZT — Тенге</div>
+                <label class="form-label"><i data-lucide="banknote"></i> Валюта</label>
+                <div class="cur-locked"><i data-lucide="flag" style="width:14px;height:14px;stroke:var(--text-mid)"></i> KZT — Тенге</div>
               </div>
             </div>
             <div class="form-row r1">
               <div class="form-group">
-                <label class="form-label">Сумма <span class="req">*</span></label>
-                <div class="amount-wrap" style="max-width:320px">
-                  <input class="form-inp" id="p-amount" type="text" placeholder="0" oninput="recalcPod()">
+                <label class="form-label"><i data-lucide="coins"></i> Сумма <span class="req">*</span></label>
+                <div class="amount-wrap" style="max-width:340px">
+                  <input class="form-inp" id="p-amount" type="text" placeholder="0" oninput="recalcPod()" style="padding-right:40px">
                   <span class="amount-suffix">₸</span>
                 </div>
                 <div class="amount-words" id="p-words"></div>
@@ -491,30 +482,30 @@
             </div>
             <div class="form-row r1">
               <div class="form-group">
-                <label class="form-label">Комментарий / Примечание</label>
+                <label class="form-label"><i data-lucide="message-square"></i> Комментарий / Примечание</label>
                 <textarea class="form-textarea" id="p-note" placeholder="Дополнительная информация..."></textarea>
               </div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-section-title">Реквизиты <span class="fs-badge fs-auto">автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="building-2"></i> Реквизиты <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">Наименование отделения</label>
+                <label class="form-label"><i data-lucide="map-pin"></i> Отделение</label>
                 <select class="form-sel" id="p-branch"><option>АПОРТ</option><option>Мега Алматы</option><option>Достык Плаза</option></select>
               </div>
               <div class="form-group">
-                <label class="form-label">Касса</label>
+                <label class="form-label"><i data-lucide="monitor"></i> Касса</label>
                 <select class="form-sel" id="p-desk"><option>Касса №1</option><option>Касса №2</option><option>Касса №3</option></select>
               </div>
             </div>
             <div class="form-row r2">
               <div class="form-group">
-                <label class="form-label">ФИО бухгалтера <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> ФИО бухгалтера <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Сидорова О.Н." disabled>
               </div>
               <div class="form-group">
-                <label class="form-label">ФИО кассира <span class="fs-badge fs-auto">авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> ФИО кассира <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Иванова А.Ю." disabled>
               </div>
             </div>
@@ -523,41 +514,54 @@
 
         <!-- ACCOUNTANT ACTIONS -->
         <div class="form-actions" id="acct-actions" style="display:none">
-          <button class="btn-act-cancel" onclick="openCancelDialog()">✕ Отменить</button>
+          <button class="btn btn-danger" onclick="openCancelDialog()">
+            <i data-lucide="x-circle"></i> Отменить
+          </button>
           <div style="flex:1"></div>
-          <button class="btn-act-draft" onclick="saveDraft()">💾 Сохранить черновик</button>
-          <button class="btn-act-send" id="btn-send" onclick="sendOrder()">→ Отправить на исполнение</button>
+          <button class="btn btn-ghost" onclick="saveDraft()">
+            <i data-lucide="save"></i> Сохранить черновик
+          </button>
+          <button class="btn btn-primary" id="btn-send" onclick="sendOrder()">
+            <i data-lucide="send"></i> Отправить на исполнение
+          </button>
         </div>
       </div>
 
       <!-- ===== CASHIER VIEW ===== -->
       <div id="view-cashier" style="display:none">
-        <div class="role-banner cashier">
-          <div class="rb-icon">👤</div>
+        <div class="role-banner">
+          <div class="rb-icon"><i data-lucide="user" style="width:20px;height:20px;stroke:white"></i></div>
           <div><div class="rb-title">Кассир — исполнение операции</div><div class="rb-sub">Проверьте параметры и подтвердите фактическое получение или выдачу</div></div>
         </div>
 
         <div class="exec-detail">
-          <div class="form-section-title" style="margin-bottom:16px">Параметры операции</div>
+          <div class="form-section-title" style="margin-bottom:16px"><i data-lucide="clipboard-list"></i> Параметры операции</div>
           <div class="detail-grid-3" id="exec-detail-grid"></div>
         </div>
 
-        <!-- SUCCESS STATE -->
         <div class="success-card" id="exec-success" style="display:none">
-          <div class="s-icon">✅</div>
-          <div class="s-title">Операция проведена</div>
-          <div class="s-sub" id="exec-success-sub">Денежные средства приняты, остатки обновлены.</div>
+          <div class="success-icon"><i data-lucide="check" style="width:28px;height:28px;stroke:white"></i></div>
+          <div class="success-title">Операция проведена</div>
+          <div class="success-sub" id="exec-success-sub">Денежные средства приняты, остатки обновлены.</div>
         </div>
 
         <div class="form-actions" id="cashier-actions">
-          <button class="btn-act-cancel" onclick="openCancelDialog()">✕ Отменить операцию</button>
+          <button class="btn btn-danger" onclick="openCancelDialog()">
+            <i data-lucide="x-circle"></i> Отменить операцию
+          </button>
           <div style="flex:1"></div>
-          <button class="btn-act-exec" id="btn-exec" onclick="execOrder()">✓ Исполнить</button>
+          <button class="btn btn-primary" onclick="execOrder()">
+            <i data-lucide="check-circle-2"></i> Исполнить
+          </button>
         </div>
         <div class="form-actions" id="cashier-done-actions" style="display:none">
-          <button class="btn-act-draft" onclick="location.href='cash-orders.html'">← К реестру</button>
+          <button class="btn btn-ghost" onclick="location.href='cash-orders.html'">
+            <i data-lucide="arrow-left"></i> К реестру
+          </button>
           <div style="flex:1"></div>
-          <button class="btn-act-print" onclick="doPrint()">⎙ Распечатать чек</button>
+          <button class="btn btn-primary" onclick="doPrint()">
+            <i data-lucide="printer"></i> Распечатать чек
+          </button>
         </div>
       </div>
 
@@ -567,7 +571,6 @@
 
 <script>
 const LS_ORDERS='ecash-cash-orders';
-
 const BANK_DATA={
   halyk:{name:'Народный Банк Казахстана',bik:'HSBKKZKX',bin:'920140000076'},
   kaspi:{name:'Kaspi Bank',bik:'CASPKZKX',bin:'971240024151'},
@@ -576,61 +579,53 @@ const BANK_DATA={
   eurasian:{name:'Евразийский Банк',bik:'EURIKZKA',bin:'940540013278'},
   bcc:{name:'Банк ЦентрКредит',bik:'KCJBKZKX',bin:'930040000612'},
 };
-
 const NBRK_RATES={KZT:1,USD:503.40,EUR:548.20,RUB:5.48,CNY:69.50,GBP:641.30};
 
-let opType=''; // buh | bank | pod
-let direction='in'; // in | out
-let orderId=null;
-let orderData=null;
-let pageMode='create'; // create | exec | view
-
+let opTypeKey=''; // e.g. 'buh-in', 'bank-out'
+let orderId=null, orderData=null;
 const sp=new URLSearchParams(location.search);
 
-// ---- AMOUNT IN WORDS ----
 function amountWords(n){
-  n=Math.floor(n); if(!n) return '';
+  n=Math.floor(n);if(!n)return'';
   const U=['','один','два','три','четыре','пять','шесть','семь','восемь','девять'];
   const T=['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
   const D=['','десять','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
   const H=['','сто','двести','триста','четыреста','пятьсот','шестьсот','семьсот','восемьсот','девятьсот'];
   function pl(v,f){const m=v%100;if(m>=11&&m<=19)return f[0];const r=v%10;if(r===1)return f[1];if(r>=2&&r<=4)return f[2];return f[0];}
   function thr(v,fem){let s='';const h=Math.floor(v/100);v%=100;s+=H[h]?(H[h]+' '):'';if(v>=10&&v<20){s+=T[v-10]+' ';return s;}const d=Math.floor(v/10);v%=10;s+=D[d]?(D[d]+' '):'';if(fem&&v===1)s+='одна ';else if(fem&&v===2)s+='две ';else s+=U[v]?(U[v]+' '):'';return s;}
-  const mil=Math.floor(n/1000000);n%=1000000;const tho=Math.floor(n/1000);n%=1000;const rem=n;
+  const mil=Math.floor(n/1e6);n%=1e6;const tho=Math.floor(n/1e3);n%=1e3;const rem=n;
   let s='';if(mil)s+=thr(mil,false)+pl(mil,['миллионов','миллион','миллиона','миллионов'])+' ';if(tho)s+=thr(tho,true)+pl(tho,['тысяч','тысяча','тысячи','тысяч'])+' ';if(rem)s+=thr(rem,false);
   s+=pl(arguments[0],['тенге','тенге','тенге','тенге']);
   const r=s.trim();return r.charAt(0).toUpperCase()+r.slice(1);
 }
+function fmtNum(n){return Number(n).toLocaleString('ru-RU');}
 
-function fmtNum(n){ return Number(n).toLocaleString('ru-RU'); }
-function genOpNum(){ return 'БКО-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*90000+10000)); }
-
-// ---- TYPE / DIRECTION ----
-function selectOpType(t){
-  opType=t;
-  ['buh','bank','pod'].forEach(k=>{
-    document.getElementById('oc-'+k).classList.toggle('active',k===t);
-    document.getElementById('form-'+k).style.display=k===t?'block':'none';
-  });
-  document.getElementById('dir-wrap').style.display=(t==='buh'||t==='pod')?'block':'none';
+function onOpTypeChange(){
+  const val=document.getElementById('op-type-sel').value;
+  opTypeKey=val;
+  const base=val.split('-')[0];
+  const dir=val.split('-')[1];
+  ['buh','bank','pod'].forEach(t=>document.getElementById('form-'+t).style.display='none');
+  document.getElementById('acct-actions').style.display='none';
+  document.getElementById('dir-pill-wrap').style.display='none';
+  if(!val)return;
+  document.getElementById('form-'+base).style.display='block';
   document.getElementById('acct-actions').style.display='flex';
+  // Show direction pill
+  const dirLabels={in:'↓ Получено',out:'↑ Выдано'};
+  const dirClass={in:'in',out:'out'};
+  document.getElementById('dir-pill-wrap').innerHTML=`<span class="dir-pill ${dirClass[dir]}">${dirLabels[dir]}</span>`;
+  document.getElementById('dir-pill-wrap').style.display='block';
+  lucide.createIcons();
 }
 
-function selectDir(d){
-  direction=d;
-  document.getElementById('dir-in').className='dir-btn '+(d==='in'?'active-in':'');
-  document.getElementById('dir-out').className='dir-btn '+(d==='out'?'active-out':'');
-}
-
-// ---- BANK AUTOFILL ----
 function onBankSelect(){
   const key=document.getElementById('bk-bank').value;
-  const bank=BANK_DATA[key]||{bik:'',bin:''};
+  const bank=BANK_DATA[key]||{};
   document.getElementById('bk-bik').value=bank.bik||'';
   document.getElementById('bk-bin').value=bank.bin||'';
-  // update NBRK rate based on selected currency
   const cur=document.getElementById('bk-cur').value;
-  document.getElementById('bk-rate-nbrk').textContent=fmtNum(NBRK_RATES[cur]||0);
+  document.getElementById('bk-rate-nbrk').textContent=Number(NBRK_RATES[cur]||0).toFixed(2);
   validateBank();
 }
 
@@ -638,16 +633,10 @@ function recalcBank(){
   const amount=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
   const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;
   const cur=document.getElementById('bk-cur').value;
-  document.getElementById('bk-rate-nbrk').textContent=fmtNum(NBRK_RATES[cur]||0);
-  if(amount>0&&rate>0){
-    const equiv=Math.round(amount*rate);
-    document.getElementById('bk-equiv').textContent=fmtNum(equiv)+' ₸';
-  } else {
-    document.getElementById('bk-equiv').textContent='—';
-  }
+  document.getElementById('bk-rate-nbrk').textContent=Number(NBRK_RATES[cur]||0).toFixed(2);
+  document.getElementById('bk-equiv').textContent=amount>0&&rate>0?(fmtNum(Math.round(amount*rate))+' ₸'):'—';
   validateBank();
 }
-
 function recalcBuh(){
   const v=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;
   document.getElementById('b-words').textContent=v?amountWords(v):'';
@@ -657,69 +646,57 @@ function recalcPod(){
   document.getElementById('p-words').textContent=v?amountWords(v):'';
 }
 
-// ---- VALIDATION ----
-function showErr(id,msg,show){
-  const el=document.getElementById(id);
-  const inp=document.getElementById(id.replace('err-',''));
-  if(el){ el.textContent=msg||el.textContent; el.classList.toggle('show',show); }
-  if(inp) inp.classList.toggle('error',show);
+function showErr(errId,show){
+  const el=document.getElementById(errId);if(el)el.classList.toggle('show',show);
+  const fId=errId.replace('err-','');
+  const fi=document.getElementById(fId);if(fi)fi.classList.toggle('error',show);
 }
-
 function validateBank(){
   let ok=true;
   const bank=document.getElementById('bk-bank').value;
   const acc=(document.getElementById('bk-account').value||'').trim();
-  const amount=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
+  const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
   const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;
-  const contract=document.getElementById('bk-contract').value;
-  showErr('err-bk-bank','Выберите банк',!bank);if(!bank)ok=false;
-  showErr('err-bk-account','Укажите счёт',!acc);if(!acc)ok=false;
-  showErr('err-bk-amount','Сумма > 0',amount<=0);if(amount<=0)ok=false;
-  showErr('err-bk-rate','Курс > 0',rate<=0);if(rate<=0)ok=false;
-  showErr('err-bk-contract','Выберите договор',!contract);if(!contract)ok=false;
+  const con=document.getElementById('bk-contract').value;
+  showErr('err-bk-bank',!bank);if(!bank)ok=false;
+  showErr('err-bk-account',!acc);if(!acc)ok=false;
+  showErr('err-bk-amount',am<=0);if(am<=0)ok=false;
+  showErr('err-bk-rate',rate<=0);if(rate<=0)ok=false;
+  showErr('err-bk-contract',!con);if(!con)ok=false;
   return ok;
 }
 function validateBuh(){
   let ok=true;
-  const amount=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;
-  const date=document.getElementById('b-date').value;
-  showErr('err-b-amount','Сумма > 0',amount<=0);if(amount<=0)ok=false;
-  showErr('err-b-date','Укажите дату',!date);if(!date)ok=false;
+  const am=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;
+  const dt=document.getElementById('b-date').value;
+  showErr('err-b-amount',am<=0);if(am<=0)ok=false;
+  showErr('err-b-date',!dt);if(!dt)ok=false;
   return ok;
 }
 function validatePod(){
   let ok=true;
-  const amount=parseInt((document.getElementById('p-amount').value||'').replace(/\s/g,''))||0;
-  const date=document.getElementById('p-date').value;
-  const person=document.getElementById('p-person').value;
-  showErr('err-p-amount','Сумма > 0',amount<=0);if(amount<=0)ok=false;
-  showErr('err-p-date','Укажите дату',!date);if(!date)ok=false;
-  showErr('err-p-person','Выберите подотчётное лицо',!person);if(!person)ok=false;
+  const am=parseInt((document.getElementById('p-amount').value||'').replace(/\s/g,''))||0;
+  const dt=document.getElementById('p-date').value;
+  const per=document.getElementById('p-person').value;
+  showErr('err-p-amount',am<=0);if(am<=0)ok=false;
+  showErr('err-p-date',!dt);if(!dt)ok=false;
+  showErr('err-p-person',!per);if(!per)ok=false;
   return ok;
 }
 
-// ---- BUILD ORDER OBJECT ----
 function buildOrder(status){
   const now=new Date();
   const dt=now.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const dateStr=now.toLocaleDateString('ru-RU');
   const timeStr=now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-  const id=orderId||(opType==='bank'?'БКО':'КО')+'-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*90000+10000));
-  let base={ id,opType,direction,status,createdAt:dt,date:dateStr,time:timeStr,accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.' };
-  if(opType==='buh'){
-    const am=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;
-    Object.assign(base,{currency:'KZT',amount:am,amountKzt:am,branch:document.getElementById('b-branch').value,desk:document.getElementById('b-desk').value,date:document.getElementById('b-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('b-note').value});
-  } else if(opType==='bank'){
-    const cur=document.getElementById('bk-cur').value;
-    const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
-    const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;
-    const bankKey=document.getElementById('bk-bank').value;
-    Object.assign(base,{currency:cur,amount:am,rateBuy:rate,rateNbrk:NBRK_RATES[cur]||0,amountKzt:Math.round(am*rate),bankKey,bankName:(BANK_DATA[bankKey]||{}).name||'',bankBik:document.getElementById('bk-bik').value,bankBin:document.getElementById('bk-bin').value,account:document.getElementById('bk-account').value,contract:document.getElementById('bk-contract').value,branch:document.getElementById('bk-branch').value,desk:document.getElementById('bk-desk').value,note:document.getElementById('bk-note').value});
-  } else if(opType==='pod'){
-    const am=parseInt((document.getElementById('p-amount').value||'').replace(/\s/g,''))||0;
-    Object.assign(base,{currency:'KZT',amount:am,amountKzt:am,person:document.getElementById('p-person').value,branch:document.getElementById('p-branch').value,desk:document.getElementById('p-desk').value,date:document.getElementById('p-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('p-note').value});
-  }
-  return base;
+  const base=opTypeKey.split('-')[0];
+  const dir=opTypeKey.split('-')[1];
+  const id=orderId||('КО-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*90000+10000)));
+  let o={id,opTypeKey,opType:base,direction:dir,status,createdAt:dt,date:dateStr,time:timeStr,accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.'};
+  if(base==='buh'){const am=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;Object.assign(o,{currency:'KZT',amount:am,amountKzt:am,branch:document.getElementById('b-branch').value,desk:document.getElementById('b-desk').value,date:document.getElementById('b-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('b-note').value});}
+  else if(base==='bank'){const cur=document.getElementById('bk-cur').value;const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;const bk=document.getElementById('bk-bank').value;Object.assign(o,{currency:cur,amount:am,rateBuy:rate,rateNbrk:NBRK_RATES[cur]||0,amountKzt:Math.round(am*rate),bankKey:bk,bankName:(BANK_DATA[bk]||{}).name||'',bankBik:document.getElementById('bk-bik').value,bankBin:document.getElementById('bk-bin').value,account:document.getElementById('bk-account').value,contract:document.getElementById('bk-contract').value,branch:document.getElementById('bk-branch').value,desk:document.getElementById('bk-desk').value,note:document.getElementById('bk-note').value});}
+  else if(base==='pod'){const am=parseInt((document.getElementById('p-amount').value||'').replace(/\s/g,''))||0;Object.assign(o,{currency:'KZT',amount:am,amountKzt:am,person:document.getElementById('p-person').value,branch:document.getElementById('p-branch').value,desk:document.getElementById('p-desk').value,date:document.getElementById('p-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('p-note').value});}
+  return o;
 }
 
 function saveToStorage(order){
@@ -727,200 +704,151 @@ function saveToStorage(order){
   const idx=all.findIndex(o=>o.id===order.id);
   if(idx>=0)all[idx]=order;else all.unshift(order);
   localStorage.setItem(LS_ORDERS,JSON.stringify(all));
-  orderId=order.id; orderData=order;
+  orderId=order.id;orderData=order;
 }
 
 function saveDraft(){
-  if(!opType){ showToast('⚠️','Выберите тип операции'); return; }
-  let valid=false;
-  if(opType==='buh') valid=validateBuh();
-  else if(opType==='bank') valid=validateBank();
-  else valid=validatePod();
-  if(!valid){ showToast('⚠️','Заполните все обязательные поля'); return; }
-  const order=buildOrder('draft');
-  saveToStorage(order);
-  showToast('💾','Черновик сохранён — '+order.id);
+  if(!opTypeKey){showToast('Выберите тип операции');return;}
+  const base=opTypeKey.split('-')[0];
+  const valid=(base==='buh'?validateBuh():base==='bank'?validateBank():validatePod());
+  if(!valid){showToast('Заполните все обязательные поля');return;}
+  const order=buildOrder('draft');saveToStorage(order);
+  showToast('Черновик сохранён — '+order.id);
 }
 
 function sendOrder(){
-  if(!opType){ showToast('⚠️','Выберите тип операции'); return; }
-  let valid=false;
-  if(opType==='buh') valid=validateBuh();
-  else if(opType==='bank') valid=validateBank();
-  else valid=validatePod();
-  if(!valid){ showToast('⚠️','Заполните все обязательные поля'); return; }
-  const order=buildOrder('pending');
-  saveToStorage(order);
-  showToast('📤','Ордер отправлен кассиру на исполнение');
+  if(!opTypeKey){showToast('Выберите тип операции');return;}
+  const base=opTypeKey.split('-')[0];
+  const valid=(base==='buh'?validateBuh():base==='bank'?validateBank():validatePod());
+  if(!valid){showToast('Заполните все обязательные поля');return;}
+  const order=buildOrder('pending');saveToStorage(order);
+  showToast('Ордер отправлен кассиру на исполнение');
   setTimeout(()=>location.href='cash-orders.html',1200);
 }
 
-// ---- CASHIER EXEC ----
 function execOrder(){
   const now=new Date();
   const exAt=now.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
   const idx=all.findIndex(o=>o.id===orderId);
-  if(idx>=0){ all[idx].status='executed'; all[idx].executedAt=exAt; localStorage.setItem(LS_ORDERS,JSON.stringify(all)); orderData=all[idx]; }
+  if(idx>=0){all[idx].status='executed';all[idx].executedAt=exAt;localStorage.setItem(LS_ORDERS,JSON.stringify(all));orderData=all[idx];}
   setStepTracker('executed');
   document.getElementById('cashier-actions').style.display='none';
   document.getElementById('exec-success').style.display='block';
   document.getElementById('exec-success-sub').textContent='Операция '+orderId+' проведена · '+exAt+' · Иванова А.Ю.';
   document.getElementById('cashier-done-actions').style.display='flex';
-  showToast('✅','Операция проведена');
+  lucide.createIcons();
 }
 
-// ---- CANCEL DIALOG ----
-let _cancelTarget=null;
 function openCancelDialog(){
   document.getElementById('cancel-dialog').classList.add('open');
   document.getElementById('cancel-reason').value='';
   document.getElementById('btn-cancel-confirm').disabled=true;
-  document.getElementById('cancel-reason').oninput=function(){
-    document.getElementById('btn-cancel-confirm').disabled=!this.value.trim();
-  };
+  document.getElementById('cancel-reason').oninput=function(){document.getElementById('btn-cancel-confirm').disabled=!this.value.trim();};
 }
-function closeCancelDialog(){ document.getElementById('cancel-dialog').classList.remove('open'); }
+function closeCancelDialog(){document.getElementById('cancel-dialog').classList.remove('open');}
 function doCancel(){
-  const reason=document.getElementById('cancel-reason').value.trim();
-  if(!reason)return;
+  const reason=document.getElementById('cancel-reason').value.trim();if(!reason)return;
   const now=new Date();
   const exAt=now.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
   const idx=all.findIndex(o=>o.id===orderId);
-  if(idx>=0){ all[idx].status='cancelled'; all[idx].cancelReason=reason; all[idx].cancelledAt=exAt; localStorage.setItem(LS_ORDERS,JSON.stringify(all)); }
-  closeCancelDialog();
-  showToast('✕','Операция отменена');
+  if(idx>=0){all[idx].status='cancelled';all[idx].cancelReason=reason;all[idx].cancelledAt=exAt;localStorage.setItem(LS_ORDERS,JSON.stringify(all));}
+  closeCancelDialog();showToast('Операция отменена');
   setTimeout(()=>location.href='cash-orders.html',900);
 }
 
-// ---- PRINT ----
-function doPrint(){
-  if(orderId) window.open('cash-order-print.html?id='+encodeURIComponent(orderId),'_blank','width=900,height=700');
-}
+function doPrint(){if(orderId)window.open('cash-order-print.html?id='+encodeURIComponent(orderId),'_blank','width=920,height=750');}
 
-// ---- STEP TRACKER ----
 function setStepTracker(status){
-  const STATUS_IDX={draft:0,pending:1,executed:2,cancelled:-1};
-  const idx=STATUS_IDX[status]??0;
+  const idx={draft:0,pending:1,executed:2,cancelled:-1}[status]??0;
   const LABELS=['Создана','На подтверждении','Проведена'];
-  const STATUS_BADGE={draft:{label:'Создана',cls:'badge-draft'},pending:{label:'На подтверждении',cls:'badge-pending'},executed:{label:'Проведена',cls:'badge-executed'},cancelled:{label:'Отменена',cls:'badge-cancelled'}};
+  const BADGE={draft:{l:'Создана',c:'badge-draft'},pending:{l:'На подтверждении',c:'badge-pending'},executed:{l:'Проведена',c:'badge-executed'},cancelled:{l:'Отменена',c:'badge-cancelled'}};
   [1,2,3].forEach(i=>{
-    const dot=document.getElementById('st'+i);
-    const lbl=document.getElementById('sl'+i);
-    if(i-1<idx){ dot.className='strack-dot done'; dot.textContent='✓'; lbl.className='strack-label active'; }
-    else if(i-1===idx){ dot.className='strack-dot active'; dot.textContent=i; lbl.className='strack-label active'; }
-    else { dot.className='strack-dot idle'; dot.textContent=i; lbl.className='strack-label idle'; }
+    const dot=document.getElementById('st'+i),lbl=document.getElementById('sl'+i);
+    if(i-1<idx){dot.className='strack-dot done';dot.textContent='✓';}
+    else if(i-1===idx){dot.className='strack-dot active';dot.textContent=i;}
+    else{dot.className='strack-dot idle';dot.textContent=i;}
+    lbl.className='strack-label '+(i-1<=idx?'active':'idle');
     lbl.textContent=LABELS[i-1];
   });
-  [1,2].forEach(i=>{ const ln=document.getElementById('ln'+i); ln.className='strack-line '+(i<=idx?'done':''); });
-  const bd=STATUS_BADGE[status]||STATUS_BADGE.draft;
-  document.getElementById('st-badge-wrap').innerHTML=`<span class="badge ${bd.cls}">${bd.label}</span>`;
+  [1,2].forEach(i=>document.getElementById('ln'+i).className='strack-line '+(i<=idx?'done':''));
+  const bd=BADGE[status]||BADGE.draft;
+  document.getElementById('st-badge-wrap').innerHTML=`<span class="badge ${bd.c}">${bd.l}</span>`;
 }
 
-// ---- RENDER EXEC DETAIL ----
 function renderExecDetail(o){
-  const OP_LABELS={buh:'Касса бухгалтерии',bank:'Банк (БВУ)',pod:'Подотчётное лицо'};
-  const DIR_LABELS={in:'Получено ↓',out:'Выдано ↑'};
-  const items=[];
-  items.push({l:'Номер ордера',v:o.id,style:'font-family:monospace'});
-  items.push({l:'Тип операции',v:(OP_LABELS[o.opType]||o.opType||'—')});
-  items.push({l:'Направление',v:(DIR_LABELS[o.direction]||'—'),style:o.direction==='in'?'color:#1BA85D;font-weight:700':'color:#D93025;font-weight:700'});
-  items.push({l:'Сумма',v:(o.currency!=='KZT'?(Number(o.amount).toLocaleString('ru-RU')+' '+o.currency+' = '):'')+(Number(o.amountKzt||o.amount).toLocaleString('ru-RU')+' ₸'),big:true,style:'color:var(--brand)'});
-  if(o.opType==='bank'){
-    items.push({l:'Банк',v:o.bankName||'—'});
-    items.push({l:'Курс приобретения',v:Number(o.rateBuy||0).toFixed(2)+' ₸'});
-    items.push({l:'Договор',v:o.contract||'—'});
-    items.push({l:'Счёт',v:o.account||'—'});
-  }
-  if(o.opType==='pod') items.push({l:'Подотчётное лицо',v:o.person||'—'});
+  const OP={buh:'Касса бухгалтерии',bank:'Банк (БВУ)',pod:'Подотчётное лицо'};
+  const DIR={in:'↓ Получено',out:'↑ Выдано'};
+  const items=[
+    {l:'Номер ордера',v:o.id,mono:true},
+    {l:'Тип операции',v:OP[o.opType]||o.opType||'—'},
+    {l:'Направление',v:DIR[o.direction]||'—',style:o.direction==='in'?'color:#1BA85D;font-weight:700':'color:#D93025;font-weight:700'},
+    {l:'Сумма',v:(o.currency!=='KZT'?(fmtNum(o.amount)+' '+o.currency+' = '):'')+(fmtNum(o.amountKzt||o.amount)+' ₸'),big:true,span:3},
+  ];
+  if(o.opType==='bank'){items.push({l:'Банк',v:o.bankName||'—'});items.push({l:'Курс приобретения',v:Number(o.rateBuy||0).toFixed(2)+' ₸'});items.push({l:'Договор',v:o.contract||'—'});}
+  if(o.opType==='pod')items.push({l:'Подотчётное лицо',v:o.person||'—'});
   items.push({l:'Отделение / Касса',v:(o.branch||'АПОРТ')+' / '+(o.desk||'Касса №1')});
   items.push({l:'Бухгалтер',v:o.accountant||'Сидорова О.Н.'});
-  items.push({l:'Дата создания',v:o.createdAt||o.date});
-  if(o.note) items.push({l:'Комментарий',v:o.note,span:3});
+  items.push({l:'Создана',v:o.createdAt||o.date});
+  if(o.note)items.push({l:'Комментарий',v:o.note,span:3});
   document.getElementById('exec-detail-grid').innerHTML=items.map(it=>`
     <div class="detail-item" style="grid-column:span ${it.span||1}">
       <div class="detail-label">${it.l}</div>
-      <div class="detail-value${it.big?' big':''}" style="${it.style||''}">${it.v}</div>
+      <div class="detail-value${it.big?' big':''}" style="${it.mono?'font-family:monospace':''}${it.style?';'+it.style:''}">${it.v}</div>
     </div>`).join('');
 }
 
-// ---- TOAST ----
-function showToast(icon,msg){
+function showToast(msg){
   const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;font-size:13px;font-family:inherit;';
-  t.innerHTML='<span style="font-size:20px">'+icon+'</span><span>'+msg+'</span>';
-  document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+  t.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 18px;box-shadow:0 8px 32px rgba(0,0,0,.12);font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
 }
 
 function findOrder(id){
-  const live=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
-  return live.find(o=>o.id===id)||null;
+  const live=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');return live.find(o=>o.id===id)||null;
 }
 
-// ---- INIT ----
 window.onload=function(){
   const th=localStorage.getItem('ecash-theme')||'light';
   document.documentElement.dataset.theme=th;
   document.getElementById('btn-theme').textContent=th==='dark'?'☀️':'🌙';
-  function tick(){ const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); document.getElementById('hdr-time').textContent=t; }
-  tick(); setInterval(tick,30000);
+  function tick(){document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+  tick();setInterval(tick,30000);
 
-  // Auto-fill dates
   const todayIso=new Date().toISOString().split('T')[0];
   const todayDisp=new Date().toLocaleDateString('ru-RU');
   const todayTime=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-  ['b-date','p-date'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=todayIso; });
-  ['bk-date-show','bk-time-show'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=(id==='bk-date-show'?todayDisp:todayTime); });
-  const opNum=genOpNum();
-  const el=document.getElementById('bk-opnum'); if(el) el.value=opNum;
+  ['b-date','p-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayIso;});
+  const bkd=document.getElementById('bk-date-show');if(bkd)bkd.value=todayDisp;
+  const bkt=document.getElementById('bk-time-show');if(bkt)bkt.value=todayTime;
+  const bkn=document.getElementById('bk-opnum');if(bkn)bkn.value='БКО-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*90000+10000));
 
   const id=sp.get('id');
   const isExec=sp.get('exec')==='1';
+  if(id){orderId=id;orderData=findOrder(id);}
 
-  if(id){
-    orderId=id;
-    orderData=findOrder(id);
-  }
-
-  if(isExec && orderData){
-    // CASHIER MODE
-    pageMode='exec';
+  if(isExec&&orderData){
     document.getElementById('view-accountant').style.display='none';
     document.getElementById('view-cashier').style.display='block';
     document.getElementById('bc-label').textContent='Исполнение — '+orderId;
-    document.getElementById('hdr-role-chip').innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(241,90,37,.12);border:1px solid rgba(241,90,37,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--brand)">👤 Кассир</span>';
+    document.getElementById('hdr-role-chip').innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Кассир</span>';
     setStepTracker(orderData.status);
     renderExecDetail(orderData);
   } else {
-    // ACCOUNTANT MODE
-    pageMode='create';
-    document.getElementById('hdr-role-chip').innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(27,111,186,.12);border:1px solid rgba(27,111,186,.3);border-radius:20px;font-size:11px;font-weight:700;color:#1B6FBA">📒 Бухгалтер</span>';
+    document.getElementById('hdr-role-chip').innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Бухгалтер</span>';
     document.getElementById('av-hdr').textContent='СО';
     document.getElementById('un-hdr').textContent='Сидорова О.';
     document.getElementById('ur-hdr').textContent='Бухгалтер';
-    if(orderData){
-      // Fill from existing
-      opType=orderData.opType||'buh';
-      direction=orderData.direction||'in';
-      selectOpType(opType);
-      selectDir(direction);
-      setStepTracker(orderData.status);
-      document.getElementById('bc-label').textContent=orderId;
-    } else {
-      setStepTracker('draft');
-    }
+    if(orderData){opTypeKey=orderData.opTypeKey||((orderData.opType||'buh')+'-'+(orderData.direction||'in'));document.getElementById('op-type-sel').value=opTypeKey;onOpTypeChange();setStepTracker(orderData.status);}
+    else setStepTracker('draft');
   }
+  lucide.createIcons();
 };
 
-function toggleTheme(){
-  const d=document.documentElement.dataset.theme==='dark';
-  document.documentElement.dataset.theme=d?'light':'dark';
-  document.getElementById('btn-theme').textContent=d?'🌙':'☀️';
-  localStorage.setItem('ecash-theme',d?'light':'dark');
-}
-function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
-function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+function toggleTheme(){const d=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=d?'light':'dark';document.getElementById('btn-theme').textContent=d?'🌙':'☀️';localStorage.setItem('ecash-theme',d?'light':'dark');}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('overlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('overlay').classList.remove('show');}
 </script>
 </body>
 </html>

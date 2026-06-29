@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 .role-bar { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:5px; margin-bottom:18px; width:fit-content; }
 .role-tab { padding:8px 22px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; color:var(--text-mid); border:none; background:none; font-family:inherit; }
-.role-tab.active-cashier { background:var(--brand); color:white; }
-.role-tab.active-accountant { background:#1B6FBA; color:white; }
+.role-tab.active-cashier { background:var(--sidebar-bg); color:white; }
+.role-tab.active-accountant { background:var(--sidebar-bg); color:white; }
 
 .stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
 .stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; min-width:160px; }
@@ -61,14 +62,12 @@
 .date-cell { color:var(--text-mid); font-size:12px; white-space:nowrap; }
 
 /* ACCOUNTANT banner */
-.accountant-banner { background:linear-gradient(135deg,#1B6FBA,#1557a0); color:white; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:14px; }
-.acct-banner-icon { font-size:28px; }
+.accountant-banner { background:var(--sidebar-bg); color:white; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:14px; }
+.acct-banner-icon { width:38px; height:38px; background:rgba(255,255,255,.1); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .acct-banner-text .title { font-size:15px; font-weight:700; }
-.acct-banner-text .sub { font-size:12px; opacity:.75; margin-top:2px; }
-.btn-create-pko { padding:9px 20px; background:white; color:#1B6FBA; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:opacity .13s; white-space:nowrap; }
-.btn-create-pko:hover { opacity:.9; }
-.btn-create-rko { padding:9px 20px; background:rgba(255,255,255,.15); color:white; border:1.5px solid rgba(255,255,255,.4); border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:all .13s; white-space:nowrap; }
-.btn-create-rko:hover { background:rgba(255,255,255,.25); }
+.acct-banner-text .sub { font-size:12px; opacity:.65; margin-top:2px; }
+.btn-create-pko { padding:9px 20px; background:var(--brand); color:white; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:opacity .13s; white-space:nowrap; }
+.btn-create-pko:hover { opacity:.88; }
 </style>
 </head>
 <body>
@@ -122,7 +121,7 @@
 
     <!-- ACCOUNTANT CREATE BANNER (shown only for accountant) -->
     <div class="accountant-banner" id="acct-banner" style="display:none">
-      <div class="acct-banner-icon">📒</div>
+      <div class="acct-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
       <div class="acct-banner-text">
         <div class="title">Режим бухгалтера — создание кассовых ордеров</div>
         <div class="sub">Создайте ордер, он поступит кассиру на исполнение</div>
@@ -221,9 +220,9 @@ function setRole(role){
   document.getElementById('acct-banner').style.display=role==='accountant'?'flex':'none';
   const chip=document.getElementById('role-chip-header');
   if(role==='accountant'){
-    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(27,111,186,.12);border:1px solid rgba(27,111,186,.3);border-radius:20px;font-size:11px;font-weight:700;color:#1B6FBA">📒 Бухгалтер</span>';
+    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid rgba(67,67,67,.25);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Бухгалтер</span>';
   } else {
-    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(241,90,37,.12);border:1px solid rgba(241,90,37,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--brand)">👤 Кассир</span>';
+    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid rgba(67,67,67,.25);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Кассир</span>';
   }
   renderTable(filtered.length?filtered:allOrders);
 }
@@ -289,7 +288,7 @@ function renderTable(data){
     } else {
       if(o.status==='draft'){
         actions+=`<button class="btn-edit" onclick="editOrder('${o.id}')">✎ Изменить</button>`;
-        actions+=`<button class="btn-exec" style="background:#1B6FBA" onclick="sendToPending('${o.id}')">→ Отправить</button>`;
+        actions+=`<button class="btn-exec" onclick="sendToPending('${o.id}')">→ Отправить</button>`;
       }
       if(o.status==='executed') actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙ Чек</button>`;
       actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁</button>`;
@@ -367,6 +366,7 @@ window.onload=function(){
   updateStats(allOrders);
   setRole(savedRole);
   applyFilters();
+  if(typeof lucide!=='undefined') lucide.createIcons();
 };
 
 function toggleTheme(){
