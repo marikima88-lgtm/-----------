@@ -266,7 +266,6 @@
               </div>
             </div>
           </div>
-          <div id="dir-pill-wrap" style="display:none"></div>
         </div>
 
         <!-- BUH FORM -->
@@ -656,15 +655,9 @@ function onOpTypeChange(){
   const dir=val.split('-')[1];
   ['buh','bank','pod'].forEach(t=>document.getElementById('form-'+t).style.display='none');
   document.getElementById('acct-actions').style.display='none';
-  document.getElementById('dir-pill-wrap').style.display='none';
   if(!val)return;
   document.getElementById('form-'+base).style.display='block';
   document.getElementById('acct-actions').style.display='flex';
-  // Show direction pill
-  const dirLabels={in:'↓ Получено',out:'↑ Выдано'};
-  const dirClass={in:'in',out:'out'};
-  document.getElementById('dir-pill-wrap').innerHTML=`<span class="dir-pill ${dirClass[dir]}">${dirLabels[dir]}</span>`;
-  document.getElementById('dir-pill-wrap').style.display='block';
   lucide.createIcons();
 }
 
