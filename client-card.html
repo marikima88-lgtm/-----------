@@ -416,7 +416,7 @@ function confirmDeal(){
   try{
     const log=JSON.parse(localStorage.getItem('ecash-ops-log')||'[]');
     log.unshift({
-      id:receiptNum, dt:dt, type:p.t, cur:p.c,
+      id:receiptNum, reqId:p.req, dt:dt, type:p.t, cur:p.c,
       amount:p.a, rate:p.rate, total:p.total,
       custom:p.custom, cashier:'Иванова А.',
       branch:'АПОРТ', desk:'Касса №1',
@@ -453,7 +453,8 @@ window.onload=function(){
     a:p.get('a')||'0',
     rate:p.get('rate')||'0',
     total:parseInt(p.get('total')||'0'),
-    custom:p.get('custom')==='1'
+    custom:p.get('custom')==='1',
+    req:p.get('req')||''
   };
 
   const label=TYPE_LABELS[params.t]||'Операция';

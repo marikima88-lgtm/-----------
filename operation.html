@@ -659,7 +659,9 @@ function goClient(){
   else { total=parseFloat(document.getElementById('inp-kzt').value||'0')||0; cur=document.getElementById('sel-cur').value; amount=document.getElementById('inp-cur').value; }
   if(!amount||total===0){ toast('⚠️','Укажите сумму операции','warn',4000); return; }
   setStep(3);
-  location.href='client-card.html?t='+curType+'&c='+cur+'&a='+amount+'&rate='+rate+'&total='+Math.round(total)+'&custom='+(customRate?1:0);
+  let _reqNum='';
+  try{ const _r=localStorage.getItem('ecash-rate-req'); if(_r) _reqNum=JSON.parse(_r).num||''; }catch(e){}
+  location.href='client-card.html?t='+curType+'&c='+cur+'&a='+amount+'&rate='+rate+'&total='+Math.round(total)+'&custom='+(customRate?1:0)+'&req='+encodeURIComponent(_reqNum);
 }
 
 /* INIT */

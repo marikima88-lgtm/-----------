@@ -227,7 +227,7 @@ let filtered=[];
 
 function buildData(){
   allData=[];
-  // Live request from localStorage
+  // Live pending request
   const reqStr=localStorage.getItem('ecash-rate-req');
   if(reqStr){
     try{
@@ -235,10 +235,7 @@ function buildData(){
       let liveStatus='pending';
       const decStr=localStorage.getItem('ecash-rate-decision');
       if(decStr){
-        try{
-          const dec=JSON.parse(decStr);
-          liveStatus=dec.action==='approve'?'approved':'rejected';
-        }catch(e){}
+        try{ const dec=JSON.parse(decStr); liveStatus=dec.action==='approve'?'approved':'rejected'; }catch(e){}
       }
       allData.push({
         num:r.num, date:r.date, time:r.time,
@@ -249,6 +246,24 @@ function buildData(){
       });
     }catch(e){}
   }
+  // Completed operations from ops log (individual rate only)
+  try{
+    const opsLog=JSON.parse(localStorage.getItem('ecash-ops-log')||'[]');
+    opsLog.filter(op=>op.custom).forEach(op=>{
+      const parts=(op.dt||'').split(', ');
+      allData.push({
+        num:op.reqId||op.id,
+        date:parts[0]||op.dt,
+        time:parts[1]||'',
+        branch:op.branch||'АПОРТ',
+        desk:op.desk||'Касса №1',
+        cashier:op.cashier||'Иванова А.',
+        type:op.type, cur:op.cur, amount:op.amount,
+        rate:parseFloat(op.rate||0).toFixed(2),
+        status:'executed', isLive:false
+      });
+    });
+  }catch(e){}
   allData=[...allData,...SAMPLE];
 }
 
