@@ -9,10 +9,24 @@
 <link rel="stylesheet" href="shared.css">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-.role-bar { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:5px; margin-bottom:18px; width:fit-content; }
-.role-tab { padding:8px 22px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; color:var(--text-mid); border:none; background:none; font-family:inherit; }
-.role-tab.active-cashier { background:var(--sidebar-bg); color:white; }
-.role-tab.active-accountant { background:var(--sidebar-bg); color:white; }
+/* Role cards in sidebar */
+.role-card { margin:4px 8px; border-radius:10px; padding:10px 12px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:10px; border:1.5px solid transparent; }
+.role-card:hover { background:rgba(255,255,255,.08); }
+.role-card.active-cashier { background:rgba(241,90,37,.18); border-color:rgba(241,90,37,.5); }
+.role-card.active-accountant { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25); }
+.role-card-avatar { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
+.role-card.active-cashier .role-card-avatar { background:var(--brand); color:white; }
+.role-card.active-accountant .role-card-avatar { background:rgba(255,255,255,.2); color:white; }
+.role-card:not(.active-cashier):not(.active-accountant) .role-card-avatar { background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); }
+.role-card-info { flex:1; min-width:0; }
+.role-card-title { font-size:12px; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.role-card:not(.active-cashier):not(.active-accountant) .role-card-title { color:rgba(255,255,255,.45); }
+.role-card-name { font-size:10px; color:rgba(255,255,255,.5); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.role-card.active-cashier .role-card-name,
+.role-card.active-accountant .role-card-name { color:rgba(255,255,255,.7); }
+.role-active-dot { width:6px; height:6px; border-radius:50%; background:var(--brand); flex-shrink:0; display:none; }
+.role-card.active-cashier .role-active-dot { display:block; }
+.role-card.active-accountant .role-active-dot { display:block; background:rgba(255,255,255,.7); }
 
 .stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
 .stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; min-width:160px; }
@@ -78,13 +92,31 @@
   <nav class="nav">
     <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
     <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
-    <div class="nav-item active"><span class="nav-icon">📋</span><span class="nav-label">Кассовые ордера</span></div>
+    <div class="nav-item active"><span class="nav-icon">◫</span><span class="nav-label">Кассовые ордера</span></div>
     <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
-    <div class="nav-item"><span class="nav-icon">◈</span><span class="nav-label">Золото</span></div>
-    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span><span class="nav-badge">14</span></div>
+    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span></div>
     <div class="nav-section">Управление</div>
     <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
     <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+
+    <div class="nav-section nav-section-role">Активная роль</div>
+    <div class="role-card" id="rc-cashier" onclick="setRole('cashier')">
+      <div class="role-card-avatar" id="rca-cashier">ИИ</div>
+      <div class="role-card-info">
+        <div class="role-card-title">Кассир</div>
+        <div class="role-card-name">Иванова А.Ю.</div>
+      </div>
+      <div class="role-active-dot"></div>
+    </div>
+    <div class="role-card" id="rc-accountant" onclick="setRole('accountant')">
+      <div class="role-card-avatar" id="rca-accountant">СО</div>
+      <div class="role-card-info">
+        <div class="role-card-title">Бухгалтер</div>
+        <div class="role-card-name">Сидорова О.Н.</div>
+      </div>
+      <div class="role-active-dot"></div>
+    </div>
+
     <div class="nav-section nav-section-role">Казначейство</div>
     <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
   </nav>
@@ -111,12 +143,6 @@
         <h1 class="page-title">Кассовые ордера</h1>
         <div class="page-sub">Приходные и расходные кассовые ордера · АПОРТ</div>
       </div>
-    </div>
-
-    <!-- ROLE TOGGLE -->
-    <div class="role-bar">
-      <button class="role-tab" id="tab-cashier" onclick="setRole('cashier')">👤 Кассир</button>
-      <button class="role-tab" id="tab-accountant" onclick="setRole('accountant')">📒 Бухгалтер</button>
     </div>
 
     <!-- ACCOUNTANT CREATE BANNER (shown only for accountant) -->
@@ -215,15 +241,31 @@ function loadOrders(){
 function setRole(role){
   currentRole=role;
   localStorage.setItem('ecash-co-role',role);
-  document.getElementById('tab-cashier').className='role-tab'+(role==='cashier'?' active-cashier':'');
-  document.getElementById('tab-accountant').className='role-tab'+(role==='accountant'?' active-accountant':'');
+
+  // Sidebar role cards
+  document.getElementById('rc-cashier').className='role-card'+(role==='cashier'?' active-cashier':'');
+  document.getElementById('rc-accountant').className='role-card'+(role==='accountant'?' active-accountant':'');
+
+  // Accountant banner
   document.getElementById('acct-banner').style.display=role==='accountant'?'flex':'none';
+
+  // Header chip + user
   const chip=document.getElementById('role-chip-header');
+  const hdrUser=document.querySelector('.header-user .user-name');
+  const hdrRole=document.querySelector('.header-user .user-role');
+  const hdrAv=document.querySelector('.header-user .avatar');
   if(role==='accountant'){
     chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid rgba(67,67,67,.25);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Бухгалтер</span>';
+    if(hdrUser) hdrUser.textContent='Сидорова О.';
+    if(hdrRole) hdrRole.textContent='Бухгалтер';
+    if(hdrAv) hdrAv.textContent='СО';
   } else {
     chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(67,67,67,.1);border:1px solid rgba(67,67,67,.25);border-radius:20px;font-size:11px;font-weight:700;color:var(--text)">Кассир</span>';
+    if(hdrUser) hdrUser.textContent='Иванова А.';
+    if(hdrRole) hdrRole.textContent='Кассир';
+    if(hdrAv) hdrAv.textContent='ИИ';
   }
+
   renderTable(filtered.length?filtered:allOrders);
 }
 
