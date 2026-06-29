@@ -128,8 +128,7 @@
         <div class="sub">Создайте ордер, он поступит кассиру на исполнение</div>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn-create-pko" onclick="location.href='cash-order-form.html?type=pko'">＋ ПКО (приход)</button>
-        <button class="btn-create-rko" onclick="location.href='cash-order-form.html?type=rko'">＋ РКО (расход)</button>
+        <button class="btn-create-pko" onclick="location.href='cash-order-form.html'">＋ Новый ордер</button>
       </div>
     </div>
 
@@ -141,16 +140,18 @@
       <span class="f-label">Тип</span>
       <select class="f-sel" id="f-type" onchange="applyFilters()">
         <option value="">Все</option>
-        <option value="pko">ПКО (приход)</option>
-        <option value="rko">РКО (расход)</option>
+        <option value="buh">Касса бухгалтерии</option>
+        <option value="bank">Банк (БВУ)</option>
+        <option value="pod">Подотчётное лицо</option>
       </select>
       <span class="f-sep"></span>
       <span class="f-label">Статус</span>
       <select class="f-sel" id="f-status" onchange="applyFilters()">
         <option value="">Все</option>
-        <option value="draft">Черновик</option>
-        <option value="pending">Ожидает исполнения</option>
-        <option value="executed">Исполнено</option>
+        <option value="draft">Создана</option>
+        <option value="pending">На подтверждении</option>
+        <option value="executed">Проведена</option>
+        <option value="cancelled">Отменена</option>
       </select>
       <span class="f-sep"></span>
       <input class="f-inp" id="f-search" placeholder="Поиск по номеру, основанию..." oninput="applyFilters()" style="min-width:220px">
@@ -163,10 +164,10 @@
           <tr>
             <th>Номер</th>
             <th>Дата / Время</th>
-            <th>Тип</th>
+            <th>Тип операции</th>
             <th>Сумма</th>
-            <th>Контрагент</th>
-            <th>Основание</th>
+            <th>Контрагент / Лицо</th>
+            <th>Бухгалтер</th>
             <th>Статус</th>
             <th>Действия</th>
           </tr>
@@ -187,19 +188,20 @@
 const LS_ORDERS='ecash-cash-orders';
 
 const STATUS_CFG={
-  draft:    {label:'Черновик',     cls:'badge-draft'},
-  pending:  {label:'Ожидает исп.',  cls:'badge-pending'},
-  executed: {label:'Исполнено',    cls:'badge-executed'},
+  draft:     {label:'Создана',           cls:'badge-draft'},
+  pending:   {label:'На подтверждении',  cls:'badge-pending'},
+  executed:  {label:'Проведена',         cls:'badge-executed'},
+  cancelled: {label:'Отменена',          cls:'badge-cancelled'},
 };
-const TYPE_LABEL={pko:'ПКО · Приход',rko:'РКО · Расход'};
-const TYPE_ICON={pko:'↓',rko:'↑'};
+const OP_LABELS={buh:'Касса БУХ',bank:'Банк (БВУ)',pod:'Подотчётное'};
+const DIR_ICON={in:'↓',out:'↑'};
 
 const SAMPLE=[
-  {id:'ПКО-2026-031',type:'pko',status:'pending',date:'29.06.2026',time:'11:20',amount:150000,fromWhom:'ТОО "Клиент-Сервис"',toWhom:'',basis:'Возврат займа по договору №45/2026',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 11:20'},
-  {id:'РКО-2026-018',type:'rko',status:'pending',date:'29.06.2026',time:'10:45',amount:75000,fromWhom:'',toWhom:'Петров С.И.',basis:'Командировочные расходы',note:'Суточные + проезд',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 10:45'},
-  {id:'ПКО-2026-030',type:'pko',status:'executed',date:'28.06.2026',time:'15:30',amount:320000,fromWhom:'ИП Касымов А.Б.',toWhom:'',basis:'Оплата услуг по договору №12',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 15:35'},
-  {id:'РКО-2026-017',type:'rko',status:'executed',date:'28.06.2026',time:'14:00',amount:42000,fromWhom:'',toWhom:'Иванова А.Ю.',basis:'Аванс на хозяйственные нужды',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 14:05'},
-  {id:'ПКО-2026-029',type:'pko',status:'draft',date:'29.06.2026',time:'09:00',amount:500000,fromWhom:'ТОО "Финанс-Групп"',toWhom:'',basis:'Пополнение оборотных средств',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 09:00'},
+  {id:'БКО-2026-031',opType:'bank',direction:'in',status:'pending',date:'29.06.2026',time:'11:20',currency:'USD',amount:5000,amountKzt:2517000,bankName:'Народный Банк Казахстана',rateBuy:503.40,contract:'ДОГ-2026-001',accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 11:20'},
+  {id:'КО-2026-018',opType:'pod',direction:'out',status:'pending',date:'29.06.2026',time:'10:45',currency:'KZT',amount:75000,amountKzt:75000,person:'Петров С.И.',accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 10:45'},
+  {id:'БКО-2026-030',opType:'bank',direction:'in',status:'executed',date:'28.06.2026',time:'15:30',currency:'EUR',amount:2000,amountKzt:1096400,bankName:'Kaspi Bank',rateBuy:548.20,contract:'ДОГ-2026-002',accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.',branch:'АПОРТ',desk:'Касса №1',executedAt:'28.06.2026, 15:35'},
+  {id:'КО-2026-017',opType:'buh',direction:'in',status:'executed',date:'28.06.2026',time:'14:00',currency:'KZT',amount:320000,amountKzt:320000,accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.',branch:'АПОРТ',desk:'Касса №1',executedAt:'28.06.2026, 14:05'},
+  {id:'КО-2026-029',opType:'buh',direction:'out',status:'draft',date:'29.06.2026',time:'09:00',currency:'KZT',amount:50000,amountKzt:50000,note:'Хозрасходы',accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 09:00'},
 ];
 
 let currentRole='cashier';
@@ -226,28 +228,22 @@ function setRole(role){
   renderTable(filtered.length?filtered:allOrders);
 }
 
-function fmtMoney(n){ return Number(n).toLocaleString('ru-RU')+'  ₸'; }
+function fmtMoney(n){ return Number(n).toLocaleString('ru-RU')+' ₸'; }
 
 function updateStats(data){
-  const pendingPKO=data.filter(o=>o.status==='pending'&&o.type==='pko').length;
-  const pendingRKO=data.filter(o=>o.status==='pending'&&o.type==='rko').length;
-  const execToday=data.filter(o=>o.status==='executed'&&(o.executedAt||'').includes('29.06.2026')).length;
-  const totalPending=pendingPKO+pendingRKO;
+  const pending=data.filter(o=>o.status==='pending').length;
+  const execToday=data.filter(o=>o.status==='executed'&&(o.executedAt||'').startsWith('29.06')).length;
+  const bankPending=data.filter(o=>o.status==='pending'&&o.opType==='bank').length;
   document.getElementById('stats-row').innerHTML=`
-    <div class="stat-card${totalPending?'  warn':''}">
-      <div class="stat-dot" style="background:${totalPending?'#F59E0B':'#1BA85D'}"></div>
-      <span class="stat-label">Ожидают исполнения</span>
-      <span class="stat-val">${totalPending}</span>
+    <div class="stat-card${pending?' warn':''}">
+      <div class="stat-dot" style="background:${pending?'#F59E0B':'#1BA85D'}"></div>
+      <span class="stat-label">На подтверждении</span>
+      <span class="stat-val">${pending}</span>
     </div>
     <div class="stat-card">
-      <div class="stat-dot" style="background:#1BA85D"></div>
-      <span class="stat-label">ПКО — на исполнении</span>
-      <span class="stat-val">${pendingPKO}</span>
-    </div>
-    <div class="stat-card">
-      <div class="stat-dot" style="background:#D93025"></div>
-      <span class="stat-label">РКО — на исполнении</span>
-      <span class="stat-val">${pendingRKO}</span>
+      <div class="stat-dot" style="background:#1B6FBA"></div>
+      <span class="stat-label">Банк (БВУ) ожидают</span>
+      <span class="stat-val">${bankPending}</span>
     </div>
     <div class="stat-card">
       <div class="stat-dot" style="background:var(--brand)"></div>
@@ -261,9 +257,9 @@ function applyFilters(){
   const status=document.getElementById('f-status').value;
   const q=(document.getElementById('f-search').value||'').toLowerCase();
   filtered=allOrders.filter(o=>{
-    if(type && o.type!==type) return false;
+    if(type && o.opType!==type) return false;
     if(status && o.status!==status) return false;
-    if(q && !o.id.toLowerCase().includes(q) && !(o.basis||'').toLowerCase().includes(q) && !(o.fromWhom||o.toWhom||'').toLowerCase().includes(q)) return false;
+    if(q && !o.id.toLowerCase().includes(q) && !(o.bankName||'').toLowerCase().includes(q) && !(o.person||'').toLowerCase().includes(q) && !(o.note||'').toLowerCase().includes(q)) return false;
     return true;
   });
   renderTable(filtered);
@@ -278,36 +274,38 @@ function renderTable(data){
   const role=currentRole;
   body.innerHTML=data.map(o=>{
     const sc=STATUS_CFG[o.status]||STATUS_CFG.draft;
-    const isPKO=o.type==='pko';
-    const party=isPKO?(o.fromWhom||'—'):(o.toWhom||'—');
-    const isLive=!!o._live;
+    const dirIcon=DIR_ICON[o.direction]||'↕';
+    const dirColor=o.direction==='in'?'color:#1BA85D':'color:#D93025';
+    const typeLabel=OP_LABELS[o.opType]||o.opType||'—';
+    const party=o.bankName||o.person||'—';
+    const amountDisp=o.currency&&o.currency!=='KZT'?(Number(o.amount).toLocaleString('ru-RU')+' '+o.currency):fmtMoney(o.amountKzt||o.amount);
+    const isNew=!!o._live;
 
     let actions='';
     if(role==='cashier'){
-      if(o.status==='pending'){
-        actions+=`<button class="btn-exec" onclick="execOrder('${o.id}')">✓ Исполнить</button>`;
-      }
+      if(o.status==='pending') actions+=`<button class="btn-exec" onclick="execOrder('${o.id}')">✓ Исполнить</button>`;
+      if(o.status==='executed') actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙ Чек</button>`;
       actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁</button>`;
-      if(o.status==='executed'){
-        actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙</button>`;
-      }
     } else {
       if(o.status==='draft'){
-        actions+=`<button class="btn-edit" onclick="editOrder('${o.id}')">✎ Редактировать</button>`;
-        actions+=`<button class="btn-exec" style="background:#1B6FBA" onclick="sendToPending('${o.id}')">→ На исполнение</button>`;
-      } else {
-        actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁 Просмотр</button>`;
+        actions+=`<button class="btn-edit" onclick="editOrder('${o.id}')">✎ Изменить</button>`;
+        actions+=`<button class="btn-exec" style="background:#1B6FBA" onclick="sendToPending('${o.id}')">→ Отправить</button>`;
       }
-      actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙</button>`;
+      if(o.status==='executed') actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙ Чек</button>`;
+      actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁</button>`;
     }
 
-    return `<tr class="${isPKO?'pko-row':'rko-row'}${o.status==='pending'?' pending-row':''}">
-      <td><span class="id-cell">${o.id}</span>${isLive?'<span class="new-badge" style="margin-left:6px">NEW</span>':''}</td>
+    const rowCls=o.status==='pending'?' pending-row':'';
+    return `<tr class="${rowCls}">
+      <td><span class="id-cell">${o.id}</span>${isNew?'<span class="new-badge" style="margin-left:6px">NEW</span>':''}</td>
       <td class="date-cell">${o.date}<br><span style="font-size:11px">${o.time}</span></td>
-      <td><span class="type-chip ${isPKO?'type-pko':'type-rko'}">${TYPE_ICON[o.type]} ${isPKO?'ПКО':'РКО'}</span></td>
-      <td class="amount-cell">${fmtMoney(o.amount)}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${party}">${party}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-mid)" title="${o.basis||'—'}">${o.basis||'—'}</td>
+      <td>
+        <span style="font-size:12px;font-weight:700;${dirColor}">${dirIcon}</span>
+        <span style="font-size:12px;margin-left:4px">${typeLabel}</span>
+      </td>
+      <td class="amount-cell">${amountDisp}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${party}">${party}</td>
+      <td style="font-size:11px;color:var(--text-mid)">${o.accountant||'—'}</td>
       <td><span class="badge ${sc.cls}">${sc.label}</span></td>
       <td><div class="tbl-actions">${actions}</div></td>
     </tr>`;
@@ -325,18 +323,23 @@ function printOrder(id){
 }
 
 function sendToPending(id){
+  // Copy sample to localStorage if needed
   const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
   const idx=all.findIndex(o=>o.id===id);
-  if(idx>=0){ all[idx].status='pending'; localStorage.setItem(LS_ORDERS,JSON.stringify(all)); }
+  if(idx>=0){ all[idx].status='pending'; }
+  else { const s=SAMPLE.find(o=>o.id===id); if(s){ all.unshift({...s,status:'pending'}); } }
+  localStorage.setItem(LS_ORDERS,JSON.stringify(all));
   loadOrders(); applyFilters(); updateStats(allOrders);
-  toast('📤','','Ордер отправлен на исполнение кассиру','warn',3500);
+  toast('📤','','Ордер отправлен на исполнение кассиру','warn',3000);
 }
 
 function execOrder(id){
-  // Find order
+  // Copy sample to localStorage so cashier page can find it
   const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
-  const sampleIdx=SAMPLE.findIndex(o=>o.id===id);
-  // Open execution page
+  if(!all.find(o=>o.id===id)){
+    const s=SAMPLE.find(o=>o.id===id);
+    if(s){ all.unshift({...s}); localStorage.setItem(LS_ORDERS,JSON.stringify(all)); }
+  }
   location.href='cash-order-form.html?id='+encodeURIComponent(id)+'&exec=1';
 }
 
