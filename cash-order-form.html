@@ -37,14 +37,14 @@
 .form-section-title svg { width: 14px; height: 14px; stroke: var(--text-mid); }
 .auto-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; background: var(--surface-2); color: var(--text-mid); border: 1px solid var(--border); }
 .auto-tag svg { width: 10px; height: 10px; stroke: var(--text-mid); }
-.form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+.form-row { display: grid; gap: 14px; margin-bottom: 14px; align-items: start; }
 .form-row.r2 { grid-template-columns: 1fr 1fr; }
 .form-row.r3 { grid-template-columns: 1fr 1fr 1fr; }
 .form-row.r4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 .form-row.r1 { grid-template-columns: 1fr; }
 .form-row:last-child { margin-bottom: 0; }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
-.form-label { font-size: 12px; font-weight: 600; color: var(--text-mid); display: flex; align-items: center; gap: 5px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-mid); display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; min-height: 22px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .form-label svg { width: 13px; height: 13px; stroke: var(--text-mid); }
 .req { color: #D93025; }
 .form-inp, .form-sel, .form-textarea {
@@ -333,8 +333,10 @@
 
         <!-- BANK FORM -->
         <div id="form-bank" style="display:none">
+
+          <!-- Общие сведения -->
           <div class="form-section">
-            <div class="form-section-title"><i data-lucide="info"></i> Общие сведения <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="info"></i> Общие сведения <span class="auto-tag"><i data-lucide="zap"></i>авто</span></div>
             <div class="form-row r4">
               <div class="form-group">
                 <label class="form-label"><i data-lucide="calendar"></i> Дата <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
@@ -345,11 +347,11 @@
                 <input class="form-inp auto-filled" id="bk-time-show" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="map-pin"></i> Обменный пункт <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <label class="form-label"><i data-lucide="map-pin"></i> Пункт <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="АПОРТ" disabled>
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="hash"></i> Номер операции <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <label class="form-label"><i data-lucide="hash"></i> № операции <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" id="bk-opnum" disabled>
               </div>
             </div>
@@ -367,53 +369,50 @@
                 <select class="form-sel" id="bk-contract" onchange="validateBank()">
                   <option value="">— Выбрать из реестра —</option>
                   <option value="ДОГ-2026-001">ДОГ-2026-001 · Народный Банк</option>
-                  <option value="ДОГ-2026-002">ДОГ-2026-002 · Kaspi Bank</option>
-                  <option value="ДОГ-2025-018">ДОГ-2025-018 · Казкоммерцбанк</option>
                 </select>
                 <span class="field-error" id="err-bk-contract">Выберите договор</span>
               </div>
             </div>
           </div>
+
+          <!-- Банковские реквизиты -->
           <div class="form-section">
-            <div class="form-section-title"><i data-lucide="landmark"></i> Источник поступления</div>
-            <div class="form-row r2">
+            <div class="form-section-title"><i data-lucide="landmark"></i> Банковские реквизиты</div>
+            <div class="form-row r3">
               <div class="form-group">
-                <label class="form-label"><i data-lucide="landmark"></i> Наименование банка (БВУ) <span class="req">*</span></label>
-                <select class="form-sel" id="bk-bank" onchange="onBankSelect()">
-                  <option value="">— Выбрать банк из справочника —</option>
-                  <option value="halyk">Народный Банк Казахстана</option>
-                  <option value="kaspi">Kaspi Bank</option>
-                  <option value="kkb">Казкоммерцбанк</option>
-                  <option value="forte">Forte Bank</option>
-                  <option value="eurasian">Евразийский Банк</option>
-                  <option value="bcc">Банк ЦентрКредит</option>
-                </select>
-                <span class="field-error" id="err-bk-bank">Выберите банк</span>
+                <label class="form-label"><i data-lucide="landmark"></i> Банк (БВУ) <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <input class="form-inp auto-filled" id="bk-bank-name" value="Народный Банк Казахстана" disabled>
+                <input type="hidden" id="bk-bank" value="halyk">
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="credit-card"></i> Банковский счёт <span class="req">*</span></label>
-                <input class="form-inp" id="bk-account" placeholder="KZ00 0000 0000 0000 0000" oninput="validateBank()">
-                <span class="field-error" id="err-bk-account">Укажите банковский счёт</span>
+                <label class="form-label"><i data-lucide="hash"></i> БИК <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <input class="form-inp auto-filled" id="bk-bik" value="HSBKKZKX" disabled>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i data-lucide="hash"></i> БИН <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <input class="form-inp auto-filled" id="bk-bin" value="920140000076" disabled>
               </div>
             </div>
-            <div class="form-row r2">
+            <div class="form-row r1">
               <div class="form-group">
-                <label class="form-label"><i data-lucide="hash"></i> БИК банка <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
-                <input class="form-inp auto-filled" id="bk-bik" disabled placeholder="Заполнится при выборе банка">
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i data-lucide="hash"></i> БИН банка <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
-                <input class="form-inp auto-filled" id="bk-bin" disabled placeholder="Заполнится при выборе банка">
+                <label class="form-label"><i data-lucide="credit-card"></i> Банковский счёт <span class="req">*</span> <span style="font-size:10px;color:var(--text-mid);font-weight:500">(20 символов)</span></label>
+                <input class="form-inp" id="bk-account"
+                  placeholder="KZ00 0000 0000 0000 0000"
+                  maxlength="24"
+                  oninput="formatAccount(this); validateBank()">
+                <div id="bk-account-counter" style="font-size:11px;color:var(--text-mid);margin-top:3px">Введено символов: <span id="bk-acc-len">0</span> / 20</div>
+                <span class="field-error" id="err-bk-account">Счёт должен содержать ровно 20 символов</span>
               </div>
             </div>
           </div>
+
+          <!-- Валюта и суммы -->
           <div class="form-section">
-            <div class="form-section-title"><i data-lucide="coins"></i> Валюта и сумма</div>
-            <div class="form-row r2">
+            <div class="form-section-title"><i data-lucide="coins"></i> Валюта и суммы</div>
+            <div class="form-row r3">
               <div class="form-group">
                 <label class="form-label"><i data-lucide="globe"></i> Валюта <span class="req">*</span></label>
                 <select class="form-sel" id="bk-cur" onchange="recalcBank()">
-                  <option value="KZT">KZT — Тенге</option>
                   <option value="USD">USD — Доллар США</option>
                   <option value="EUR">EUR — Евро</option>
                   <option value="RUB">RUB — Российский рубль</option>
@@ -422,42 +421,53 @@
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="coins"></i> Сумма в валюте <span class="req">*</span></label>
-                <input class="form-inp" id="bk-amount" type="text" placeholder="0" oninput="recalcBank()">
-                <span class="field-error" id="err-bk-amount">Сумма должна быть больше 0</span>
+                <label class="form-label"><i data-lucide="banknote"></i> Сумма в валюте <span class="req">*</span></label>
+                <div class="amount-wrap">
+                  <input class="form-inp" id="bk-amount" type="text" placeholder="0.00" oninput="recalcBank()" style="padding-right:44px">
+                  <span class="amount-suffix" id="bk-cur-suffix">USD</span>
+                </div>
+                <span class="field-error" id="err-bk-amount">Введите сумму</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i data-lucide="trending-up"></i> Курс покупки <span class="req">*</span></label>
+                <div class="amount-wrap">
+                  <input class="form-inp" id="bk-rate-buy" type="text" placeholder="0.00" oninput="recalcBank()" style="padding-right:44px">
+                  <span class="amount-suffix" style="font-size:10px">₸/1</span>
+                </div>
+                <span class="field-error" id="err-bk-rate">Укажите курс</span>
               </div>
             </div>
             <div class="form-row r3">
               <div class="form-group">
-                <label class="form-label"><i data-lucide="trending-up"></i> Курс приобретения <span class="req">*</span></label>
-                <div class="amount-wrap">
-                  <input class="form-inp" id="bk-rate-buy" type="text" placeholder="0.00" oninput="recalcBank()" style="padding-right:44px">
-                  <span class="amount-suffix" style="font-size:11px">₸/1</span>
-                </div>
-                <span class="field-error" id="err-bk-rate">Курс должен быть больше 0</span>
+                <label class="form-label"><i data-lucide="bar-chart-2"></i> Курс НБРК <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <div class="calc-field"><span id="bk-rate-nbrk">503.40</span><span style="font-size:11px;color:var(--text-mid);margin-left:4px">₸</span></div>
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="bar-chart-2"></i> Курс НБРК на дату <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
-                <div class="calc-field"><span id="bk-rate-nbrk">503.40</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><i data-lucide="activity"></i> Средний курс кассы (WAC) <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
-                <div class="calc-field"><span id="bk-rate-wac">498.75</span> <span style="font-size:11px;color:var(--text-mid)">₸</span></div>
-              </div>
-            </div>
-            <div class="form-row r2">
-              <div class="form-group">
-                <label class="form-label"><i data-lucide="calculator"></i> Эквивалент в тенге <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
-                <div class="calc-field hi"><span id="bk-equiv">—</span></div>
+                <label class="form-label"><i data-lucide="activity"></i> WAC (ср. курс) <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <div class="calc-field"><span id="bk-rate-wac">498.75</span><span style="font-size:11px;color:var(--text-mid);margin-left:4px">₸</span></div>
               </div>
               <div class="form-group">
                 <label class="form-label"><i data-lucide="message-square"></i> Комментарий</label>
                 <input class="form-inp" id="bk-note" placeholder="Необязательно...">
               </div>
             </div>
+
+            <!-- Итог: суммы отдельно -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;padding:16px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+              <div>
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mid);margin-bottom:6px">Сумма в иностранной валюте</div>
+                <div style="font-size:22px;font-weight:800;color:var(--text)" id="bk-total-fx">— <span style="font-size:14px;font-weight:600" id="bk-total-fx-cur">USD</span></div>
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mid);margin-bottom:6px">Сумма в тенге <span style="font-size:9px;font-weight:500;text-transform:none">(авто)</span></div>
+                <div style="font-size:22px;font-weight:800;color:var(--brand)" id="bk-total-kzt">— ₸</div>
+              </div>
+            </div>
           </div>
+
+          <!-- Реквизиты отделения -->
           <div class="form-section">
-            <div class="form-section-title"><i data-lucide="building-2"></i> Реквизиты <span class="auto-tag"><i data-lucide="zap"></i>автозаполнение</span></div>
+            <div class="form-section-title"><i data-lucide="building-2"></i> Реквизиты <span class="auto-tag"><i data-lucide="zap"></i>авто</span></div>
             <div class="form-row r3">
               <div class="form-group">
                 <label class="form-label"><i data-lucide="map-pin"></i> Отделение</label>
@@ -468,7 +478,7 @@
                 <select class="form-sel" id="bk-desk"><option>Касса №1</option><option>Касса №2</option><option>Касса №3</option></select>
               </div>
               <div class="form-group">
-                <label class="form-label"><i data-lucide="user-check"></i> ФИО кассира <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
+                <label class="form-label"><i data-lucide="user-check"></i> Кассир <span class="auto-tag"><i data-lucide="zap"></i>авто</span></label>
                 <input class="form-inp auto-filled" value="Иванова А.Ю." disabled>
               </div>
             </div>
@@ -658,22 +668,31 @@ function onOpTypeChange(){
   lucide.createIcons();
 }
 
-function onBankSelect(){
-  const key=document.getElementById('bk-bank').value;
-  const bank=BANK_DATA[key]||{};
-  document.getElementById('bk-bik').value=bank.bik||'';
-  document.getElementById('bk-bin').value=bank.bin||'';
-  const cur=document.getElementById('bk-cur').value;
-  document.getElementById('bk-rate-nbrk').textContent=Number(NBRK_RATES[cur]||0).toFixed(2);
-  validateBank();
+function formatAccount(inp){
+  let v=inp.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,20);
+  // insert spaces for readability: XX00 XXXX XXXX XXXX XXXX
+  let fmt='';
+  for(let i=0;i<v.length;i++){if(i===2||i===6||i===10||i===14)fmt+=' ';fmt+=v[i];}
+  inp.value=fmt;
+  const len=v.length;
+  const counter=document.getElementById('bk-acc-len');
+  if(counter) counter.textContent=len;
+  const cntWrap=document.getElementById('bk-account-counter');
+  if(cntWrap) cntWrap.style.color=len===20?'#1BA85D':len>0?'#F59E0B':'var(--text-mid)';
 }
 
 function recalcBank(){
-  const amount=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
-  const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;
-  const cur=document.getElementById('bk-cur').value;
+  const amount=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;
+  const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;
+  const cur=document.getElementById('bk-cur').value||'USD';
+  // update НБРК rate display
   document.getElementById('bk-rate-nbrk').textContent=Number(NBRK_RATES[cur]||0).toFixed(2);
-  document.getElementById('bk-equiv').textContent=amount>0&&rate>0?(fmtNum(Math.round(amount*rate))+' ₸'):'—';
+  // update currency suffix on amount field
+  const sfx=document.getElementById('bk-cur-suffix');if(sfx)sfx.textContent=cur;
+  // totals
+  const kzt=amount>0&&rate>0?Math.round(amount*rate):0;
+  document.getElementById('bk-total-fx').innerHTML=(amount>0?fmtNum(amount):'—')+' <span style="font-size:14px;font-weight:600" id="bk-total-fx-cur">'+cur+'</span>';
+  document.getElementById('bk-total-kzt').textContent=(kzt>0?(fmtNum(kzt)+' ₸'):'— ₸');
   validateBank();
 }
 function recalcBuh(){
@@ -692,13 +711,12 @@ function showErr(errId,show){
 }
 function validateBank(){
   let ok=true;
-  const bank=document.getElementById('bk-bank').value;
-  const acc=(document.getElementById('bk-account').value||'').trim();
-  const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;
-  const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;
+  const accRaw=(document.getElementById('bk-account').value||'').replace(/\s/g,'');
+  const accOk=accRaw.length===20;
+  const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;
+  const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;
   const con=document.getElementById('bk-contract').value;
-  showErr('err-bk-bank',!bank);if(!bank)ok=false;
-  showErr('err-bk-account',!acc);if(!acc)ok=false;
+  showErr('err-bk-account',!accOk);if(!accOk)ok=false;
   showErr('err-bk-amount',am<=0);if(am<=0)ok=false;
   showErr('err-bk-rate',rate<=0);if(rate<=0)ok=false;
   showErr('err-bk-contract',!con);if(!con)ok=false;
@@ -733,7 +751,7 @@ function buildOrder(status){
   const id=orderId||('КО-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*90000+10000)));
   let o={id,opTypeKey,opType:base,direction:dir,status,createdAt:dt,date:dateStr,time:timeStr,accountant:'Сидорова О.Н.',cashier:'Иванова А.Ю.'};
   if(base==='buh'){const am=parseInt((document.getElementById('b-amount').value||'').replace(/\s/g,''))||0;Object.assign(o,{currency:'KZT',amount:am,amountKzt:am,branch:document.getElementById('b-branch').value,desk:document.getElementById('b-desk').value,date:document.getElementById('b-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('b-note').value});}
-  else if(base==='bank'){const cur=document.getElementById('bk-cur').value;const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,''))||0;const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,''))||0;const bk=document.getElementById('bk-bank').value;Object.assign(o,{currency:cur,amount:am,rateBuy:rate,rateNbrk:NBRK_RATES[cur]||0,amountKzt:Math.round(am*rate),bankKey:bk,bankName:(BANK_DATA[bk]||{}).name||'',bankBik:document.getElementById('bk-bik').value,bankBin:document.getElementById('bk-bin').value,account:document.getElementById('bk-account').value,contract:document.getElementById('bk-contract').value,branch:document.getElementById('bk-branch').value,desk:document.getElementById('bk-desk').value,note:document.getElementById('bk-note').value});}
+  else if(base==='bank'){const cur=document.getElementById('bk-cur').value;const am=parseFloat((document.getElementById('bk-amount').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;const rate=parseFloat((document.getElementById('bk-rate-buy').value||'').replace(/\s/g,'').replace(/,/g,'.'))||0;const bk='halyk';Object.assign(o,{currency:cur,amount:am,rateBuy:rate,rateNbrk:NBRK_RATES[cur]||0,amountKzt:Math.round(am*rate),bankKey:bk,bankName:'Народный Банк Казахстана',bankBik:document.getElementById('bk-bik').value,bankBin:document.getElementById('bk-bin').value,account:(document.getElementById('bk-account').value||'').replace(/\s/g,''),contract:document.getElementById('bk-contract').value,branch:document.getElementById('bk-branch').value,desk:document.getElementById('bk-desk').value,note:document.getElementById('bk-note').value});}
   else if(base==='pod'){const am=parseInt((document.getElementById('p-amount').value||'').replace(/\s/g,''))||0;Object.assign(o,{currency:'KZT',amount:am,amountKzt:am,person:document.getElementById('p-person').value,branch:document.getElementById('p-branch').value,desk:document.getElementById('p-desk').value,date:document.getElementById('p-date').value.split('-').reverse().join('.')||dateStr,note:document.getElementById('p-note').value});}
   return o;
 }
