@@ -2,85 +2,123 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Печать кассового ордера</title>
+<title>Кассовый ордер</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff}
+body{font-family:'Times New Roman',Times,serif;font-size:10pt;color:#000;background:#fff}
 
-.no-print{font-family:Arial,sans-serif;background:#f5f5f5;border-bottom:1px solid #ddd;padding:12px 20px;display:flex;gap:10px;align-items:center}
-.btn-print{background:#F15A25;color:#fff;border:none;padding:9px 22px;border-radius:7px;font-family:Arial,sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.btn-close{background:none;color:#434343;border:1.5px solid #ccc;padding:9px 22px;border-radius:7px;font-family:Arial,sans-serif;font-size:13px;cursor:pointer}
-.btn-print:hover{opacity:.88}
+/* NO-PRINT TOOLBAR */
+.no-print{font-family:Arial,sans-serif;background:#f5f5f5;border-bottom:1px solid #ddd;padding:10px 18px;display:flex;gap:10px;align-items:center}
+.btn-print{background:#F15A25;color:#fff;border:none;padding:8px 20px;border-radius:7px;font-family:Arial,sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.btn-close{background:none;color:#434343;border:1.5px solid #ccc;padding:8px 20px;border-radius:7px;font-family:Arial,sans-serif;font-size:13px;cursor:pointer}
 
-.page{padding:16mm 20mm 14mm;max-width:210mm;margin:0 auto}
+/* PAGE WRAPPER: two-column layout side by side */
+.page{
+  width:297mm; /* A4 landscape */
+  min-height:210mm;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1px 1fr;
+  gap:0;
+  padding:10mm 8mm;
+}
 
-.org-header{display:grid;grid-template-columns:1fr auto;align-items:start;margin-bottom:4mm}
-.org-name{font-size:11pt;font-weight:bold}
-.org-sub{font-size:9pt;margin-top:2px;color:#333}
-.form-meta{text-align:right;font-size:9pt;border:1px solid #000;padding:4px 8px}
-.form-meta-title{font-size:8pt;color:#555}
-.form-meta-num{font-size:11pt;font-weight:bold}
+/* Vertical dashed divider */
+.divider{
+  border-left:2px dashed #666;
+  margin:0;
+  align-self:stretch;
+}
 
-.doc-title{text-align:center;margin:5mm 0 3mm}
-.doc-title h1{font-size:16pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px}
-.doc-title .doc-subtitle{font-size:8.5pt;color:#555;margin-top:3px}
+/* LEFT COLUMN — main PKO */
+.col-main{padding-right:8mm}
 
-.tbl{width:100%;border-collapse:collapse;margin-bottom:4mm}
-.tbl td,.tbl th{border:1px solid #000;padding:3px 5px;font-size:10pt;vertical-align:top}
-.tbl th{background:#f0f0f0;font-size:9pt;text-align:center;font-weight:normal}
-.tbl .center{text-align:center}
-.tbl .bold{font-weight:bold}
+/* RIGHT COLUMN — stub / kvitantsiya */
+.col-stub{padding-left:8mm}
 
-.field-row{display:flex;align-items:flex-end;margin:3mm 0;gap:4px;font-size:11pt}
-.field-label{white-space:nowrap;flex-shrink:0}
-.field-line{flex:1;border-bottom:1px solid #000;min-width:30mm;padding-bottom:1px;font-weight:bold}
-.field-postfix{white-space:nowrap;flex-shrink:0;font-size:9pt;color:#555}
+/* REFERENCE NOTE top-right (both columns) */
+.ref-note{
+  text-align:right;
+  font-size:7pt;
+  font-style:italic;
+  line-height:1.4;
+  margin-bottom:3mm;
+  color:#333;
+}
 
-.amount-words-block{margin:3mm 0}
-.awb-label{font-size:9pt;color:#555;margin-bottom:1mm}
-.awb-value{font-size:11pt;font-weight:bold;border-bottom:1px solid #000;padding-bottom:2px}
+/* ORG BLOCK */
+.org-line{display:flex;align-items:baseline;gap:4mm;margin-bottom:2mm}
+.org-label{font-size:9pt;white-space:nowrap;flex-shrink:0}
+.org-value{font-size:9pt;font-weight:bold;border-bottom:1px solid #000;flex:1;padding-bottom:1px}
 
-.basis-block{margin:3mm 0}
-.basis-label{font-size:9pt;color:#555;margin-bottom:1mm}
-.basis-value{font-size:11pt;border-bottom:1px solid #000;padding-bottom:2px;min-height:7mm}
+.iinbin-row{display:flex;align-items:center;gap:6mm;margin-bottom:3mm}
+.iinbin-label{font-size:9pt;white-space:nowrap}
+.iinbin-box{border:1px solid #000;padding:2px 6px;font-size:9pt;font-weight:bold;min-width:45mm;text-align:center}
+.forma-label{font-size:9pt;margin-left:auto;font-weight:bold}
 
-.sig-section{margin-top:5mm;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6mm}
-.sig-block{display:flex;flex-direction:column;gap:3mm}
-.sig-title{font-size:9pt;font-weight:bold;color:#333;margin-bottom:1mm}
-.sig-name-line{border-bottom:1px solid #000;margin-bottom:1mm;min-height:8mm;font-size:10pt;display:flex;align-items:flex-end;padding-bottom:2px}
-.sig-hint{font-size:8pt;color:#777;text-align:center}
+/* DOC NUMBER TABLE */
+.docnum-table{width:60%;border-collapse:collapse;margin-bottom:3mm}
+.docnum-table th,.docnum-table td{border:1px solid #000;padding:2px 5px;text-align:center;font-size:9pt}
+.docnum-table th{font-weight:normal;font-size:8pt}
 
-.cashier-row{display:flex;align-items:flex-end;gap:6mm;margin-top:4mm}
-.cashier-col{display:flex;flex-direction:column;gap:2mm}
-.cashier-col label{font-size:9pt;font-weight:bold}
-.sig-field{border-bottom:1px solid #000;min-width:50mm;min-height:8mm;display:inline-block}
-.sig-field-sm{border-bottom:1px solid #000;min-width:30mm;min-height:8mm;display:inline-block;font-size:10pt;font-weight:bold}
+/* MAIN TITLE */
+.doc-title{font-size:13pt;font-weight:bold;margin:3mm 0 3mm;text-transform:uppercase}
 
-.received-block{margin-top:4mm;border:1px solid #aaa;padding:3mm 4mm;font-size:10pt}
-.received-title{font-size:9pt;color:#555;margin-bottom:2mm;font-weight:bold}
+/* CODES TABLE */
+.codes-table{width:100%;border-collapse:collapse;margin-bottom:3mm}
+.codes-table th,.codes-table td{border:1px solid #000;padding:3px 4px;font-size:8.5pt;text-align:center;vertical-align:middle}
+.codes-table th{font-size:7.5pt;font-weight:normal;vertical-align:top}
 
-.cut-line{border-top:2px dashed #888;margin:5mm 0;text-align:center;position:relative}
-.cut-label{display:inline-block;background:#fff;padding:0 6px;position:relative;top:-9px;font-size:9pt;color:#888;font-family:Arial,sans-serif}
+/* FIELD ROWS */
+.field-line{display:flex;align-items:flex-end;margin:2.5mm 0;gap:2mm}
+.fl-label{font-size:9pt;white-space:nowrap;flex-shrink:0;min-width:28mm}
+.fl-value{flex:1;border-bottom:1px solid #000;font-size:9pt;font-weight:bold;padding-bottom:1px;min-height:4.5mm;word-break:break-word}
 
-.stub{padding:4mm 0 0}
-.stub-title{font-size:12pt;font-weight:bold;text-align:center;text-transform:uppercase;margin-bottom:3mm}
-.stub-row{display:flex;align-items:flex-end;margin:2mm 0;gap:4px;font-size:10pt}
-.stub-label{white-space:nowrap;flex-shrink:0;font-size:9.5pt}
-.stub-line{flex:1;border-bottom:1px solid #000;padding-bottom:1px;font-weight:bold}
+/* AMOUNT IN WORDS */
+.sum-block{margin:2.5mm 0}
+.sum-row{display:flex;align-items:flex-end;gap:2mm}
+.sum-label{font-size:9pt;white-space:nowrap;flex-shrink:0;min-width:28mm}
+.sum-value{flex:1;border-bottom:1px solid #000;font-size:9pt;font-weight:bold;padding-bottom:1px;min-height:4.5mm}
+.sum-hint{font-size:8pt;font-style:italic;text-align:center;color:#444;margin-top:1mm}
 
-.stamps-area{margin-top:4mm;display:flex;gap:10mm;align-items:flex-start}
-.stamp-circle{width:36mm;height:36mm;border:2px solid #888;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#aaa;font-family:Arial,sans-serif;text-align:center;flex-shrink:0}
-.stamp-sigs{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4mm}
-.mini-sig{display:flex;flex-direction:column;gap:1mm}
-.mini-sig label{font-size:9pt;font-weight:bold}
-.mini-sig-line{border-bottom:1px solid #000;min-height:8mm;font-size:10pt;display:flex;align-items:flex-end;padding-bottom:2px}
-.mini-sig-hint{font-size:8pt;color:#777}
+/* SIGNATURE BLOCK */
+.sig-block{margin-top:5mm}
+.sig-row{display:flex;align-items:flex-end;gap:2mm;margin-bottom:4mm}
+.sig-left-label{font-size:9pt;flex-shrink:0;min-width:38mm;line-height:1.3}
+.sig-right{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2mm}
+.sig-line{border-bottom:1px solid #000;min-height:6mm;font-size:9pt;font-weight:bold;padding-bottom:1px;text-align:center}
+.sig-hint-row{display:grid;grid-template-columns:1fr 1fr;gap:2mm;margin-top:1px}
+.sig-hint-cell{font-size:7.5pt;font-style:italic;text-align:center;color:#444}
+
+/* ─────────── STUB (КВИТАНЦИЯ) ─────────── */
+.stub-title-block{text-align:center;margin:3mm 0 4mm}
+.stub-title{font-size:11pt;font-weight:bold;text-transform:uppercase}
+.stub-subtitle{font-size:9pt;margin-top:1mm}
+.stub-num{font-size:9pt;font-weight:bold;text-decoration:underline}
+
+.stub-field{margin:2.5mm 0}
+.stub-field-label{font-size:8.5pt;color:#555;margin-bottom:1mm}
+.stub-field-value{font-size:9pt;font-weight:bold;border-bottom:1px solid #000;min-height:5mm;padding-bottom:1px;word-break:break-word}
+
+.stub-sum-block{margin:2.5mm 0}
+.stub-sum-value{font-size:9pt;font-weight:bold;border-bottom:1px solid #000;min-height:5mm;padding-bottom:1px}
+.stub-sum-hint{font-size:7.5pt;font-style:italic;color:#444;margin-top:1px}
+
+.stub-mp-row{display:flex;align-items:center;justify-content:space-between;margin:4mm 0 3mm}
+.stub-mp{font-size:9pt;font-weight:bold}
+.stub-date{font-size:9pt;font-weight:bold}
+
+.stub-sig-block{margin-top:3mm}
+.stub-sig-label{font-size:8.5pt;margin-bottom:1mm}
+.stub-sig-name{font-size:9pt;font-weight:bold;border-bottom:1px solid #000;min-height:5mm;padding-bottom:1px;margin-bottom:1px}
+.stub-sig-hints{display:flex;justify-content:space-between;font-size:7.5pt;font-style:italic;color:#444;margin-top:0}
 
 @media print{
   .no-print{display:none!important}
-  .page{padding:14mm 18mm}
-  body{font-size:11pt}
+  body{background:#fff}
+  .page{padding:8mm 6mm}
 }
+@page{size:A4 landscape;margin:0}
 </style>
 </head>
 <body>
@@ -88,225 +126,185 @@ body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;backgro
 <div class="no-print">
   <button class="btn-print" onclick="window.print()">⎙ Распечатать</button>
   <button class="btn-close" onclick="window.close()">✕ Закрыть</button>
-  <span style="font-size:12px;color:#787878;margin-left:8px" id="print-hint"></span>
+  <span id="hint" style="font-size:12px;color:#787878;margin-left:8px"></span>
 </div>
 
-<div class="page" id="print-area">
+<div class="page">
 
-  <div class="org-header">
-    <div>
-      <div class="org-name">ТОО «ECASH SOLUTIONS»</div>
-      <div class="org-sub">БИН 200340012567 · г. Алматы, ул. Хан Тәңірі, 55</div>
-      <div class="org-sub">Подразделение: <span id="h-branch">АПОРТ</span> · <span id="h-desk">Касса №1</span></div>
+  <!-- ════════ LEFT: MAIN PKO ════════ -->
+  <div class="col-main">
+
+    <div class="ref-note">
+      Приложение 1<br>
+      к приказу Министра финансов Республики Казахстан<br>
+      от 20 декабря 2012 года № 562
     </div>
-    <div class="form-meta">
-      <div class="form-meta-title" id="form-code">Типовая форма № КО-1</div>
-      <div class="form-meta-num">№ <span id="h-num">—</span></div>
-      <div style="font-size:9pt">от <span id="h-date">—</span></div>
+
+    <div class="org-line">
+      <span class="org-label">Организация (индивидуальный предприниматель)</span>
+      <span class="org-value" id="m-org">ТОО «Ecash Solutions»</span>
     </div>
-  </div>
 
-  <div class="doc-title">
-    <h1 id="doc-title-text">ПРИХОДНЫЙ КАССОВЫЙ ОРДЕР</h1>
-    <div class="doc-subtitle" id="doc-optype">Получение наличных денежных средств</div>
-  </div>
+    <div class="iinbin-row">
+      <span class="iinbin-label">ИИН/БИН</span>
+      <span class="iinbin-box" id="m-bin">200340012567</span>
+      <span class="forma-label">Форма КО-1</span>
+    </div>
 
-  <table class="tbl">
-    <tr>
-      <th style="width:22%">Дебет (субсчёт)</th>
-      <th style="width:20%">Кредит (субсчёт)</th>
-      <th style="width:18%">Аналит. счёт</th>
-      <th style="width:20%">Сумма (цифрами)</th>
-      <th style="width:20%">Код назначения</th>
-    </tr>
-    <tr>
-      <td class="center" id="td-debet">1010</td>
-      <td class="center" id="td-kredit">1210</td>
-      <td class="center" id="td-analytic">—</td>
-      <td class="center bold" id="td-amount">—</td>
-      <td class="center">—</td>
-    </tr>
-  </table>
-
-  <div class="field-row">
-    <span class="field-label" id="party-label">Принято от:</span>
-    <span class="field-line" id="f-party">—</span>
-  </div>
-
-  <div class="basis-block">
-    <div class="basis-label">Основание:</div>
-    <div class="basis-value" id="f-basis">—</div>
-  </div>
-
-  <div id="bank-details-block" style="display:none">
-    <table class="tbl">
+    <table class="docnum-table">
       <tr>
-        <th style="width:32%">Наименование банка (БВУ)</th>
-        <th style="width:17%">БИК</th>
-        <th style="width:20%">БИН</th>
-        <th style="width:31%">Банковский счёт</th>
+        <th>Номер документа</th>
+        <th>Дата составления</th>
       </tr>
       <tr>
-        <td id="p-bankname">—</td>
-        <td class="center" id="p-bik">—</td>
-        <td class="center" id="p-bin">—</td>
-        <td class="center" id="p-account">—</td>
+        <td id="m-num" style="font-weight:bold">—</td>
+        <td id="m-date" style="font-weight:bold">—</td>
       </tr>
     </table>
-    <table class="tbl" style="margin-top:-1px">
+
+    <div class="doc-title" id="m-title">ПРИХОДНЫЙ КАССОВЫЙ ОРДЕР</div>
+
+    <table class="codes-table">
       <tr>
-        <th style="width:20%">Договор</th>
-        <th style="width:20%">Валюта</th>
-        <th style="width:20%">Сумма в валюте</th>
-        <th style="width:20%">Курс покупки (₸)</th>
-        <th style="width:20%">Курс НБРК (₸)</th>
+        <th style="width:16%">Дебет</th>
+        <th style="width:24%">Кредит<br><span style="font-weight:normal">корреспондирующий счёт</span></th>
+        <th style="width:18%">Сумма, в KZT</th>
+        <th style="width:22%">Эквивалент<br>в тенге</th>
+        <th style="width:20%">Код целевого<br>назначения</th>
       </tr>
-      <tr>
-        <td class="center" id="p-contract">—</td>
-        <td class="center bold" id="p-currency">—</td>
-        <td class="center bold" id="p-amountfx">—</td>
-        <td class="center" id="p-ratebuy">—</td>
-        <td class="center" id="p-ratenbrk">—</td>
+      <tr style="height:9mm">
+        <td id="m-debet" style="font-weight:bold">1010</td>
+        <td id="m-kredit" style="font-weight:bold">1010</td>
+        <td id="m-sum-kzt" style="font-weight:bold">—</td>
+        <td id="m-equiv" style="font-weight:bold">—</td>
+        <td id="m-code" style="font-size:8pt">производственный</td>
       </tr>
     </table>
-  </div>
 
-  <div class="amount-words-block">
-    <div class="awb-label">Сумма прописью:</div>
-    <div class="awb-value" id="f-words">—</div>
-  </div>
+    <div class="field-line">
+      <span class="fl-label" id="m-party-label">Принято от</span>
+      <span class="fl-value" id="m-party">—</span>
+    </div>
 
-  <div class="field-row" style="margin-top:2mm">
-    <span class="field-label">В том числе НДС:</span>
-    <span class="field-line" style="font-size:10pt;color:#555">без НДС</span>
-  </div>
-  <div class="field-row">
-    <span class="field-label">Приложение:</span>
-    <span class="field-line" id="f-note" style="font-size:10pt;color:#555">—</span>
-  </div>
+    <div class="field-line">
+      <span class="fl-label">Описание</span>
+      <span class="fl-value" id="m-basis">—</span>
+    </div>
 
-  <div class="sig-section">
+    <div class="sum-block">
+      <div class="sum-row">
+        <span class="sum-label">Сумма</span>
+        <span class="sum-value" id="m-words">—</span>
+      </div>
+      <div class="sum-hint">прописью</div>
+    </div>
+
     <div class="sig-block">
-      <div class="sig-title">Директор</div>
-      <div class="sig-name-line"></div>
-      <div class="sig-hint">подпись / Ф.И.О.</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-title">Главный бухгалтер</div>
-      <div class="sig-name-line" id="sig-accountant"></div>
-      <div class="sig-hint">подпись / Ф.И.О.</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-title">Кассир</div>
-      <div class="sig-name-line" id="sig-cashier"></div>
-      <div class="sig-hint">подпись / Ф.И.О.</div>
-    </div>
-  </div>
-
-  <div class="received-block" id="received-block" style="display:none">
-    <div class="received-title">ПОЛУЧИЛ:</div>
-    <div class="field-row" style="margin:1mm 0">
-      <span class="field-label">Сумма прописью:</span>
-      <span class="field-line" id="recv-words" style="font-size:10pt"></span>
-    </div>
-    <div class="field-row" style="margin:2mm 0">
-      <span class="field-label">Удостоверение / Паспорт серия:</span>
-      <span class="field-line" style="font-size:10pt"></span>
-      <span class="field-postfix">№</span>
-      <span class="field-line" style="flex:0;min-width:28mm;font-size:10pt"></span>
-    </div>
-    <div class="field-row" style="margin:2mm 0">
-      <span class="field-label">Выдано:</span>
-      <span class="field-line" style="font-size:10pt"></span>
-    </div>
-    <div class="cashier-row">
-      <div class="cashier-col">
-        <label>Получил:</label>
-        <span class="sig-field"></span>
-      </div>
-      <div class="cashier-col">
-        <label>Дата получения:</label>
-        <span class="sig-field-sm" id="recv-date"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="stamps-area" style="margin-top:5mm">
-    <div class="stamp-circle">МЕСТО<br>ПЕЧАТИ<br>(МП)</div>
-    <div class="stamp-sigs">
-      <div class="mini-sig">
-        <label>Составил (бухгалтер):</label>
-        <div class="mini-sig-line" id="stamp-accountant"></div>
-        <div class="mini-sig-hint">подпись / Ф.И.О.</div>
-      </div>
-      <div class="mini-sig">
-        <label>Провёл (кассир):</label>
-        <div class="mini-sig-line" id="stamp-cashier"></div>
-        <div class="mini-sig-hint">подпись / Ф.И.О.</div>
-      </div>
-      <div class="mini-sig">
-        <label>Проведено:</label>
-        <div class="mini-sig-line" id="stamp-execat" style="font-size:10pt;font-weight:bold"></div>
-        <div class="mini-sig-hint">дата и время</div>
-      </div>
-      <div class="mini-sig">
-        <label>Статус:</label>
-        <div class="mini-sig-line" style="font-size:10pt;font-weight:bold;color:#1BA85D">ПРОВЕДЕНО</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="cut-line"><span class="cut-label">✂ Линия отрыва</span></div>
-
-  <div class="stub">
-    <div class="stub-title" id="stub-title">Квитанция к приходному кассовому ордеру</div>
-    <div class="stub-row">
-      <span class="stub-label">№</span>
-      <span class="stub-line" id="s-num" style="max-width:40mm"></span>
-      <span class="stub-label" style="margin-left:6mm">от</span>
-      <span class="stub-line" id="s-date" style="max-width:40mm"></span>
-    </div>
-    <div class="stub-row">
-      <span class="stub-label" id="stub-party-lbl">Принято от:</span>
-      <span class="stub-line" id="s-party"></span>
-    </div>
-    <div class="stub-row">
-      <span class="stub-label">Основание:</span>
-      <span class="stub-line" id="s-basis" style="font-size:10pt;color:#444"></span>
-    </div>
-    <div class="stub-row">
-      <span class="stub-label">Сумма:</span>
-      <span class="stub-line" id="s-amount" style="font-weight:bold;font-size:11pt"></span>
-    </div>
-    <div class="stub-row" style="margin-top:1mm">
-      <span class="stub-label" style="font-size:9pt;color:#555">Прописью:</span>
-      <span class="stub-line" id="s-words" style="font-size:9pt;color:#444"></span>
-    </div>
-    <div class="stamps-area" style="margin-top:4mm">
-      <div class="stamp-circle" style="width:28mm;height:28mm;font-size:7.5pt">МП</div>
-      <div class="stamp-sigs">
-        <div class="mini-sig">
-          <label>Бухгалтер:</label>
-          <div class="mini-sig-line" id="s-acct"></div>
-          <div class="mini-sig-hint">подпись / Ф.И.О.</div>
+      <div class="sig-row">
+        <span class="sig-left-label">Главный бухгалтер или<br>уполномоченное лицо</span>
+        <div class="sig-right">
+          <div class="sig-line"></div>
+          <div class="sig-line" id="m-acct">—</div>
         </div>
-        <div class="mini-sig">
-          <label>Кассир:</label>
-          <div class="mini-sig-line" id="s-cash"></div>
-          <div class="mini-sig-hint">подпись / Ф.И.О.</div>
+      </div>
+      <div style="margin-left:38mm">
+        <div class="sig-hint-row">
+          <div class="sig-hint-cell">подпись</div>
+          <div class="sig-hint-cell">расшифровка подписи</div>
+        </div>
+      </div>
+
+      <div class="sig-row" style="margin-top:4mm">
+        <span class="sig-left-label" id="m-cashier-label">Получил кассир</span>
+        <div class="sig-right">
+          <div class="sig-line"></div>
+          <div class="sig-line" id="m-cashier">—</div>
+        </div>
+      </div>
+      <div style="margin-left:38mm">
+        <div class="sig-hint-row">
+          <div class="sig-hint-cell">подпись</div>
+          <div class="sig-hint-cell">расшифровка подписи</div>
         </div>
       </div>
     </div>
+
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider"></div>
+
+  <!-- ════════ RIGHT: STUB (КВИТАНЦИЯ) ════════ -->
+  <div class="col-stub">
+
+    <div class="ref-note">
+      Приложение 1<br>
+      к приказу Министра финансов Республики Казахстан<br>
+      от 20 декабря 2012 года № 562
+    </div>
+
+    <div style="font-size:9pt;font-weight:bold;margin-bottom:1mm">Форма КО-1</div>
+
+    <div style="font-size:9pt;margin-bottom:2mm">
+      Организация (индивидуальный предприниматель)<br>
+      <strong id="s-org">ТОО «Ecash Solutions»</strong>
+    </div>
+
+    <div class="stub-title-block">
+      <div class="stub-title" id="s-title">КВИТАНЦИЯ</div>
+      <div class="stub-subtitle">к приходному кассовому ордеру</div>
+      <div class="stub-num">№<span id="s-num">—</span></div>
+    </div>
+
+    <div class="stub-field">
+      <div class="stub-field-label" id="s-party-label">Принято от</div>
+      <div class="stub-field-value" id="s-party">—</div>
+    </div>
+
+    <div class="stub-field">
+      <div class="stub-field-label">Основание</div>
+      <div class="stub-field-value" id="s-basis">—</div>
+    </div>
+
+    <div class="stub-sum-block">
+      <div class="stub-field-label">Сумма</div>
+      <div class="stub-sum-value" id="s-words">—</div>
+      <div class="stub-sum-hint">прописью</div>
+    </div>
+
+    <div class="stub-mp-row">
+      <span class="stub-mp">М.П</span>
+      <span class="stub-date" id="s-date">—</span>
+    </div>
+
+    <div class="stub-sig-block">
+      <div class="stub-sig-label">Главный бухгалтер или уполномоченное лицо</div>
+      <div class="stub-sig-name" id="s-acct">—</div>
+      <div class="stub-sig-hints">
+        <span>прописью</span>
+        <span>расшифровка подписи</span>
+      </div>
+    </div>
+
+    <div class="stub-sig-block" style="margin-top:4mm">
+      <div class="stub-sig-label" id="s-cashier-label">Кассир</div>
+      <div class="stub-sig-name" id="s-cashier">—</div>
+      <div class="stub-sig-hints">
+        <span>прописью</span>
+        <span>расшифровка подписи</span>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
 <script>
-const LS_ORDERS='ecash-cash-orders';
-const NBRK_RATES={KZT:1,USD:503.40,EUR:548.20,RUB:5.48,CNY:69.50,GBP:641.30};
+const LS='ecash-cash-orders';
+const NBRK={KZT:1,USD:503.40,EUR:548.20,RUB:5.48,CNY:69.50,GBP:641.30};
 
-function amountWords(n){
-  n=Math.floor(n);if(!n)return'Ноль тенге';
+function words(n){
+  n=Math.floor(n);if(!n)return'Ноль тенге 00 тиын';
   const U=['','один','два','три','четыре','пять','шесть','семь','восемь','девять'];
   const T=['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
   const D=['','десять','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
@@ -316,97 +314,76 @@ function amountWords(n){
   const orig=n;const mil=Math.floor(n/1e6);n%=1e6;const tho=Math.floor(n/1e3);n%=1e3;const rem=n;
   let s='';if(mil)s+=thr(mil,false)+pl(mil,['миллионов','миллион','миллиона','миллионов'])+' ';if(tho)s+=thr(tho,true)+pl(tho,['тысяч','тысяча','тысячи','тысяч'])+' ';if(rem)s+=thr(rem,false);
   s+=pl(orig,['тенге','тенге','тенге','тенге']);
-  const r=s.trim();return r.charAt(0).toUpperCase()+r.slice(1);
+  const r=s.trim();return r.charAt(0).toUpperCase()+r.slice(1)+' 00 тиын';
 }
 
-function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val||'—';}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v||'—';}
 
 window.onload=function(){
   const sp=new URLSearchParams(location.search);
   const id=sp.get('id');
-  if(!id){document.getElementById('print-hint').textContent='ID ордера не передан';return;}
-  const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
+  if(!id){document.getElementById('hint').textContent='ID не передан';return;}
+
+  const all=JSON.parse(localStorage.getItem(LS)||'[]');
   const o=all.find(x=>x.id===id);
-  if(!o){document.getElementById('print-hint').textContent='Ордер '+id+' не найден';return;}
-  document.getElementById('print-hint').textContent='Ордер '+id;
+  if(!o){document.getElementById('hint').textContent='Ордер '+id+' не найден';return;}
+
+  document.getElementById('hint').textContent=id;
+  document.title='Ордер '+id;
 
   const dir=o.direction||'in';
   const base=o.opType||'buh';
   const isIn=dir==='in';
 
-  document.getElementById('doc-title-text').textContent=isIn?'ПРИХОДНЫЙ КАССОВЫЙ ОРДЕР':'РАСХОДНЫЙ КАССОВЫЙ ОРДЕР';
-  const OP_LABELS={buh:'Касса бухгалтерии',bank:'Банк (БВУ)',pod:'Подотчётное лицо'};
-  document.getElementById('doc-optype').textContent=(isIn?'Поступление — ':'Выдача — ')+(OP_LABELS[base]||base);
-  document.getElementById('form-code').textContent='Типовая форма '+(isIn?'№ КО-1':'№ КО-2');
+  // Titles
+  const mainTitle=isIn?'ПРИХОДНЫЙ КАССОВЫЙ ОРДЕР':'РАСХОДНЫЙ КАССОВЫЙ ОРДЕР';
+  const stubTitle=isIn?'КВИТАНЦИЯ':'КВИТАНЦИЯ';
+  const stubSub=isIn?'к приходному кассовому ордеру':'к расходному кассовому ордеру';
+  set('m-title',mainTitle);
+  set('s-title',stubTitle);
+  const stubSubEl=document.querySelector('.stub-subtitle');if(stubSubEl)stubSubEl.textContent=stubSub;
 
-  setText('h-num',id);
-  setText('h-date',o.date||(o.createdAt||'').split(',')[0]||'—');
-  setText('h-branch',o.branch||'АПОРТ');
-  setText('h-desk',o.desk||'Касса №1');
+  // Party label
+  const partyLabel=isIn?'Принято от':'Выдано';
+  set('m-party-label',partyLabel);
+  set('s-party-label',isIn?'Принято от':'Выдано');
+  const cashierLabel=isIn?'Получил кассир':'Выдал кассир';
+  set('m-cashier-label',cashierLabel);
+  set('s-cashier-label',isIn?'Кассир':'Кассир');
 
+  // Number and date
+  const dateStr=o.date||(o.createdAt||'').split(',')[0]||'—';
+  set('m-num',id); set('s-num',id);
+  set('m-date',dateStr); set('s-date',dateStr);
+
+  // Codes (Дебет/Кредит)
   const KREDIT={buh:{in:'3390',out:'1010'},bank:{in:'3010',out:'1030'},pod:{in:'1250',out:'1250'}};
-  setText('td-debet','1010');
-  setText('td-kredit',((KREDIT[base]||{})[dir])||'—');
+  set('m-debet','1010');
+  set('m-kredit',(KREDIT[base]||{})[dir]||'1010');
 
+  // Amounts
   const amtKzt=parseInt(o.amountKzt||o.amount)||0;
-  setText('td-amount',Number(amtKzt).toLocaleString('ru-RU')+' ₸');
+  const amtFx=o.currency&&o.currency!=='KZT'?Number(o.amount).toLocaleString('ru-RU')+' '+o.currency:null;
+  set('m-sum-kzt',amtFx||Number(amtKzt).toLocaleString('ru-RU'));
+  set('m-equiv',Number(amtKzt).toLocaleString('ru-RU'));
 
-  let party=o.bankName||o.person||'Касса бухгалтерии';
-  if(!isIn){
-    const pl=document.getElementById('party-label');if(pl)pl.textContent='Выдано:';
-    const spl=document.getElementById('stub-party-lbl');if(spl)spl.textContent='Выдано:';
-  }
-  setText('f-party',party);
+  // Party (Принято от)
+  const OP={buh:'Касса бухгалтерии',bank:o.bankName||'Банк',pod:o.person||'—'};
+  const party=OP[base]||'—';
+  set('m-party',party); set('s-party',party);
 
-  const basisMap={
-    buh:{in:'Получение наличных с кассы бухгалтерии',out:'Сдача наличных в кассу бухгалтерии'},
-    bank:{in:'Подкрепление кассы из банка · Договор '+(o.contract||'—'),out:'Инкассация в банк · Договор '+(o.contract||'—')},
-    pod:{in:'Возврат подотчётных сумм',out:'Выдача подотчётных сумм'}
-  };
-  setText('f-basis',((basisMap[base]||{})[dir])||'—');
-  setText('f-note',o.note||'—');
+  // Basis
+  const BASIS={buh:{in:'Получение из кассы бухгалтерии',out:'Сдача в кассу бухгалтерии'},bank:{in:'Подкрепление кассы из Банка (БВУ)',out:'Инкассация в Банк (БВУ)'},pod:{in:'Возврат подотчётных сумм',out:'Выдача подотчётных сумм'}};
+  const basis=((BASIS[base]||{})[dir])||o.note||'—';
+  set('m-basis',basis); set('s-basis',basis);
 
-  const words=amountWords(amtKzt);
-  setText('f-words',words);
+  // Amount in words
+  const w=words(amtKzt);
+  set('m-words',w); set('s-words',w);
 
-  setText('sig-accountant',o.accountant||'Сидорова О.Н.');
-  setText('sig-cashier',o.cashier||'Иванова А.Ю.');
-  setText('stamp-accountant',o.accountant||'Сидорова О.Н.');
-  setText('stamp-cashier',o.cashier||'Иванова А.Ю.');
-  setText('stamp-execat',o.executedAt||'—');
-
-  if(base==='bank'){
-    document.getElementById('bank-details-block').style.display='block';
-    setText('p-bankname',o.bankName||'—');
-    setText('p-bik',o.bankBik||'—');
-    setText('p-bin',o.bankBin||'—');
-    setText('p-account',o.account||'—');
-    setText('p-contract',o.contract||'—');
-    setText('p-currency',o.currency||'—');
-    setText('p-amountfx',Number(o.amount||0).toLocaleString('ru-RU')+' '+(o.currency||''));
-    setText('p-ratebuy',Number(o.rateBuy||0).toFixed(2));
-    setText('p-ratenbrk',Number(o.rateNbrk||NBRK_RATES[o.currency]||0).toFixed(2));
-  }
-
-  if(!isIn){
-    document.getElementById('received-block').style.display='block';
-    setText('recv-words',words);
-    setText('recv-date',o.executedAt||(o.date||''));
-  }
-
-  document.getElementById('stub-title').textContent=isIn?
-    'Квитанция к приходному кассовому ордеру':
-    'Квитанция к расходному кассовому ордеру';
-  setText('s-num',id);
-  setText('s-date',o.date||(o.createdAt||'').split(',')[0]||'—');
-  setText('s-party',party);
-  setText('s-basis',((basisMap[base]||{})[dir])||'—');
-  setText('s-amount',Number(amtKzt).toLocaleString('ru-RU')+' ₸');
-  setText('s-words',words);
-  setText('s-acct',o.accountant||'Сидорова О.Н.');
-  setText('s-cash',o.cashier||'Иванова А.Ю.');
-
-  document.title='Ордер '+id+' · Ecash';
+  // Signatures
+  set('m-acct',o.accountant||'—'); set('s-acct',o.accountant||'—');
+  set('m-cashier',o.cashier||'—'); set('s-cashier',o.cashier||'—');
 };
 </script>
 </body>
