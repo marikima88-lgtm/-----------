@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кассовый ордер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111}
+
+/* SCREEN UI */
+.screen-bar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:#434343;color:white;justify-content:space-between}
+.screen-bar-title{font-size:14px;font-weight:700}
+.screen-bar-actions{display:flex;gap:10px}
+.btn-bar{padding:8px 20px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .13s}
+.btn-bar:hover{opacity:.85}
+.btn-print-bar{background:#F15A25;color:white}
+.btn-back-bar{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.25)}
+
+.page-container{display:flex;justify-content:center;padding:32px 24px;min-height:calc(100vh - 56px)}
+
+/* ORDER DOCUMENT */
+.order-doc{background:white;width:100%;max-width:760px;padding:40px 48px;border:1px solid #ddd;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+
+/* HEADER */
+.doc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #111}
+.doc-org{flex:1}
+.doc-org-name{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.doc-org-sub{font-size:11px;color:#666;margin-top:3px}
+.doc-meta{text-align:right;min-width:180px}
+.doc-meta-num{font-size:22px;font-weight:800;font-family:monospace;color:#111}
+.doc-meta-date{font-size:12px;color:#555;margin-top:4px}
+
+/* TITLE BLOCK */
+.doc-title-block{text-align:center;margin-bottom:28px;padding:16px;background:#f9f9f9;border-radius:4px}
+.doc-title{font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.doc-title.pko{color:#1B6F35}
+.doc-title.rko{color:#8B1A1A}
+.doc-type-label{font-size:12px;color:#666;margin-top:6px;text-transform:uppercase;letter-spacing:1.5px}
+
+/* FIELDS TABLE */
+.fields-table{width:100%;border-collapse:collapse;margin-bottom:24px}
+.fields-table tr td{padding:0}
+.field-row{display:flex;align-items:baseline;gap:0;margin-bottom:12px}
+.field-label{font-size:11px;color:#555;white-space:nowrap;flex-shrink:0;padding-right:8px;min-width:140px}
+.field-value{flex:1;border-bottom:1px solid #ccc;padding:4px 8px;font-size:14px;font-weight:500;min-height:28px;line-height:1.4}
+.field-row.amount-row .field-value{font-size:18px;font-weight:800;border-bottom:2px solid #111}
+.field-row.amount-row .field-label{font-size:12px;font-weight:700;color:#111}
+.field-words{font-size:11px;color:#555;font-style:italic;margin:-6px 0 12px 148px;padding-left:8px}
+
+/* AMOUNT BOX */
+.amount-box{display:inline-flex;align-items:center;gap:8px}
+.amount-box .a-val{font-size:22px;font-weight:800}
+.amount-box .a-cur{font-size:14px;color:#555}
+
+/* SIGNATURES */
+.sigs{margin-top:32px;padding-top:20px;border-top:1px solid #ddd}
+.sigs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:20px}
+.sig-row{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px}
+.sig-role{font-size:12px;color:#555;white-space:nowrap;min-width:160px}
+.sig-line{flex:1;border-bottom:1px solid #999;height:26px}
+.sig-name{min-width:180px;border-bottom:1px solid #999;height:26px;font-size:12px;color:#666;display:flex;align-items:flex-end;padding-bottom:3px}
+.sig-label-row{display:flex;gap:16px;margin-top:2px;margin-bottom:12px}
+.sig-sub{font-size:10px;color:#aaa;text-align:center;flex:1}
+.sig-sub-name{font-size:10px;color:#aaa;min-width:180px;text-align:left}
+
+/* DIVIDER */
+.tear-line{border:none;border-top:1px dashed #aaa;margin:32px 0;position:relative}
+.tear-line::before{content:'✂';position:absolute;left:50%;top:-10px;transform:translateX(-50%);background:white;padding:0 8px;font-size:16px;color:#aaa}
+
+/* STUB (bottom receipt copy) */
+.stub{padding-top:8px}
+.stub-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:14px;text-align:center}
+.stub-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.stub-row .s-label{font-size:11px;color:#666}
+.stub-row .s-value{font-size:12px;font-weight:700}
+.stub-sig{display:flex;align-items:center;gap:10px;margin-top:16px}
+.stub-sig-label{font-size:11px;color:#555;white-space:nowrap}
+.stub-sig-line{flex:1;border-bottom:1px solid #999;height:24px}
+
+/* STATUS STAMP */
+.stamp{position:relative;display:inline-block;margin-top:16px}
+.stamp-circle{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:100px;height:100px;border-radius:50%;border:3px solid #1B6F35;padding:8px;text-align:center}
+.stamp-circle.rko{border-color:#8B1A1A}
+.stamp-text{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#1B6F35;line-height:1.3}
+.stamp-text.rko{color:#8B1A1A}
+.stamp-num{font-size:11px;font-weight:800;color:#1B6F35;margin-top:3px}
+.stamp-num.rko{color:#8B1A1A}
+
+/* NOT FOUND */
+.not-found{text-align:center;padding:60px;color:#888}
+
+@media print{
+  .screen-bar{display:none}
+  .page-container{padding:0}
+  .order-doc{border:none;box-shadow:none;max-width:100%;padding:24px 32px}
+  body{background:white}
+  @page{margin:10mm;size:A4}
+}
+</style>
+</head>
+<body>
+
+<div class="screen-bar">
+  <div class="screen-bar-title" id="bar-title">Кассовый ордер</div>
+  <div class="screen-bar-actions">
+    <button class="btn-bar btn-back-bar" onclick="window.close()">← Закрыть</button>
+    <button class="btn-bar btn-print-bar" onclick="window.print()">⎙ Печать / PDF</button>
+  </div>
+</div>
+
+<div class="page-container">
+  <div class="order-doc" id="order-doc">
+    <div class="not-found" id="not-found" style="display:none">
+      <div style="font-size:40px;margin-bottom:12px">📋</div>
+      <div>Ордер не найден</div>
+    </div>
+    <div id="doc-content"></div>
+  </div>
+</div>
+
+<script>
+const LS_ORDERS='ecash-cash-orders';
+const SAMPLE=[
+  {id:'ПКО-2026-031',type:'pko',status:'pending',date:'29.06.2026',time:'11:20',amount:150000,fromWhom:'ТОО "Клиент-Сервис"',toWhom:'',basis:'Возврат займа по договору №45/2026',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 11:20'},
+  {id:'РКО-2026-018',type:'rko',status:'pending',date:'29.06.2026',time:'10:45',amount:75000,fromWhom:'',toWhom:'Петров С.И.',basis:'Командировочные расходы',note:'Суточные + проезд',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 10:45'},
+  {id:'ПКО-2026-030',type:'pko',status:'executed',date:'28.06.2026',time:'15:30',amount:320000,fromWhom:'ИП Касымов А.Б.',toWhom:'',basis:'Оплата услуг по договору №12',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 15:35'},
+  {id:'РКО-2026-017',type:'rko',status:'executed',date:'28.06.2026',time:'14:00',amount:42000,fromWhom:'',toWhom:'Иванова А.Ю.',basis:'Аванс на хозяйственные нужды',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 14:05'},
+  {id:'ПКО-2026-029',type:'pko',status:'draft',date:'29.06.2026',time:'09:00',amount:500000,fromWhom:'ТОО "Финанс-Групп"',toWhom:'',basis:'Пополнение оборотных средств',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 09:00'},
+];
+
+const UNITS=['','один','два','три','четыре','пять','шесть','семь','восемь','девять'];
+const TEENS=['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
+const TENS=['','десять','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
+const HUNDREDS=['','сто','двести','триста','четыреста','пятьсот','шестьсот','семьсот','восемьсот','девятьсот'];
+function plural(n,f){ const m=n%100; if(m>=11&&m<=19) return f[0]; const r=n%10; if(r===1) return f[1]; if(r>=2&&r<=4) return f[2]; return f[0]; }
+function three(n,female){
+  let s='';const h=Math.floor(n/100);n%=100;s+=HUNDREDS[h]?(HUNDREDS[h]+' '):'';
+  if(n>=10&&n<20){s+=TEENS[n-10]+' ';return s;}
+  const t=Math.floor(n/10);n%=10;s+=TENS[t]?(TENS[t]+' '):'';
+  if(female&&n===1)s+='одна ';else if(female&&n===2)s+='две ';else s+=UNITS[n]?(UNITS[n]+' '):'';return s;
+}
+function amountWords(n){
+  n=Math.floor(n);if(!n)return 'Ноль тенге';
+  const mil=Math.floor(n/1000000);n%=1000000;const tho=Math.floor(n/1000);n%=1000;const rem=n;
+  let s='';
+  if(mil)s+=three(mil,false)+plural(mil,['миллионов','миллион','миллиона','миллионов'])+' ';
+  if(tho)s+=three(tho,true)+plural(tho,['тысяч','тысяча','тысячи','тысяч'])+' ';
+  if(rem)s+=three(rem,false);
+  s+=plural(Math.floor(arguments[0]),['тенге','тенге','тенге','тенге']);
+  const res=s.trim();return res.charAt(0).toUpperCase()+res.slice(1);
+}
+function fmtMoney(n){ return Number(n).toLocaleString('ru-RU'); }
+
+function findOrder(id){
+  const live=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
+  return live.find(o=>o.id===id)||SAMPLE.find(o=>o.id===id)||null;
+}
+
+function renderDoc(o){
+  const isPKO=o.type==='pko';
+  const party=isPKO?o.fromWhom:o.toWhom;
+  const executed=o.status==='executed';
+
+  document.getElementById('bar-title').textContent=(isPKO?'ПКО':'РКО')+' · '+o.id;
+
+  const stampHtml=executed?`
+    <div class="stamp">
+      <div class="stamp-circle ${isPKO?'':'rko'}">
+        <div class="stamp-text ${isPKO?'':'rko'}">${isPKO?'ПРИНЯТО':'ВЫДАНО'}</div>
+        <div class="stamp-num ${isPKO?'':'rko'}">${o.executedAt?o.executedAt.split(',')[0]:o.date}</div>
+      </div>
+    </div>`:'';
+
+  document.getElementById('doc-content').innerHTML=`
+    <!-- MAIN COPY -->
+    <div class="doc-header">
+      <div class="doc-org">
+        <div class="doc-org-name">ТОО «Ecash»</div>
+        <div class="doc-org-sub">БИН 240840023456 · ${o.branch} · ${o.desk}</div>
+      </div>
+      <div class="doc-meta">
+        <div class="doc-meta-num">${o.id}</div>
+        <div class="doc-meta-date">${o.date} ${o.time}</div>
+      </div>
+    </div>
+
+    <div class="doc-title-block">
+      <div class="doc-title ${isPKO?'pko':'rko'}">${isPKO?'Приходный кассовый ордер':'Расходный кассовый ордер'}</div>
+      <div class="doc-type-label">${isPKO?'PKO · Incoming Cash Order':'RKO · Outgoing Cash Order'}</div>
+    </div>
+
+    <div class="field-row amount-row">
+      <div class="field-label">${isPKO?'Принято от:':'Выдать:'}</div>
+      <div class="field-value">${party||''}</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">Основание:</div>
+      <div class="field-value">${o.basis||''}</div>
+    </div>
+
+    ${o.note?`<div class="field-row">
+      <div class="field-label">Приложение:</div>
+      <div class="field-value">${o.note}</div>
+    </div>`:''}
+
+    <div class="field-row amount-row" style="margin-top:16px">
+      <div class="field-label">Сумма:</div>
+      <div class="field-value">
+        <div class="amount-box"><span class="a-val">${fmtMoney(o.amount)}</span><span class="a-cur">тенге</span></div>
+      </div>
+    </div>
+    <div class="field-words">${amountWords(o.amount)}</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:24px">
+      <div style="flex:1">
+        <div class="sigs">
+          <div class="sigs-title">Подписи</div>
+          ${isPKO?'':''/* director only on RKO */}
+          ${!isPKO?`<div class="sig-row">
+            <div class="sig-role">Директор</div>
+            <div class="sig-line"></div>
+            <div class="sig-name"></div>
+          </div>
+          <div class="sig-label-row"><div class="sig-sub">подпись</div><div class="sig-sub-name">расшифровка подписи</div></div>`:''}
+          <div class="sig-row">
+            <div class="sig-role">Главный бухгалтер</div>
+            <div class="sig-line"></div>
+            <div class="sig-name">${o.accountant||''}</div>
+          </div>
+          <div class="sig-label-row"><div class="sig-sub">подпись</div><div class="sig-sub-name">расшифровка подписи</div></div>
+          <div class="sig-row">
+            <div class="sig-role">Кассир</div>
+            <div class="sig-line"></div>
+            <div class="sig-name">${executed?(o.cashier||''):'Иванова А.'}</div>
+          </div>
+          <div class="sig-label-row"><div class="sig-sub">подпись</div><div class="sig-sub-name">расшифровка подписи</div></div>
+          ${!isPKO?`<div class="sig-row">
+            <div class="sig-role">Получил</div>
+            <div class="sig-line"></div>
+            <div class="sig-name">${party||''}</div>
+          </div>
+          <div class="sig-label-row"><div class="sig-sub">подпись</div><div class="sig-sub-name">расшифровка подписи</div></div>`:''}
+        </div>
+      </div>
+      ${stampHtml?`<div style="padding-left:24px">${stampHtml}</div>`:''}
+    </div>
+
+    <!-- TEAR LINE & STUB -->
+    <hr class="tear-line">
+
+    <div class="stub">
+      <div class="stub-title">${isPKO?'Квитанция к ПКО (остаётся у вносителя)':'Расписка в получении'}</div>
+      <div class="stub-row"><span class="s-label">Ордер №</span><span class="s-value">${o.id}</span></div>
+      <div class="stub-row"><span class="s-label">Дата</span><span class="s-value">${o.date}</span></div>
+      <div class="stub-row"><span class="s-label">${isPKO?'Принято от':'Выдано'}</span><span class="s-value">${party||'—'}</span></div>
+      <div class="stub-row"><span class="s-label">Сумма</span><span class="s-value">${fmtMoney(o.amount)} ₸</span></div>
+      <div class="stub-row"><span class="s-label">Основание</span><span class="s-value" style="max-width:300px;text-align:right;font-size:11px">${o.basis||'—'}</span></div>
+      ${executed?`<div class="stub-row" style="margin-top:8px"><span class="s-label">Дата исполнения</span><span class="s-value" style="color:#1B6F35">${o.executedAt||'—'}</span></div>`:''}
+      <div class="stub-sig" style="margin-top:14px">
+        <span class="stub-sig-label">Кассир</span>
+        <div class="stub-sig-line"></div>
+        <span style="font-size:11px;color:#555;white-space:nowrap;margin-left:8px">${executed?(o.cashier||'Иванова А.'):'Иванова А.'}</span>
+      </div>
+    </div>`;
+}
+
+window.onload=function(){
+  const id=new URLSearchParams(location.search).get('id');
+  if(!id){ document.getElementById('not-found').style.display='block'; return; }
+  const order=findOrder(id);
+  if(!order){ document.getElementById('not-found').style.display='block'; return; }
+  renderDoc(order);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Кассовые ордера</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.role-bar { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:5px; margin-bottom:18px; width:fit-content; }
+.role-tab { padding:8px 22px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; color:var(--text-mid); border:none; background:none; font-family:inherit; }
+.role-tab.active-cashier { background:var(--brand); color:white; }
+.role-tab.active-accountant { background:#1B6FBA; color:white; }
+
+.stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; min-width:160px; }
+.stat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.stat-label { font-size:12px; color:var(--text-mid); }
+.stat-val { font-size:20px; font-weight:800; color:var(--text); margin-left:auto; }
+.stat-card.warn { border-color:var(--warning-border); background:var(--warning-bg); }
+.stat-card.warn .stat-dot { background:#F59E0B; animation:blink 1.4s infinite; }
+.stat-card.warn .stat-label,.stat-card.warn .stat-val { color:#92400E; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+.f-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); white-space:nowrap; }
+.f-sel,.f-inp { padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--bg); outline:none; transition:border-color .13s; }
+.f-sel { padding-right:30px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.f-sel:focus,.f-inp:focus { border-color:var(--text); }
+.f-sep { width:1px; height:24px; background:var(--border); }
+
+.tbl-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.tbl { width:100%; border-collapse:collapse; }
+.tbl th { background:var(--surface-2); padding:11px 16px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-mid); border-bottom:2px solid var(--border); white-space:nowrap; }
+.tbl td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr.pko-row { border-left:3px solid #1BA85D; }
+.tbl tr.rko-row { border-left:3px solid #D93025; }
+.tbl tr.pending-row { background:rgba(245,158,11,.04); }
+
+.type-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+.type-pko { background:rgba(27,168,93,.1); color:#1BA85D; border:1px solid rgba(27,168,93,.3); }
+.type-rko { background:rgba(217,48,37,.1); color:#D93025; border:1px solid rgba(217,48,37,.3); }
+
+.tbl-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.btn-exec { padding:6px 14px; background:var(--brand); color:white; border:none; border-radius:7px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; transition:opacity .13s; white-space:nowrap; }
+.btn-exec:hover { opacity:.85; }
+.btn-edit { padding:6px 12px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:7px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all .13s; }
+.btn-edit:hover { border-color:var(--text); color:var(--text); }
+.btn-print { padding:6px 12px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:7px; font-family:inherit; font-size:12px; cursor:pointer; transition:all .13s; }
+.btn-print:hover { border-color:var(--text); color:var(--text); }
+.btn-view { padding:6px 12px; border:1.5px solid var(--border); background:transparent; color:var(--text-mid); border-radius:7px; font-family:inherit; font-size:12px; cursor:pointer; transition:all .13s; }
+.btn-view:hover { border-color:var(--text); color:var(--text); }
+
+.empty-state { text-align:center; padding:48px 24px; color:var(--text-mid); }
+.empty-icon { font-size:40px; margin-bottom:12px; }
+
+.id-cell { font-family:'Courier New',monospace; font-size:12px; font-weight:700; }
+.amount-cell { font-weight:700; white-space:nowrap; }
+.date-cell { color:var(--text-mid); font-size:12px; white-space:nowrap; }
+
+/* ACCOUNTANT banner */
+.accountant-banner { background:linear-gradient(135deg,#1B6FBA,#1557a0); color:white; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:14px; }
+.acct-banner-icon { font-size:28px; }
+.acct-banner-text .title { font-size:15px; font-weight:700; }
+.acct-banner-text .sub { font-size:12px; opacity:.75; margin-top:2px; }
+.btn-create-pko { padding:9px 20px; background:white; color:#1B6FBA; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:opacity .13s; white-space:nowrap; }
+.btn-create-pko:hover { opacity:.9; }
+.btn-create-rko { padding:9px 20px; background:rgba(255,255,255,.15); color:white; border:1.5px solid rgba(255,255,255,.4); border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:all .13s; white-space:nowrap; }
+.btn-create-rko:hover { background:rgba(255,255,255,.25); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item active"><span class="nav-icon">📋</span><span class="nav-label">Кассовые ордера</span></div>
+    <div class="nav-item"><span class="nav-icon">$</span><span class="nav-label">Курсы валют</span></div>
+    <div class="nav-item"><span class="nav-icon">◈</span><span class="nav-label">Золото</span></div>
+    <div class="nav-item"><span class="nav-icon">▤</span><span class="nav-label">Касса ОФД</span><span class="nav-badge">14</span></div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item"><span class="nav-icon">↗</span><span class="nav-label">Отчёты</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙</span><span class="nav-label">Настройки</span></div>
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы, АПОРТ</span>
+      <span class="header-cashier">Касса №1 <span class="caret">▾</span></span>
+    </div>
+    <div id="role-chip-header"></div>
+    <div class="header-right">
+      <span class="header-meta">🕐 <strong id="hdr-time"></strong></span>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user"><div class="avatar">ИИ</div><div class="user-info"><div class="user-name">Иванова А.</div><div class="user-role">Кассир</div></div></div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Кассовые ордера</h1>
+        <div class="page-sub">Приходные и расходные кассовые ордера · АПОРТ</div>
+      </div>
+    </div>
+
+    <!-- ROLE TOGGLE -->
+    <div class="role-bar">
+      <button class="role-tab" id="tab-cashier" onclick="setRole('cashier')">👤 Кассир</button>
+      <button class="role-tab" id="tab-accountant" onclick="setRole('accountant')">📒 Бухгалтер</button>
+    </div>
+
+    <!-- ACCOUNTANT CREATE BANNER (shown only for accountant) -->
+    <div class="accountant-banner" id="acct-banner" style="display:none">
+      <div class="acct-banner-icon">📒</div>
+      <div class="acct-banner-text">
+        <div class="title">Режим бухгалтера — создание кассовых ордеров</div>
+        <div class="sub">Создайте ордер, он поступит кассиру на исполнение</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-create-pko" onclick="location.href='cash-order-form.html?type=pko'">＋ ПКО (приход)</button>
+        <button class="btn-create-rko" onclick="location.href='cash-order-form.html?type=rko'">＋ РКО (расход)</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row" id="stats-row"></div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <span class="f-label">Тип</span>
+      <select class="f-sel" id="f-type" onchange="applyFilters()">
+        <option value="">Все</option>
+        <option value="pko">ПКО (приход)</option>
+        <option value="rko">РКО (расход)</option>
+      </select>
+      <span class="f-sep"></span>
+      <span class="f-label">Статус</span>
+      <select class="f-sel" id="f-status" onchange="applyFilters()">
+        <option value="">Все</option>
+        <option value="draft">Черновик</option>
+        <option value="pending">Ожидает исполнения</option>
+        <option value="executed">Исполнено</option>
+      </select>
+      <span class="f-sep"></span>
+      <input class="f-inp" id="f-search" placeholder="Поиск по номеру, основанию..." oninput="applyFilters()" style="min-width:220px">
+    </div>
+
+    <!-- TABLE -->
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Номер</th>
+            <th>Дата / Время</th>
+            <th>Тип</th>
+            <th>Сумма</th>
+            <th>Контрагент</th>
+            <th>Основание</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span style="font-size:13px;color:var(--text-mid)">Ecash · Кассовые ордера</span>
+    <div class="footer-space"></div>
+  </footer>
+</div>
+
+<script>
+const LS_ORDERS='ecash-cash-orders';
+
+const STATUS_CFG={
+  draft:    {label:'Черновик',     cls:'badge-draft'},
+  pending:  {label:'Ожидает исп.',  cls:'badge-pending'},
+  executed: {label:'Исполнено',    cls:'badge-executed'},
+};
+const TYPE_LABEL={pko:'ПКО · Приход',rko:'РКО · Расход'};
+const TYPE_ICON={pko:'↓',rko:'↑'};
+
+const SAMPLE=[
+  {id:'ПКО-2026-031',type:'pko',status:'pending',date:'29.06.2026',time:'11:20',amount:150000,fromWhom:'ТОО "Клиент-Сервис"',toWhom:'',basis:'Возврат займа по договору №45/2026',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 11:20'},
+  {id:'РКО-2026-018',type:'rko',status:'pending',date:'29.06.2026',time:'10:45',amount:75000,fromWhom:'',toWhom:'Петров С.И.',basis:'Командировочные расходы',note:'Суточные + проезд',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 10:45'},
+  {id:'ПКО-2026-030',type:'pko',status:'executed',date:'28.06.2026',time:'15:30',amount:320000,fromWhom:'ИП Касымов А.Б.',toWhom:'',basis:'Оплата услуг по договору №12',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 15:35'},
+  {id:'РКО-2026-017',type:'rko',status:'executed',date:'28.06.2026',time:'14:00',amount:42000,fromWhom:'',toWhom:'Иванова А.Ю.',basis:'Аванс на хозяйственные нужды',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',cashier:'Иванова А.',executedAt:'28.06.2026, 14:05'},
+  {id:'ПКО-2026-029',type:'pko',status:'draft',date:'29.06.2026',time:'09:00',amount:500000,fromWhom:'ТОО "Финанс-Групп"',toWhom:'',basis:'Пополнение оборотных средств',note:'',accountant:'Сидорова О.Н.',branch:'АПОРТ',desk:'Касса №1',createdAt:'29.06.2026, 09:00'},
+];
+
+let currentRole='cashier';
+let allOrders=[];
+let filtered=[];
+
+function loadOrders(){
+  const live=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
+  allOrders=[...live,...SAMPLE];
+}
+
+function setRole(role){
+  currentRole=role;
+  localStorage.setItem('ecash-co-role',role);
+  document.getElementById('tab-cashier').className='role-tab'+(role==='cashier'?' active-cashier':'');
+  document.getElementById('tab-accountant').className='role-tab'+(role==='accountant'?' active-accountant':'');
+  document.getElementById('acct-banner').style.display=role==='accountant'?'flex':'none';
+  const chip=document.getElementById('role-chip-header');
+  if(role==='accountant'){
+    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(27,111,186,.12);border:1px solid rgba(27,111,186,.3);border-radius:20px;font-size:11px;font-weight:700;color:#1B6FBA">📒 Бухгалтер</span>';
+  } else {
+    chip.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(241,90,37,.12);border:1px solid rgba(241,90,37,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--brand)">👤 Кассир</span>';
+  }
+  renderTable(filtered.length?filtered:allOrders);
+}
+
+function fmtMoney(n){ return Number(n).toLocaleString('ru-RU')+'  ₸'; }
+
+function updateStats(data){
+  const pendingPKO=data.filter(o=>o.status==='pending'&&o.type==='pko').length;
+  const pendingRKO=data.filter(o=>o.status==='pending'&&o.type==='rko').length;
+  const execToday=data.filter(o=>o.status==='executed'&&(o.executedAt||'').includes('29.06.2026')).length;
+  const totalPending=pendingPKO+pendingRKO;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card${totalPending?'  warn':''}">
+      <div class="stat-dot" style="background:${totalPending?'#F59E0B':'#1BA85D'}"></div>
+      <span class="stat-label">Ожидают исполнения</span>
+      <span class="stat-val">${totalPending}</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-dot" style="background:#1BA85D"></div>
+      <span class="stat-label">ПКО — на исполнении</span>
+      <span class="stat-val">${pendingPKO}</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-dot" style="background:#D93025"></div>
+      <span class="stat-label">РКО — на исполнении</span>
+      <span class="stat-val">${pendingRKO}</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-dot" style="background:var(--brand)"></div>
+      <span class="stat-label">Исполнено сегодня</span>
+      <span class="stat-val">${execToday}</span>
+    </div>`;
+}
+
+function applyFilters(){
+  const type=document.getElementById('f-type').value;
+  const status=document.getElementById('f-status').value;
+  const q=(document.getElementById('f-search').value||'').toLowerCase();
+  filtered=allOrders.filter(o=>{
+    if(type && o.type!==type) return false;
+    if(status && o.status!==status) return false;
+    if(q && !o.id.toLowerCase().includes(q) && !(o.basis||'').toLowerCase().includes(q) && !(o.fromWhom||o.toWhom||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function renderTable(data){
+  const body=document.getElementById('tbl-body');
+  if(!data.length){
+    body.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><div>Ордера не найдены</div></div></td></tr>';
+    return;
+  }
+  const role=currentRole;
+  body.innerHTML=data.map(o=>{
+    const sc=STATUS_CFG[o.status]||STATUS_CFG.draft;
+    const isPKO=o.type==='pko';
+    const party=isPKO?(o.fromWhom||'—'):(o.toWhom||'—');
+    const isLive=!!o._live;
+
+    let actions='';
+    if(role==='cashier'){
+      if(o.status==='pending'){
+        actions+=`<button class="btn-exec" onclick="execOrder('${o.id}')">✓ Исполнить</button>`;
+      }
+      actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁</button>`;
+      if(o.status==='executed'){
+        actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙</button>`;
+      }
+    } else {
+      if(o.status==='draft'){
+        actions+=`<button class="btn-edit" onclick="editOrder('${o.id}')">✎ Редактировать</button>`;
+        actions+=`<button class="btn-exec" style="background:#1B6FBA" onclick="sendToPending('${o.id}')">→ На исполнение</button>`;
+      } else {
+        actions+=`<button class="btn-view" onclick="viewOrder('${o.id}')">👁 Просмотр</button>`;
+      }
+      actions+=`<button class="btn-print" onclick="printOrder('${o.id}')">⎙</button>`;
+    }
+
+    return `<tr class="${isPKO?'pko-row':'rko-row'}${o.status==='pending'?' pending-row':''}">
+      <td><span class="id-cell">${o.id}</span>${isLive?'<span class="new-badge" style="margin-left:6px">NEW</span>':''}</td>
+      <td class="date-cell">${o.date}<br><span style="font-size:11px">${o.time}</span></td>
+      <td><span class="type-chip ${isPKO?'type-pko':'type-rko'}">${TYPE_ICON[o.type]} ${isPKO?'ПКО':'РКО'}</span></td>
+      <td class="amount-cell">${fmtMoney(o.amount)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${party}">${party}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-mid)" title="${o.basis||'—'}">${o.basis||'—'}</td>
+      <td><span class="badge ${sc.cls}">${sc.label}</span></td>
+      <td><div class="tbl-actions">${actions}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function viewOrder(id){
+  location.href='cash-order-form.html?id='+encodeURIComponent(id)+'&view=1';
+}
+function editOrder(id){
+  location.href='cash-order-form.html?id='+encodeURIComponent(id);
+}
+function printOrder(id){
+  window.open('cash-order-print.html?id='+encodeURIComponent(id),'_blank','width=900,height=700');
+}
+
+function sendToPending(id){
+  const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
+  const idx=all.findIndex(o=>o.id===id);
+  if(idx>=0){ all[idx].status='pending'; localStorage.setItem(LS_ORDERS,JSON.stringify(all)); }
+  loadOrders(); applyFilters(); updateStats(allOrders);
+  toast('📤','','Ордер отправлен на исполнение кассиру','warn',3500);
+}
+
+function execOrder(id){
+  // Find order
+  const all=JSON.parse(localStorage.getItem(LS_ORDERS)||'[]');
+  const sampleIdx=SAMPLE.findIndex(o=>o.id===id);
+  // Open execution page
+  location.href='cash-order-form.html?id='+encodeURIComponent(id)+'&exec=1';
+}
+
+function toast(icon,title,msg,type,dur){
+  // simple toast
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.15);max-width:340px;font-family:inherit;display:flex;align-items:center;gap:10px;font-size:13px;';
+  t.innerHTML='<span style="font-size:20px">'+icon+'</span><div><strong>'+title+'</strong><div style="color:var(--text-mid);font-size:12px">'+msg+'</div></div>';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),dur||3000);
+}
+
+window.onload=function(){
+  // theme
+  const th=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=th;
+  document.getElementById('btn-theme').textContent=th==='dark'?'☀️':'🌙';
+  // time
+  function tick(){ document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+  tick(); setInterval(tick,30000);
+  // role
+  const savedRole=localStorage.getItem('ecash-co-role')||'cashier';
+  loadOrders();
+  filtered=[...allOrders];
+  updateStats(allOrders);
+  setRole(savedRole);
+  applyFilters();
+};
+
+function toggleTheme(){
+  const d=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=d?'light':'dark';
+  document.getElementById('btn-theme').textContent=d?'🌙':'☀️';
+  localStorage.setItem('ecash-theme',d?'light':'dark');
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+</script>
+</body>
+</html>
