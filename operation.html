@@ -569,6 +569,8 @@ function fillPendingScreen(req){
 function showApproval(approvedRate,comment,reqNum){
   stopPolling();
   customRate=approvedRate; rateState='approved';
+  document.getElementById('inp-rate').value=fmt(approvedRate);
+  calcFromCur();
 
   const diff=approvedRate-stdRate;
   const pct=((diff/stdRate)*100).toFixed(2);
