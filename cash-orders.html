@@ -82,20 +82,6 @@
 .acct-banner-text .sub { font-size:12px; opacity:.65; margin-top:2px; }
 .btn-create-pko { padding:9px 20px; background:var(--brand); color:white; border:none; border-radius:8px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:opacity .13s; white-space:nowrap; }
 .btn-create-pko:hover { opacity:.88; }
-
-/* СВЕРКА АФМ */
-.section-block { margin-top:28px; }
-.section-block-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-.section-block-title { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
-.section-block-sub { font-size:12px; color:var(--text-mid); margin-top:2px; }
-.afm-status { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
-.afm-status.ok { background:rgba(27,168,93,.1); color:#1BA85D; border:1px solid rgba(27,168,93,.3); }
-.afm-status.warn { background:rgba(245,158,11,.1); color:#B45309; border:1px solid rgba(245,158,11,.35); }
-.afm-status.bad { background:rgba(217,48,37,.1); color:#D93025; border:1px solid rgba(217,48,37,.3); }
-.afm-status.missing { background:var(--surface-2); color:var(--text-mid); border:1px solid var(--border); }
-.diff-ok { color:var(--text-mid); font-size:12px; }
-.diff-bad { color:#D93025; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; }
-.tbl tr.diff-row { background:rgba(217,48,37,.03); }
 </style>
 </head>
 <body>
@@ -130,6 +116,8 @@
     <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
     <div class="nav-section nav-section-role">Мотивация</div>
     <div class="nav-item" onclick="location.href='motivation.html'"><span class="nav-icon">🏆</span><span class="nav-label">Мотивация кассиров</span></div>
+    <div class="nav-section nav-section-role">Комплаенс</div>
+    <div class="nav-item" onclick="location.href='afm-reconciliation.html'"><span class="nav-icon">🔍</span><span class="nav-label">Сверка АФМ</span></div>
   </nav>
 </aside>
 
@@ -210,36 +198,6 @@
         </thead>
         <tbody id="tbl-body"></tbody>
       </table>
-    </div>
-
-    <!-- СВЕРКА АФМ -->
-    <div class="section-block">
-      <div class="section-block-head">
-        <div>
-          <div class="section-block-title">⚖ Сверка АФМ</div>
-          <div class="section-block-sub">Сопоставление сделок с валютой между Quiq и Агентством по финансовому мониторингу</div>
-        </div>
-        <div style="margin-left:auto" class="stats-row" id="afm-stats-row"></div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>Отделение</th>
-              <th>Дата операции</th>
-              <th>№ заявки</th>
-              <th>Тип сделки</th>
-              <th>Сумма в валюте</th>
-              <th>ФИО клиента</th>
-              <th>Инициатор</th>
-              <th>Статус в Quiq</th>
-              <th>Статус в АФМ</th>
-              <th>Расхождения</th>
-            </tr>
-          </thead>
-          <tbody id="afm-tbl-body"></tbody>
-        </table>
-      </div>
     </div>
 
   </div>
@@ -425,80 +383,6 @@ function execOrder(id){
   location.href='cash-order-form.html?id='+encodeURIComponent(id)+'&exec=1';
 }
 
-/* ===== СВЕРКА АФМ ===== */
-const AFM_TYPE_LABEL={'buy-cur':'Покупка валюты','sell-cur':'Продажа валюты','buy-gold':'Покупка золота','sell-gold':'Продажа золота'};
-
-const AFM_RECORDS=[
-  {branch:'АПОРТ',date:'29.06.2026',num:'EC-48271',type:'buy-cur',cur:'USD',amount:'2 500',client:'Иванова Анна Петровна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
-  {branch:'АПОРТ',date:'29.06.2026',num:'EC-48270',type:'sell-cur',cur:'EUR',amount:'800',client:'Петров Сергей Игоревич',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
-  {branch:'АПОРТ',date:'28.06.2026',num:'EC-48269',type:'buy-cur',cur:'USD',amount:'10 000',client:'Смирнова Елена Викторовна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'rejected',diff:'Статус в АФМ отличается от Quiq'},
-  {branch:'Мега Алматы',date:'28.06.2026',num:'EC-48268',type:'sell-gold',cur:'GOLD 10г',amount:'1 шт.',client:'Касымов Асхат Болатович',initiator:'Петров С.И.',quiq:'executed',afm:'not_found',diff:'Не передано в АФМ'},
-  {branch:'Мега Алматы',date:'28.06.2026',num:'EC-48267',type:'buy-cur',cur:'RUB',amount:'150 000',client:'Нурланов Ержан Серикович',initiator:'Петров С.И.',quiq:'executed',afm:'accepted',diff:'Сумма расходится: Quiq 150 000 / АФМ 148 500'},
-  {branch:'Достык Плаза',date:'27.06.2026',num:'EC-48266',type:'sell-cur',cur:'CNY',amount:'5 000',client:'Смирнова Елена Викторовна',initiator:'Смирнова Е.В.',quiq:'executed',afm:'accepted',diff:null},
-  {branch:'Достык Плаза',date:'27.06.2026',num:'EC-48265',type:'buy-cur',cur:'GBP',amount:'500',client:'Ахметов Данияр Муратович',initiator:'Смирнова Е.В.',quiq:'executed',afm:'pending',diff:'Ожидает рассмотрения в АФМ'},
-  {branch:'АПОРТ',date:'27.06.2026',num:'EC-48264',type:'sell-cur',cur:'USD',amount:'3 200',client:'Иванова Анна Петровна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
-  {branch:'АПОРТ',date:'26.06.2026',num:'—',type:'buy-cur',cur:'USD',amount:'7 000',client:'Касымов Асхат Болатович',initiator:'—',quiq:'not_found',afm:'accepted',diff:'Заявка есть в АФМ, но не найдена в Quiq'},
-  {branch:'Мега Алматы',date:'26.06.2026',num:'EC-48262',type:'sell-cur',cur:'EUR',amount:'1 200',client:'Нурланов Ержан Серикович',initiator:'Петров С.И.',quiq:'executed',afm:'accepted',diff:null},
-];
-
-const AFM_STATUS_CFG={
-  executed: {cls:'ok',    label:'Исполнено'},
-  accepted: {cls:'ok',    label:'Принято'},
-  pending:  {cls:'warn',  label:'На рассмотрении'},
-  rejected: {cls:'bad',   label:'Отклонено'},
-  not_found:{cls:'missing',label:'Не найдено'},
-};
-
-function afmStatusChip(key){
-  const c=AFM_STATUS_CFG[key]||AFM_STATUS_CFG.not_found;
-  return `<span class="afm-status ${c.cls}">${c.label}</span>`;
-}
-
-function renderAfmStats(){
-  const total=AFM_RECORDS.length;
-  const withDiff=AFM_RECORDS.filter(r=>r.diff).length;
-  const matched=total-withDiff;
-  document.getElementById('afm-stats-row').innerHTML=`
-    <div class="stat-card">
-      <div class="stat-dot" style="background:#1B6FBA"></div>
-      <span class="stat-label">Сверено сделок</span>
-      <span class="stat-val">${total}</span>
-    </div>
-    <div class="stat-card">
-      <div class="stat-dot" style="background:#1BA85D"></div>
-      <span class="stat-label">Совпадают</span>
-      <span class="stat-val">${matched}</span>
-    </div>
-    <div class="stat-card${withDiff?' warn':''}">
-      <div class="stat-dot" style="background:${withDiff?'#D93025':'#1BA85D'}"></div>
-      <span class="stat-label">Расхождения</span>
-      <span class="stat-val">${withDiff}</span>
-    </div>`;
-}
-
-function renderAfmTable(){
-  const body=document.getElementById('afm-tbl-body');
-  body.innerHTML=AFM_RECORDS.map(r=>{
-    const typeLabel=AFM_TYPE_LABEL[r.type]||r.type;
-    const amountDisp=r.amount+' '+r.cur;
-    const diffCell=r.diff
-      ? `<span class="diff-bad">⚠ ${r.diff}</span>`
-      : `<span class="diff-ok">Нет</span>`;
-    return `<tr class="${r.diff?'diff-row':''}">
-      <td>${r.branch}</td>
-      <td class="date-cell">${r.date}</td>
-      <td><span class="id-cell">${r.num}</span></td>
-      <td style="font-size:12px">${typeLabel}</td>
-      <td class="amount-cell">${amountDisp}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${r.client}">${r.client}</td>
-      <td style="font-size:11px;color:var(--text-mid)">${r.initiator}</td>
-      <td>${afmStatusChip(r.quiq)}</td>
-      <td>${afmStatusChip(r.afm)}</td>
-      <td>${diffCell}</td>
-    </tr>`;
-  }).join('');
-}
-
 function toast(icon,title,msg,type,dur){
   // simple toast
   const t=document.createElement('div');
@@ -523,8 +407,6 @@ window.onload=function(){
   updateStats(allOrders);
   setRole(savedRole);
   applyFilters();
-  renderAfmStats();
-  renderAfmTable();
   if(typeof lucide!=='undefined') lucide.createIcons();
 };
 

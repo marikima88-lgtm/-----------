@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Сверка АФМ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; min-width:160px; }
+.stat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.stat-label { font-size:12px; color:var(--text-mid); }
+.stat-val { font-size:20px; font-weight:800; color:var(--text); margin-left:auto; }
+.stat-card.warn { border-color:var(--warning-border); background:var(--warning-bg); }
+.stat-card.warn .stat-dot { background:#F59E0B; }
+.stat-card.warn .stat-label,.stat-card.warn .stat-val { color:#92400E; }
+
+.filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+.f-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); white-space:nowrap; }
+.f-sel,.f-inp { padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--bg); outline:none; transition:border-color .13s; }
+.f-sel { padding-right:30px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.f-sel:focus,.f-inp:focus { border-color:var(--text); }
+.f-sep { width:1px; height:24px; background:var(--border); }
+.f-check { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text); cursor:pointer; user-select:none; }
+.f-check input { width:15px; height:15px; accent-color:var(--brand); cursor:pointer; }
+
+.tbl-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.tbl { width:100%; border-collapse:collapse; }
+.tbl th { background:var(--surface-2); padding:11px 16px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-mid); border-bottom:2px solid var(--border); white-space:nowrap; }
+.tbl td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr.diff-row { background:rgba(217,48,37,.03); }
+
+.empty-state { text-align:center; padding:48px 24px; color:var(--text-mid); }
+.empty-icon { font-size:40px; margin-bottom:12px; }
+.id-cell { font-family:'Courier New',monospace; font-size:12px; font-weight:700; }
+.amount-cell { font-weight:700; white-space:nowrap; }
+.date-cell { color:var(--text-mid); font-size:12px; white-space:nowrap; }
+
+.afm-status { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.afm-status.ok { background:rgba(27,168,93,.1); color:#1BA85D; border:1px solid rgba(27,168,93,.3); }
+.afm-status.warn { background:rgba(245,158,11,.1); color:#B45309; border:1px solid rgba(245,158,11,.35); }
+.afm-status.bad { background:rgba(217,48,37,.1); color:#D93025; border:1px solid rgba(217,48,37,.3); }
+.afm-status.missing { background:var(--surface-2); color:var(--text-mid); border:1px solid var(--border); }
+.diff-ok { color:var(--text-mid); font-size:12px; }
+.diff-bad { color:#D93025; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item" onclick="location.href='cash-orders.html'"><span class="nav-icon">📋</span><span class="nav-label">Кассовые ордера</span></div>
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+    <div class="nav-section nav-section-role">Мотивация</div>
+    <div class="nav-item" onclick="location.href='motivation.html'"><span class="nav-icon">🏆</span><span class="nav-label">Мотивация кассиров</span></div>
+    <div class="nav-section nav-section-role">Комплаенс</div>
+    <div class="nav-item active"><span class="nav-icon">🔍</span><span class="nav-label">Сверка АФМ</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">г. Алматы, АПОРТ</span>
+      <span class="header-cashier">Все отделения <span class="caret">▾</span></span>
+    </div>
+    <div class="header-right">
+      <span class="header-meta">🕐 <strong id="hdr-time"></strong></span>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="header-user">
+        <div class="avatar">СО</div>
+        <div><div class="user-name">Сидорова О.</div><div class="user-role">Бухгалтер</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Сверка АФМ</h1>
+        <div class="page-sub">Сопоставление сделок с валютой между Quiq и Агентством по финансовому мониторингу</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row" id="stats-row"></div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <span class="f-label">Отделение</span>
+      <select class="f-sel" id="f-branch" onchange="applyFilters()">
+        <option value="">Все</option>
+        <option value="АПОРТ">АПОРТ</option>
+        <option value="Мега Алматы">Мега Алматы</option>
+        <option value="Достык Плаза">Достык Плаза</option>
+      </select>
+      <span class="f-sep"></span>
+      <span class="f-label">Статус в АФМ</span>
+      <select class="f-sel" id="f-afm-status" onchange="applyFilters()">
+        <option value="">Все</option>
+        <option value="accepted">Принято</option>
+        <option value="pending">На рассмотрении</option>
+        <option value="rejected">Отклонено</option>
+        <option value="not_found">Не найдено</option>
+      </select>
+      <span class="f-sep"></span>
+      <label class="f-check"><input type="checkbox" id="f-only-diff" onchange="applyFilters()"> Только расхождения</label>
+      <span class="f-sep"></span>
+      <input class="f-inp" id="f-search" placeholder="Поиск по № заявки, ФИО клиента..." oninput="applyFilters()" style="min-width:240px">
+    </div>
+
+    <!-- TABLE -->
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Отделение</th>
+            <th>Дата операции</th>
+            <th>№ заявки</th>
+            <th>Тип сделки</th>
+            <th>Сумма в валюте</th>
+            <th>ФИО клиента</th>
+            <th>Инициатор</th>
+            <th>Статус в Quiq</th>
+            <th>Статус в АФМ</th>
+            <th>Расхождения</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span style="font-size:13px;color:var(--text-mid)">Ecash · Сверка АФМ</span>
+    <div class="footer-space"></div>
+  </footer>
+</div>
+
+<script>
+const AFM_TYPE_LABEL={'buy-cur':'Покупка валюты','sell-cur':'Продажа валюты','buy-gold':'Покупка золота','sell-gold':'Продажа золота'};
+
+const AFM_RECORDS=[
+  {branch:'АПОРТ',date:'29.06.2026',num:'EC-48271',type:'buy-cur',cur:'USD',amount:'2 500',client:'Иванова Анна Петровна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
+  {branch:'АПОРТ',date:'29.06.2026',num:'EC-48270',type:'sell-cur',cur:'EUR',amount:'800',client:'Петров Сергей Игоревич',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
+  {branch:'АПОРТ',date:'28.06.2026',num:'EC-48269',type:'buy-cur',cur:'USD',amount:'10 000',client:'Смирнова Елена Викторовна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'rejected',diff:'Статус в АФМ отличается от Quiq'},
+  {branch:'Мега Алматы',date:'28.06.2026',num:'EC-48268',type:'sell-gold',cur:'GOLD 10г',amount:'1 шт.',client:'Касымов Асхат Болатович',initiator:'Петров С.И.',quiq:'executed',afm:'not_found',diff:'Не передано в АФМ'},
+  {branch:'Мега Алматы',date:'28.06.2026',num:'EC-48267',type:'buy-cur',cur:'RUB',amount:'150 000',client:'Нурланов Ержан Серикович',initiator:'Петров С.И.',quiq:'executed',afm:'accepted',diff:'Сумма расходится: Quiq 150 000 / АФМ 148 500'},
+  {branch:'Достык Плаза',date:'27.06.2026',num:'EC-48266',type:'sell-cur',cur:'CNY',amount:'5 000',client:'Смирнова Елена Викторовна',initiator:'Смирнова Е.В.',quiq:'executed',afm:'accepted',diff:null},
+  {branch:'Достык Плаза',date:'27.06.2026',num:'EC-48265',type:'buy-cur',cur:'GBP',amount:'500',client:'Ахметов Данияр Муратович',initiator:'Смирнова Е.В.',quiq:'executed',afm:'pending',diff:'Ожидает рассмотрения в АФМ'},
+  {branch:'АПОРТ',date:'27.06.2026',num:'EC-48264',type:'sell-cur',cur:'USD',amount:'3 200',client:'Иванова Анна Петровна',initiator:'Иванова А.Ю.',quiq:'executed',afm:'accepted',diff:null},
+  {branch:'АПОРТ',date:'26.06.2026',num:'—',type:'buy-cur',cur:'USD',amount:'7 000',client:'Касымов Асхат Болатович',initiator:'—',quiq:'not_found',afm:'accepted',diff:'Заявка есть в АФМ, но не найдена в Quiq'},
+  {branch:'Мега Алматы',date:'26.06.2026',num:'EC-48262',type:'sell-cur',cur:'EUR',amount:'1 200',client:'Нурланов Ержан Серикович',initiator:'Петров С.И.',quiq:'executed',afm:'accepted',diff:null},
+];
+
+const AFM_STATUS_CFG={
+  executed: {cls:'ok',    label:'Исполнено'},
+  accepted: {cls:'ok',    label:'Принято'},
+  pending:  {cls:'warn',  label:'На рассмотрении'},
+  rejected: {cls:'bad',   label:'Отклонено'},
+  not_found:{cls:'missing',label:'Не найдено'},
+};
+
+let filtered=[...AFM_RECORDS];
+
+function afmStatusChip(key){
+  const c=AFM_STATUS_CFG[key]||AFM_STATUS_CFG.not_found;
+  return `<span class="afm-status ${c.cls}">${c.label}</span>`;
+}
+
+function updateStats(data){
+  const total=data.length;
+  const withDiff=data.filter(r=>r.diff).length;
+  const matched=total-withDiff;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card">
+      <div class="stat-dot" style="background:#1B6FBA"></div>
+      <span class="stat-label">Сверено сделок</span>
+      <span class="stat-val">${total}</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-dot" style="background:#1BA85D"></div>
+      <span class="stat-label">Совпадают</span>
+      <span class="stat-val">${matched}</span>
+    </div>
+    <div class="stat-card${withDiff?' warn':''}">
+      <div class="stat-dot" style="background:${withDiff?'#D93025':'#1BA85D'}"></div>
+      <span class="stat-label">Расхождения</span>
+      <span class="stat-val">${withDiff}</span>
+    </div>`;
+}
+
+function applyFilters(){
+  const branch=document.getElementById('f-branch').value;
+  const afmStatus=document.getElementById('f-afm-status').value;
+  const onlyDiff=document.getElementById('f-only-diff').checked;
+  const q=(document.getElementById('f-search').value||'').toLowerCase();
+  filtered=AFM_RECORDS.filter(r=>{
+    if(branch && r.branch!==branch) return false;
+    if(afmStatus && r.afm!==afmStatus) return false;
+    if(onlyDiff && !r.diff) return false;
+    if(q && !r.num.toLowerCase().includes(q) && !r.client.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  renderTable(filtered);
+  updateStats(filtered);
+}
+
+function renderTable(data){
+  const body=document.getElementById('tbl-body');
+  if(!data.length){
+    body.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🔍</div><div>Сделки не найдены</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML=data.map(r=>{
+    const typeLabel=AFM_TYPE_LABEL[r.type]||r.type;
+    const amountDisp=r.amount+' '+r.cur;
+    const diffCell=r.diff
+      ? `<span class="diff-bad">⚠ ${r.diff}</span>`
+      : `<span class="diff-ok">Нет</span>`;
+    return `<tr class="${r.diff?'diff-row':''}">
+      <td>${r.branch}</td>
+      <td class="date-cell">${r.date}</td>
+      <td><span class="id-cell">${r.num}</span></td>
+      <td style="font-size:12px">${typeLabel}</td>
+      <td class="amount-cell">${amountDisp}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${r.client}">${r.client}</td>
+      <td style="font-size:11px;color:var(--text-mid)">${r.initiator}</td>
+      <td>${afmStatusChip(r.quiq)}</td>
+      <td>${afmStatusChip(r.afm)}</td>
+      <td>${diffCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+window.onload=function(){
+  const th=localStorage.getItem('ecash-theme')||'light';
+  document.documentElement.dataset.theme=th;
+  document.getElementById('btn-theme').textContent=th==='dark'?'☀️':'🌙';
+  function tick(){ document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+  tick(); setInterval(tick,30000);
+
+  updateStats(AFM_RECORDS);
+  renderTable(AFM_RECORDS);
+};
+
+function toggleTheme(){
+  const d=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=d?'light':'dark';
+  document.getElementById('btn-theme').textContent=d?'🌙':'☀️';
+  localStorage.setItem('ecash-theme',d?'light':'dark');
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
+</script>
+</body>
+</html>
