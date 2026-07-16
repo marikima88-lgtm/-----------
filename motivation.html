@@ -7,98 +7,144 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 /* Page-local classes below are not in shared.css — same pattern as cash-orders.html
    and client-card.html, which also define stats/filters/table/section styles locally. */
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
 .page-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 2px; }
 
-.stats-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat-card { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; min-width: 160px; }
-.stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.stat-label { font-size: 12px; color: var(--text-mid); }
-.stat-val { font-size: 20px; font-weight: 800; color: var(--text); margin-left: auto; }
-
-.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; }
-.f-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid); white-space: nowrap; }
-.f-sel, .f-inp { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; transition: border-color .13s; }
-.f-sel { padding-right: 30px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-.f-sel:focus, .f-inp:focus { border-color: var(--text); }
-.f-sep { width: 1px; height: 24px; background: var(--border); }
-
-.tbl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-.tbl { width: 100%; border-collapse: collapse; }
-.tbl th { background: var(--surface-2); padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-mid); border-bottom: 2px solid var(--border); white-space: nowrap; }
-.tbl td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
-.tbl tr:last-child td { border-bottom: none; }
-.amount-cell { font-weight: 700; white-space: nowrap; }
-
-.empty-state { text-align: center; padding: 48px 24px; color: var(--text-mid); }
-.empty-icon { font-size: 40px; margin-bottom: 12px; }
-
-.section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-mid); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.section-num { width: 22px; height: 22px; border-radius: 50%; background: var(--brand); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.submit-row { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
-
-/* Progress indicator cell (fact / norm / %) */
-.progress-cell { display: flex; align-items: center; gap: 8px; }
-.progress-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.progress-dot.good { background: #1BA85D; }
-.progress-dot.warn { background: #F5A623; }
-.progress-dot.bad { background: #D93025; }
-.progress-dot.none { background: var(--text-light); }
-.progress-main { font-weight: 700; font-size: 13px; }
-.progress-sub { font-size: 11px; color: var(--text-mid); }
-
-/* Letter rating chip */
-.rating-chip { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; font-weight: 800; font-size: 13px; flex-shrink: 0; }
-.rating-chip.A { background: rgba(27,168,93,.12); color: #1BA85D; border: 1px solid rgba(27,168,93,.35); }
-.rating-chip.B { background: rgba(245,166,35,.14); color: #B36B00; border: 1px solid rgba(245,166,35,.4); }
-.rating-chip.C { background: rgba(217,48,37,.1); color: #D93025; border: 1px solid rgba(217,48,37,.3); }
-.rating-chip.none { background: var(--surface-2); color: var(--text-mid); border: 1px solid var(--border); font-size: 9px; width: auto; padding: 0 6px; }
-.rating-cap-note { font-size: 9.5px; color: var(--text-mid); display: block; margin-top: 2px; }
-
-/* Dynamics arrow */
-.dyn { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
-.dyn.up { color: #1BA85D; }
-.dyn.down { color: #D93025; }
-.dyn.flat { color: var(--text-mid); }
-.dyn.nodata { color: var(--text-light); font-weight: 500; }
-
-.warn-inline { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--warning-text); background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 2px 7px; border-radius: 6px; margin-top: 5px; white-space: nowrap; }
-
-.name-link { color: var(--brand); font-weight: 600; cursor: pointer; }
-.name-link:hover { text-decoration: underline; }
-
-/* Cashier card side drawer */
-.drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9000; }
-.drawer-overlay.open { display: block; }
-.card-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 660px; max-width: 100%; background: var(--surface); overflow-y: auto; padding: 26px; box-shadow: -8px 0 32px rgba(0,0,0,.18); z-index: 9001; }
-.card-drawer-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
-.card-drawer-title { font-size: 18px; font-weight: 800; }
-.card-drawer-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 2px; }
-.card-drawer-close { margin-left: auto; width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); cursor: pointer; font-size: 15px; color: var(--text-mid); flex-shrink: 0; }
-.card-drawer-close:hover { border-color: var(--text); color: var(--text); }
-
-.metric-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
-.metric-tile-label { font-size: 10px; text-transform: uppercase; color: var(--text-mid); font-weight: 700; margin-bottom: 6px; }
-
-.chart-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
-.chart-title { font-size: 11.5px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .4px; }
-.chart-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-mid); margin-top: 6px; flex-wrap: wrap; }
-.chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
-.legend-swatch { width: 14px; height: 0; border-top: 2px solid currentColor; display: inline-block; }
-.legend-swatch.dashed { border-top-style: dashed; }
-
-.period-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
-.period-btn { padding: 5px 12px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 7px; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-mid); cursor: pointer; }
-.period-btn.active { background: var(--text); color: var(--surface); border-color: var(--text); }
-
-@media (max-width: 767px) {
-  .card-drawer { width: 100%; }
-  .metric-grid { grid-template-columns: 1fr; }
+/* ============================================================
+   Below: scoped styles for the real-data dashboard (#mot-app).
+   These are the dashboard's own self-contained design tokens/classes,
+   all prefixed with #mot-app so they never leak into or collide with
+   shared.css or the rest of the site (which uses different var names
+   like --surface/--border at :root — redefining those at :root here
+   would break dark mode and every other page).
+   ============================================================ */
+#mot-app{
+  --ink:#1b1f23; --ink-soft:#55606b; --muted:#8a94a0;
+  --surface:#ffffff; --page:#f5f6f8; --border:#e3e6ea; --border-soft:#edeff2;
+  --accent:#2f6f5e; --accent-soft:#e5f0ec; --accent-ink:#1d4a3d;
+  --good:#1a8a4a; --good-bg:#e8f6ee; --good-border:#bfe3cd;
+  --warn:#a3690a; --warn-bg:#fdf3e0; --warn-border:#f1d99a;
+  --bad:#c0392b; --bad-bg:#fcebe9; --bad-border:#f3c6c0;
+  --nodata:#7a8390; --nodata-bg:#eef0f2; --nodata-border:#dde1e5;
+  --shadow:0 1px 2px rgba(20,24,28,.04), 0 8px 24px rgba(20,24,28,.05);
 }
+#mot-app *, #mot-app *::before, #mot-app *::after{box-sizing:border-box;margin:0;padding:0;}
+#mot-app{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--page); color:var(--ink); font-size:14px; line-height:1.5;
+}
+#mot-app .num{font-variant-numeric:tabular-nums;}
+#mot-app .panel{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:16px; box-shadow:var(--shadow);}
+#mot-app .panel-title{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); margin-bottom:14px;}
+#mot-app .panel-title .n{width:20px; height:20px; border-radius:6px; background:var(--accent); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+#mot-app .panel-sub{font-size:12px; color:var(--muted); margin:-8px 0 14px;}
+#mot-app .note{background:var(--accent-soft); border:1px solid var(--good-border); border-radius:10px; padding:12px 16px; font-size:12.5px; color:var(--accent-ink); margin-bottom:16px;}
+#mot-app .note b{font-weight:700;}
+#mot-app .note ul{margin:6px 0 0 18px;}
+#mot-app .filters-grid{display:flex; flex-wrap:wrap; gap:12px 16px; align-items:flex-end;}
+#mot-app .f-group{display:flex; flex-direction:column; gap:5px; min-width:150px;}
+#mot-app .f-group.wide{min-width:260px;}
+#mot-app .f-label{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted);}
+#mot-app .f-sel, #mot-app .f-inp{padding:7px 10px; border:1.5px solid var(--border); border-radius:8px; font:inherit; font-size:12.5px; color:var(--ink); background:var(--page); outline:none;}
+#mot-app .f-sel:focus, #mot-app .f-inp:focus{border-color:var(--accent);}
+#mot-app .f-actions{display:flex; gap:6px; margin-top:2px;}
+#mot-app .f-btn{padding:4px 9px; border:1px solid var(--border); border-radius:6px; background:var(--surface); font-size:11px; color:var(--ink-soft); cursor:pointer;}
+#mot-app .f-btn:hover{border-color:var(--accent); color:var(--accent);}
+#mot-app .period-dropdown-wrap{position:relative;}
+#mot-app .period-dropdown-btn{width:100%; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;}
+#mot-app .period-dropdown-panel{position:absolute; top:calc(100% + 4px); left:0; z-index:40; background:var(--surface); border:1.5px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:10px; min-width:230px;}
+#mot-app .period-list{display:flex; flex-direction:column; gap:2px; max-height:220px; overflow-y:auto; margin-top:8px;}
+#mot-app .period-item{display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:6px; font-size:12.5px; cursor:pointer;}
+#mot-app .period-item:hover{background:var(--page);}
+#mot-app .period-item input{accent-color:var(--accent);}
+#mot-app .grade{font-weight:800;}
+#mot-app .grade.A{color:var(--good);}
+#mot-app .grade.B{color:var(--warn);}
+#mot-app .grade.C{color:var(--bad);}
+#mot-app .bw-col-title{display:flex; align-items:center; gap:8px; font-weight:700; font-size:12.5px; margin-bottom:8px;}
+#mot-app .bw-col-title .grade-badges{display:inline-flex; gap:4px;}
+#mot-app .bw-badge{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:6px; font-size:11px; font-weight:800; color:#fff;}
+#mot-app .bw-badge.A{background:var(--good);}
+#mot-app .bw-badge.B{background:var(--warn);}
+#mot-app .bw-badge.C{background:var(--bad);}
+#mot-app .mb-card{border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px; background:var(--surface);}
+#mot-app .mb-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+#mot-app .mb-name{font-weight:700; font-size:12.5px;}
+#mot-app .mb-overall{font-size:12px; font-weight:800; font-variant-numeric:tabular-nums;}
+#mot-app .mb-row{display:grid; grid-template-columns:76px 1fr 52px; gap:8px; align-items:center; margin-top:3px;}
+#mot-app .mb-label{font-size:10.5px; color:var(--muted);}
+#mot-app .mb-track{position:relative; height:10px; background:var(--page); border-radius:5px; overflow:hidden;}
+#mot-app .mb-marker{position:absolute; top:0; bottom:0; width:2px; background:var(--ink); opacity:.35; left:50%;}
+#mot-app .mb-fill{height:100%; border-radius:5px 0 0 5px;}
+#mot-app .mb-fill.good{background:var(--good);}
+#mot-app .mb-fill.warn{background:var(--warn);}
+#mot-app .mb-fill.bad{background:var(--bad);}
+#mot-app .mb-fill.nodata{background:var(--nodata-border);}
+#mot-app .mb-val{font-size:11px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums;}
+#mot-app .mb-val.good{color:var(--good);}
+#mot-app .mb-val.warn{color:var(--warn);}
+#mot-app .mb-val.bad{color:var(--bad);}
+#mot-app .mb-val.nodata{color:var(--nodata);}
+#mot-app .mb-legend{display:flex; gap:14px; font-size:10.5px; color:var(--muted); margin:2px 0 12px; flex-wrap:wrap;}
+#mot-app .mb-legend span{display:inline-flex; align-items:center; gap:5px;}
+#mot-app .mb-legend .lg-dot{width:8px; height:8px; border-radius:2px; display:inline-block;}
+#mot-app .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;}
+#mot-app .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px;}
+#mot-app .card .lab{font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); font-weight:700; margin-bottom:6px;}
+#mot-app .card .val{font-size:20px; font-weight:800;}
+#mot-app .card .hint{font-size:11px; color:var(--muted); margin-top:3px;}
+#mot-app .pill{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap;}
+#mot-app .pill.good{background:var(--good-bg); color:var(--good); border:1px solid var(--good-border);}
+#mot-app .pill.warn{background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn-border);}
+#mot-app .pill.bad{background:var(--bad-bg); color:var(--bad); border:1px solid var(--bad-border);}
+#mot-app .pill.nodata{background:var(--nodata-bg); color:var(--nodata); border:1px solid var(--nodata-border);}
+#mot-app .dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+#mot-app .dot.good{background:var(--good);}
+#mot-app .dot.warn{background:var(--warn);}
+#mot-app .dot.bad{background:var(--bad);}
+#mot-app .dot.nodata{background:var(--nodata);}
+#mot-app .tbl-scroll{overflow-x:auto;}
+#mot-app table{width:100%; border-collapse:collapse; font-size:12.5px;}
+#mot-app th{text-align:left; padding:9px 10px; background:var(--page); color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; border-bottom:2px solid var(--border); white-space:nowrap; cursor:pointer;}
+#mot-app th:hover{color:var(--accent);}
+#mot-app th.sorted::after{content:' ▾'; color:var(--accent);}
+#mot-app td{padding:9px 10px; border-bottom:1px solid var(--border-soft); vertical-align:middle;}
+#mot-app tr:hover td{background:var(--page);}
+#mot-app .name-cell{font-weight:600;}
+#mot-app .muted{color:var(--muted);}
+#mot-app .right{text-align:right;}
+#mot-app .metric-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:16px; align-items:start;}
+@media (max-width:880px){#mot-app .metric-grid{grid-template-columns:1fr;}
+}
+#mot-app .mini-stat-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
+#mot-app .mini-stat{flex:1; min-width:110px; background:var(--page); border:1px solid var(--border); border-radius:8px; padding:9px 11px;}
+#mot-app .mini-stat .l{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px;}
+#mot-app .mini-stat .v{font-size:16px; font-weight:800; margin-top:2px;}
+#mot-app .leaderboard{display:flex; flex-direction:column; gap:3px;}
+#mot-app .lb-row{display:grid; grid-template-columns:20px 1fr auto; gap:8px; align-items:center; padding:5px 0;}
+#mot-app .lb-rank{font-size:11px; color:var(--muted); font-weight:700;}
+#mot-app .lb-bar-wrap{background:var(--page); border-radius:5px; height:20px; overflow:hidden; position:relative;}
+#mot-app .lb-bar{height:100%; border-radius:5px; display:flex; align-items:center;}
+#mot-app .lb-name{position:absolute; left:8px; top:0; bottom:0; display:flex; align-items:center; font-size:11.5px; color:var(--ink); font-weight:600; text-shadow:0 0 6px var(--surface),0 0 6px var(--surface);}
+#mot-app .lb-val{font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap;}
+#mot-app .chart-wrap{background:var(--page); border:1px solid var(--border); border-radius:10px; padding:10px 12px;}
+#mot-app .chart-legend{display:flex; gap:14px; font-size:11px; color:var(--muted); margin-top:4px;}
+#mot-app .chart-legend span{display:inline-flex; align-items:center; gap:5px;}
+#mot-app .sw{width:13px; height:0; border-top:2px solid currentColor; display:inline-block;}
+#mot-app .sw.dashed{border-top-style:dashed;}
+#mot-app .tier-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+#mot-app .tier-badge{font-size:22px; font-weight:800; color:var(--accent);}
+#mot-app .tier-stats{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-soft);}
+#mot-app .tier-stats b{color:var(--ink); font-variant-numeric:tabular-nums;}
+#mot-app .share-bar{height:8px; border-radius:4px; background:var(--bad-bg); overflow:hidden; margin:8px 0 14px; max-width:420px;}
+#mot-app .share-fill{height:100%; background:var(--good);}
+#mot-app .toggle-row{display:flex; gap:6px;}
+#mot-app .toggle-btn{padding:5px 11px; border:1.5px solid var(--border); background:var(--surface); border-radius:7px; font-size:11.5px; font-weight:600; color:var(--ink-soft); cursor:pointer;}
+#mot-app .toggle-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+#mot-app .empty{text-align:center; padding:30px; color:var(--muted); font-size:13px;}
 </style>
 </head>
 <body>
@@ -114,6 +160,8 @@
     <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
     <div class="nav-section nav-section-role">Мотивация</div>
     <div class="nav-item active"><span class="nav-icon">🏆</span><span class="nav-label">Мотивация кассиров</span></div>
+    <div class="nav-section nav-section-role">Комплаенс</div>
+    <div class="nav-item" onclick="location.href='afm-reconciliation.html'"><span class="nav-icon">🔍</span><span class="nav-label">Сверка АФМ</span></div>
   </nav>
 </aside>
 
@@ -138,143 +186,34 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Мотивация кассиров</h1>
-        <div class="page-sub">Выполнение нормативов, динамика по месяцам, рейтинг A / B / C</div>
+        <div class="page-sub">Реальные данные из «Общая Мотивация кассиров 2026», сверено с эталонным расчётом. Отображаются ФИО и показатели — без сумм выплат.</div>
       </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" id="tab-cashiers" onclick="switchTab('cashiers')">Кассиры</button>
-      <button class="tab" id="tab-settings" onclick="switchTab('settings')">Настройки нормативов</button>
-    </div>
+    <div id="mot-app">
+      <div class="panel" id="filters"></div>
 
-    <!-- ===== CASHIERS TAB ===== -->
-    <div class="tab-pane active" id="pane-cashiers">
-
-      <div class="stats-row" id="stats-row"></div>
-
-      <div class="filters">
-        <span class="f-label">Месяц</span>
-        <select class="f-sel" id="f-month" onchange="applyFilters()"></select>
-        <span class="f-label">Год</span>
-        <select class="f-sel" id="f-year" onchange="applyFilters()"></select>
-        <span class="f-sep"></span>
-        <span class="f-label">Отделение</span>
-        <select class="f-sel" id="f-dept" onchange="applyFilters()"><option value="all">Все</option></select>
-        <span class="f-label">Кассир</span>
-        <select class="f-sel" id="f-emp" onchange="applyFilters()"><option value="all">Все</option></select>
-        <span class="f-sep"></span>
-        <span class="f-label">Статус</span>
-        <select class="f-sel" id="f-tenure" onchange="applyFilters()">
-          <option value="all">Новый и действующий</option>
-          <option value="new">Новый (1-3 мес.)</option>
-          <option value="active">Действующий (4+ мес.)</option>
-        </select>
-        <span class="f-label">Рейтинг</span>
-        <select class="f-sel" id="f-rating" onchange="applyFilters()">
-          <option value="all">Любой</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-        </select>
+      <div class="panel">
+        <div class="panel-title"><span class="n">2</span>Сводные карточки</div>
+        <div class="cards" id="summary-cards"></div>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-        <button class="btn-icon-sm" id="btn-export" onclick="exportExcel()">⬇ Экспорт в Excel</button>
+      <div class="panel">
+        <div class="panel-title"><span class="n">3</span>Общий показатель по трём метрикам</div>
+        <div class="panel-sub" id="overall-formula"></div>
+        <div id="overall-block"></div>
       </div>
 
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>ФИО</th>
-              <th>Отделение</th>
-              <th>Месяц работы</th>
-              <th>Операции</th>
-              <th>Номера</th>
-              <th>Отзывы</th>
-              <th>Общий %</th>
-              <th>Рейтинг</th>
-              <th>Динамика</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-body"></tbody>
-        </table>
-      </div>
-    </div>
+      <div class="panel" id="metric-block-operations"></div>
+      <div class="panel" id="metric-block-phoneNumbers"></div>
+      <div class="panel" id="metric-block-reviews"></div>
 
-    <!-- ===== SETTINGS TAB ===== -->
-    <div class="tab-pane" id="pane-settings">
-      <div class="card" style="background:var(--info-bg);border-color:var(--info-border)">
-        <div style="font-size:13px;color:var(--text)">
-          В демо-версии настройки хранятся в памяти вкладки и сбрасываются при перезагрузке страницы.
-          На бэкенде рекомендуется хранить версии настроек с датой начала действия.
-        </div>
+      <div class="panel">
+        <div class="panel-title"><span class="n">7</span>Лучшие и худшие сотрудники</div>
+        <div id="best-worst"></div>
       </div>
 
-      <div class="card">
-        <div class="section-title"><span class="section-num">1</span> Базовые нормативы (в месяц, действующий кассир)</div>
-        <div class="form-grid-3">
-          <div class="form-group"><label class="form-label">Операции</label><input class="form-input" id="s-norm-ops" type="number"></div>
-          <div class="form-group"><label class="form-label">Номера клиентов</label><input class="form-input" id="s-norm-phone" type="number"></div>
-          <div class="form-group"><label class="form-label">Отзывы</label><input class="form-input" id="s-norm-reviews" type="number"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title"><span class="section-num">2</span> Проценты адаптации по месяцам работы</div>
-        <div class="form-grid-4">
-          <div class="form-group"><label class="form-label">1-й месяц, %</label><input class="form-input" id="s-adapt-1" type="number"></div>
-          <div class="form-group"><label class="form-label">2-й месяц, %</label><input class="form-input" id="s-adapt-2" type="number"></div>
-          <div class="form-group"><label class="form-label">3-й месяц, %</label><input class="form-input" id="s-adapt-3" type="number"></div>
-          <div class="form-group"><label class="form-label">С 4-го месяца, %</label><input class="form-input" id="s-adapt-4" type="number"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title"><span class="section-num">3</span> Веса показателей (нормализуются автоматически)</div>
-        <div class="form-grid-3">
-          <div class="form-group"><label class="form-label">Операции, %</label><input class="form-input" id="s-weight-ops" type="number" step="0.01"></div>
-          <div class="form-group"><label class="form-label">Номера, %</label><input class="form-input" id="s-weight-phone" type="number" step="0.01"></div>
-          <div class="form-group"><label class="form-label">Отзывы, %</label><input class="form-input" id="s-weight-reviews" type="number" step="0.01"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title"><span class="section-num">4</span> Границы рейтинга и минимальный порог показателя</div>
-        <div class="form-grid-3">
-          <div class="form-group"><label class="form-label">Рейтинг A от, %</label><input class="form-input" id="s-rating-a" type="number"></div>
-          <div class="form-group"><label class="form-label">Рейтинг B от, %</label><input class="form-input" id="s-rating-b" type="number"></div>
-          <div class="form-group"><label class="form-label">Мин. выполнение показателя, %</label><input class="form-input" id="s-min-metric" type="number"></div>
-        </div>
-        <div style="font-size:11px;color:var(--text-mid);margin-top:-8px">Ниже этого порога по любому показателю — итоговый рейтинг не выше C</div>
-      </div>
-
-      <div class="card">
-        <div class="section-title"><span class="section-num">5</span> Округление и расчёт неполного месяца</div>
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label class="form-label">Округление норматива</label>
-            <select class="form-select" id="s-rounding">
-              <option value="ceil">В большую сторону (вверх)</option>
-              <option value="round">До ближайшего целого</option>
-              <option value="floor">В меньшую сторону (вниз)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Неполный месяц считать по</label>
-            <select class="form-select" id="s-partial-method">
-              <option value="calendarDays">Календарным дням</option>
-              <option value="workDays">Рабочим дням</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="submit-row">
-        <button class="btn-secondary" onclick="resetSettingsToDefaults()">↺ Сбросить к значениям по умолчанию</button>
-        <div class="footer-space"></div>
-        <button class="btn-primary" onclick="saveSettings()">💾 Сохранить настройки</button>
-      </div>
+      <div id="tier-blocks"></div>
     </div>
 
   </div>
@@ -285,536 +224,567 @@
   </footer>
 </div>
 
-<!-- CASHIER CARD DRAWER -->
-<div class="drawer-overlay" id="drawer-overlay" onclick="closeCashierCard()"></div>
-<div class="card-drawer" id="card-drawer" style="display:none"></div>
-
 <script>
 /* ============================================================
-   DATA MODEL — mirrors react/cashier-motivation/{types,mockData}.ts
+   REAL DATA — extracted from "Общая Мотивация кассиров 2026 (2).xlsx"
+   лист "Общий" (факт по месяцам, 3 отдельные мини-таблицы: Алматы/
+   Астана/Актобе, у каждой свои столбцы) + лист "Свод" (дата приёма,
+   только часть кассиров Алматы). Ничего не выдумано и не досочинено —
+   пропуски оставлены пропусками (null / нет записи), а не нулями.
    ============================================================ */
-const REPORT_YEAR = 2026, REPORT_MONTH = 7;
+const EMPLOYEES = [{"id": "азрет-геккиев", "fullName": "Азрет Геккиев", "branch": "Алматы"}, {"id": "айгерім-сеңгірбай", "fullName": "Айгерім Сеңгірбай", "branch": "Астана"}, {"id": "айнура-айтжанова", "fullName": "Айнура Айтжанова", "branch": "Астана"}, {"id": "алина-есенбай", "fullName": "Алина Есенбай", "branch": "Алматы"}, {"id": "алия-исалина", "fullName": "Алия Исалина", "branch": "Астана"}, {"id": "алтынай-әміржан", "fullName": "Алтынай Әміржан", "branch": "Актобе"}, {"id": "асанова-гульмира", "fullName": "Асанова Гульмира", "branch": "Алматы"}, {"id": "асем-бадамбекова", "fullName": "Асем Бадамбекова", "branch": "Астана"}, {"id": "ақырыс-мұрат", "fullName": "Ақырыс Мұрат", "branch": "Алматы"}, {"id": "гулим-муртазаева", "fullName": "Гулим Муртазаева", "branch": "Алматы"}, {"id": "гулназ-ешмухаметова", "fullName": "Гулназ Ешмухаметова", "branch": "Алматы"}, {"id": "гульмира-омарова", "fullName": "Гульмира Омарова", "branch": "Астана"}, {"id": "динара-оразгулова", "fullName": "Динара Оразгулова", "branch": "Алматы"}, {"id": "жазира-исмаилова", "fullName": "Жазира Исмаилова", "branch": "Алматы"}, {"id": "жанар-алпысбай", "fullName": "Жанар Алпысбай", "branch": "Алматы"}, {"id": "жанаргүл-адақ", "fullName": "Жанаргүл Адақ", "branch": "Астана"}, {"id": "индира-ибраева", "fullName": "Индира Ибраева", "branch": "Астана"}, {"id": "кубиева-алия", "fullName": "Кубиева Алия", "branch": "Астана"}, {"id": "куралай-алипова", "fullName": "Куралай Алипова", "branch": "Алматы"}, {"id": "лаззат-жумаева", "fullName": "Лаззат Жумаева", "branch": "Астана"}, {"id": "маржан-раимжанова", "fullName": "Маржан Раимжанова", "branch": "Алматы"}, {"id": "меруерт-төлеуқызы", "fullName": "Меруерт Төлеуқызы", "branch": "Астана"}, {"id": "нургуль-жомарт", "fullName": "Нургуль Жомарт", "branch": "Астана"}, {"id": "оскенгулова-бакытгуль", "fullName": "Оскенгулова Бакытгуль", "branch": "Астана"}, {"id": "сейдалиева-карлыгаш", "fullName": "Сейдалиева Карлыгаш", "branch": "Алматы"}, {"id": "сымбат-шахар", "fullName": "Сымбат Шахар", "branch": "Алматы"}, {"id": "тахминам-козиева", "fullName": "Тахминам Козиева", "branch": "Алматы"}, {"id": "токжан-акенева", "fullName": "Токжан Акенева", "branch": "Алматы"}, {"id": "улар-примбетов", "fullName": "Улар Примбетов", "branch": "Алматы"}, {"id": "шынар-бадамбекова", "fullName": "Шынар Бадамбекова", "branch": "Алматы"}];
+const FACTS = [{"employeeId": "гулим-муртазаева", "period": "2025-12", "operations": 2639, "phoneNumbers": 1471}, {"employeeId": "тахминам-козиева", "period": "2025-12", "operations": 1784, "phoneNumbers": 11}, {"employeeId": "шынар-бадамбекова", "period": "2025-12", "operations": 1781, "phoneNumbers": 531}, {"employeeId": "гулназ-ешмухаметова", "period": "2025-12", "operations": 1614, "phoneNumbers": 1102}, {"employeeId": "сымбат-шахар", "period": "2025-12", "operations": 1204, "phoneNumbers": 4}, {"employeeId": "азрет-геккиев", "period": "2025-12", "operations": 1044, "phoneNumbers": 7}, {"employeeId": "алина-есенбай", "period": "2025-12", "operations": 352, "phoneNumbers": 8}, {"employeeId": "динара-оразгулова", "period": "2025-12", "operations": 36, "phoneNumbers": 26}, {"employeeId": "гулим-муртазаева", "period": "2026-01", "operations": 1264, "phoneNumbers": 832}, {"employeeId": "тахминам-козиева", "period": "2026-01", "operations": 1331, "phoneNumbers": 228}, {"employeeId": "шынар-бадамбекова", "period": "2026-01", "operations": 1041, "phoneNumbers": 258}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-01", "operations": 909, "phoneNumbers": 562}, {"employeeId": "сымбат-шахар", "period": "2026-01", "operations": 763, "phoneNumbers": 8}, {"employeeId": "азрет-геккиев", "period": "2026-01", "operations": 992, "phoneNumbers": 27}, {"employeeId": "алина-есенбай", "period": "2026-01", "operations": 613, "phoneNumbers": 30}, {"employeeId": "динара-оразгулова", "period": "2026-01", "operations": 724, "phoneNumbers": 383}, {"employeeId": "жазира-исмаилова", "period": "2026-01", "operations": 386, "phoneNumbers": 242}, {"employeeId": "токжан-акенева", "period": "2026-01", "operations": 554, "phoneNumbers": 7}, {"employeeId": "гулим-муртазаева", "period": "2026-02", "operations": 1225, "phoneNumbers": 876}, {"employeeId": "тахминам-козиева", "period": "2026-02", "operations": 914, "phoneNumbers": 415}, {"employeeId": "шынар-бадамбекова", "period": "2026-02", "operations": 645, "phoneNumbers": 359}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-02", "operations": 736, "phoneNumbers": 448}, {"employeeId": "сымбат-шахар", "period": "2026-02", "operations": 965, "phoneNumbers": 71}, {"employeeId": "азрет-геккиев", "period": "2026-02", "operations": 1056, "phoneNumbers": 436}, {"employeeId": "алина-есенбай", "period": "2026-02", "operations": 172, "phoneNumbers": 31}, {"employeeId": "динара-оразгулова", "period": "2026-02", "operations": 725, "phoneNumbers": 435}, {"employeeId": "жазира-исмаилова", "period": "2026-02", "operations": 680, "phoneNumbers": 353}, {"employeeId": "токжан-акенева", "period": "2026-02", "operations": 435, "phoneNumbers": 217}, {"employeeId": "гулим-муртазаева", "period": "2026-03", "operations": 1303, "phoneNumbers": 991}, {"employeeId": "тахминам-козиева", "period": "2026-03", "operations": 1659, "phoneNumbers": 829}, {"employeeId": "шынар-бадамбекова", "period": "2026-03", "operations": 710, "phoneNumbers": 427, "reviews": 3}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-03", "operations": 918, "phoneNumbers": 682, "reviews": 1}, {"employeeId": "сымбат-шахар", "period": "2026-03", "operations": 1270, "phoneNumbers": 200}, {"employeeId": "азрет-геккиев", "period": "2026-03", "operations": 1098, "phoneNumbers": 776, "reviews": 13}, {"employeeId": "алина-есенбай", "period": "2026-03", "operations": 127, "phoneNumbers": 9}, {"employeeId": "динара-оразгулова", "period": "2026-03", "operations": 906, "phoneNumbers": 617, "reviews": 9}, {"employeeId": "жазира-исмаилова", "period": "2026-03", "operations": 741, "phoneNumbers": 406, "reviews": 3}, {"employeeId": "токжан-акенева", "period": "2026-03", "operations": 488, "phoneNumbers": 340}, {"employeeId": "гулим-муртазаева", "period": "2026-04", "operations": 1479, "phoneNumbers": 879}, {"employeeId": "тахминам-козиева", "period": "2026-04", "operations": 1554, "phoneNumbers": 645}, {"employeeId": "шынар-бадамбекова", "period": "2026-04", "operations": 1067, "phoneNumbers": 488, "reviews": 7}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-04", "operations": 1114, "phoneNumbers": 531, "reviews": 1}, {"employeeId": "сымбат-шахар", "period": "2026-04", "operations": 1351, "phoneNumbers": 84}, {"employeeId": "азрет-геккиев", "period": "2026-04", "operations": 1680, "phoneNumbers": 584, "reviews": 1}, {"employeeId": "алина-есенбай", "period": "2026-04", "operations": 39, "phoneNumbers": 12}, {"employeeId": "динара-оразгулова", "period": "2026-04", "operations": 971, "phoneNumbers": 479, "reviews": 12}, {"employeeId": "жазира-исмаилова", "period": "2026-04", "operations": 360, "phoneNumbers": 155}, {"employeeId": "куралай-алипова", "period": "2026-04", "operations": 570, "phoneNumbers": 212}, {"employeeId": "токжан-акенева", "period": "2026-04", "operations": 520, "phoneNumbers": 276}, {"employeeId": "гулим-муртазаева", "period": "2026-05", "operations": 2244, "phoneNumbers": 1250}, {"employeeId": "тахминам-козиева", "period": "2026-05", "operations": 1820, "phoneNumbers": 680}, {"employeeId": "шынар-бадамбекова", "period": "2026-05", "operations": 856, "phoneNumbers": 386, "reviews": 17}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-05", "operations": 717, "phoneNumbers": 309}, {"employeeId": "сымбат-шахар", "period": "2026-05", "operations": 1477, "phoneNumbers": 135}, {"employeeId": "азрет-геккиев", "period": "2026-05", "operations": 1982, "phoneNumbers": 625, "reviews": 18}, {"employeeId": "алина-есенбай", "period": "2026-05", "operations": 224, "phoneNumbers": 19, "reviews": 6}, {"employeeId": "динара-оразгулова", "period": "2026-05", "operations": 970, "phoneNumbers": 406, "reviews": 16}, {"employeeId": "жазира-исмаилова", "period": "2026-05", "operations": 845, "phoneNumbers": 345, "reviews": 1}, {"employeeId": "куралай-алипова", "period": "2026-05", "operations": 996, "phoneNumbers": 179, "reviews": 1}, {"employeeId": "токжан-акенева", "period": "2026-05", "operations": 562, "phoneNumbers": 239}, {"employeeId": "асанова-гульмира", "period": "2026-05", "operations": 1008, "phoneNumbers": 248}, {"employeeId": "гулим-муртазаева", "period": "2026-06", "operations": 1921, "phoneNumbers": 1026, "reviews": 104}, {"employeeId": "тахминам-козиева", "period": "2026-06", "operations": 1685, "phoneNumbers": 568}, {"employeeId": "шынар-бадамбекова", "period": "2026-06", "operations": 1117, "phoneNumbers": 452, "reviews": 31}, {"employeeId": "гулназ-ешмухаметова", "period": "2026-06", "operations": 1166, "phoneNumbers": 502, "reviews": 5}, {"employeeId": "сымбат-шахар", "period": "2026-06", "operations": 1746, "phoneNumbers": 283, "reviews": 33}, {"employeeId": "азрет-геккиев", "period": "2026-06", "operations": 2370, "phoneNumbers": 1145, "reviews": 168}, {"employeeId": "алина-есенбай", "period": "2026-06", "operations": 963, "phoneNumbers": 101, "reviews": 3}, {"employeeId": "динара-оразгулова", "period": "2026-06", "operations": 657, "phoneNumbers": 333, "reviews": 15}, {"employeeId": "куралай-алипова", "period": "2026-06", "operations": 1913, "phoneNumbers": 445}, {"employeeId": "токжан-акенева", "period": "2026-06", "operations": 548, "phoneNumbers": 262, "reviews": 2}, {"employeeId": "асанова-гульмира", "period": "2026-06", "operations": 1906, "phoneNumbers": 461, "reviews": 35}, {"employeeId": "ақырыс-мұрат", "period": "2026-06", "operations": 644, "phoneNumbers": 197, "reviews": 26}, {"employeeId": "жанар-алпысбай", "period": "2026-06", "operations": 774, "phoneNumbers": 302}, {"employeeId": "сейдалиева-карлыгаш", "period": "2026-06", "operations": 152, "phoneNumbers": 72}, {"employeeId": "маржан-раимжанова", "period": "2026-06", "operations": 257, "phoneNumbers": 77}, {"employeeId": "улар-примбетов", "period": "2026-06", "operations": 73, "phoneNumbers": 45}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-01", "operations": 142}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-02", "operations": 616, "phoneNumbers": 301}, {"employeeId": "асем-бадамбекова", "period": "2026-02", "operations": 1479, "phoneNumbers": 582, "reviews": 6}, {"employeeId": "алия-исалина", "period": "2026-02", "operations": 671}, {"employeeId": "нургуль-жомарт", "period": "2026-02", "operations": 440, "phoneNumbers": 160, "reviews": 10}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-03", "operations": 987, "phoneNumbers": 626, "reviews": 20}, {"employeeId": "асем-бадамбекова", "period": "2026-03", "operations": 1500, "phoneNumbers": 817, "reviews": 10}, {"employeeId": "алия-исалина", "period": "2026-03", "operations": 884, "phoneNumbers": 342, "reviews": 4}, {"employeeId": "нургуль-жомарт", "period": "2026-03", "operations": 1586, "phoneNumbers": 727, "reviews": 17}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-04", "operations": 1220, "phoneNumbers": 670, "reviews": 39}, {"employeeId": "асем-бадамбекова", "period": "2026-04", "operations": 1750, "phoneNumbers": 675, "reviews": 27}, {"employeeId": "алия-исалина", "period": "2026-04", "operations": 837, "phoneNumbers": 425, "reviews": 12}, {"employeeId": "нургуль-жомарт", "period": "2026-04", "operations": 1847, "phoneNumbers": 653, "reviews": 44}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-05", "operations": 1270, "phoneNumbers": 628, "reviews": 29}, {"employeeId": "асем-бадамбекова", "period": "2026-05", "operations": 1786, "phoneNumbers": 542, "reviews": 6}, {"employeeId": "алия-исалина", "period": "2026-05", "operations": 1516, "phoneNumbers": 668, "reviews": 5}, {"employeeId": "нургуль-жомарт", "period": "2026-05", "operations": 1511, "phoneNumbers": 408, "reviews": 8}, {"employeeId": "оскенгулова-бакытгуль", "period": "2026-05", "operations": 1188, "phoneNumbers": 163}, {"employeeId": "айгерім-сеңгірбай", "period": "2026-06", "operations": 1433, "phoneNumbers": 683, "reviews": 50}, {"employeeId": "асем-бадамбекова", "period": "2026-06", "operations": 1057, "phoneNumbers": 284, "reviews": 39}, {"employeeId": "алия-исалина", "period": "2026-06", "operations": 1193, "phoneNumbers": 590, "reviews": 71}, {"employeeId": "нургуль-жомарт", "period": "2026-06", "operations": 1945, "phoneNumbers": 528, "reviews": 37}, {"employeeId": "оскенгулова-бакытгуль", "period": "2026-06", "operations": 1895, "phoneNumbers": 477, "reviews": 67}, {"employeeId": "айнура-айтжанова", "period": "2026-06", "operations": 224, "phoneNumbers": 86, "reviews": 11}, {"employeeId": "кубиева-алия", "period": "2026-06", "operations": 1120, "phoneNumbers": 460, "reviews": 89}, {"employeeId": "гульмира-омарова", "period": "2026-06", "operations": 318, "phoneNumbers": 177, "reviews": 5}, {"employeeId": "жанаргүл-адақ", "period": "2026-06", "operations": 250, "phoneNumbers": 46, "reviews": 7}, {"employeeId": "индира-ибраева", "period": "2026-06", "operations": 86, "phoneNumbers": 47, "reviews": 13}, {"employeeId": "лаззат-жумаева", "period": "2026-06", "operations": 134, "phoneNumbers": 75, "reviews": 2}, {"employeeId": "меруерт-төлеуқызы", "period": "2026-06", "operations": 835, "phoneNumbers": 291, "reviews": 2}, {"employeeId": "алтынай-әміржан", "period": "2026-06", "operations": 61, "phoneNumbers": 13}];
 
-const DEPARTMENTS = [
-  { id:'dep-apo', name:'АПОРТ' },
-  { id:'dep-mega', name:'Мега Алматы' },
-  { id:'dep-dostyk', name:'Достык Плаза' },
-];
+const BASE_NORMS = { operations: 1200, phoneNumbers: 359, reviews: 22 };
+/** Ограничение KPI: при расчёте ОБЩЕГО % каждый отдельный показатель учитывается
+    не более чем 131% (перевыполнение по одному показателю не должно раздувать
+    средний балл) — сверено с эталонным расчётом (файл "рейтинг_кассиров_по_месяцам").
+    На сами показатели по отдельности (в блоках 4-6) ограничение не влияет — там
+    факт/норматив/% показаны как есть, без потолка. */
+const KPI_CAP = 131;
+const METRICS = ['operations', 'phoneNumbers', 'reviews'];
+const METRIC_LABELS = { operations: 'Операции', phoneNumbers: 'Номера клиентов', reviews: 'Отзывы' };
+const METRIC_UNITS = { operations: 'операций', phoneNumbers: 'номеров', reviews: 'отзывов' };
 
-const EMPLOYEES = [
-  { id:'emp-smirnova', fullName:'Смирнова Е.В.', departmentId:'dep-apo', hireDate:'2026-07-15' },
-  { id:'emp-kasymov', fullName:'Касымов А.Б.', departmentId:'dep-mega', hireDate:'2026-06-01' },
-  { id:'emp-nurlanov', fullName:'Нурланов Е.С.', departmentId:'dep-dostyk', hireDate:'2026-05-01' },
-  { id:'emp-petrov', fullName:'Петров С.И.', departmentId:'dep-apo', hireDate:'2025-01-10' },
-  { id:'emp-akhmetova', fullName:'Ахметова Д.К.', departmentId:'dep-apo', hireDate:'2024-03-01' },
-  { id:'emp-baizhanov', fullName:'Байжанов Т.М.', departmentId:'dep-mega', hireDate:'2023-11-15' },
-  { id:'emp-ospanova', fullName:'Оспанова Г.Р.', departmentId:'dep-dostyk', hireDate:'2022-05-01' },
-  { id:'emp-zhumabaeva', fullName:'Жумабаева С.А.', departmentId:'dep-apo', hireDate:null },
-  { id:'emp-tulegenova', fullName:'Тулегенова А.С.', departmentId:'dep-mega', hireDate:'2024-08-01' },
-  { id:'emp-dyusembaeva', fullName:'Дюсембаева К.Н.', departmentId:'dep-apo', hireDate:'2023-02-01' },
-];
+const ALL_PERIODS = [...new Set(FACTS.map(f => f.period))].sort();
+const BRANCHES = [...new Set(EMPLOYEES.map(e => e.branch))].sort();
 
-function f(o){ return Object.assign({ absenceDays:0, hasData:true }, o); }
+function periodLabel(p) {
+  const names = { '01':'янв','02':'фев','03':'мар','04':'апр','05':'май','06':'июн','07':'июл','08':'авг','09':'сен','10':'окт','11':'ноя','12':'дек' };
+  const [y, m] = p.split('-');
+  return names[m] + ' ' + y.slice(2);
+}
 
-const MONTHLY_FACTS = [
-  f({ employeeId:'emp-smirnova', departmentId:'dep-apo', year:2026, month:7, operations:210, phoneNumbers:60, reviews:3 }),
+const factsIndex = {};
+FACTS.forEach(f => { factsIndex[f.employeeId + '|' + f.period] = f; });
+function factsFor(employeeId, period) { return factsIndex[employeeId + '|' + period]; }
 
-  f({ employeeId:'emp-kasymov', departmentId:'dep-mega', year:2026, month:6, operations:380, phoneNumbers:110, reviews:5 }),
-  f({ employeeId:'emp-kasymov', departmentId:'dep-mega', year:2026, month:7, operations:480, phoneNumbers:160, reviews:6 }),
+function tierFactor(mw) {
+  if (mw == null || mw < 1) return null;
+  if (mw === 1) return 0.30;
+  if (mw === 2) return 0.50;
+  if (mw === 3) return 0.70;
+  return 1.0;
+}
+function tierValue(mw) {
+  if (mw == null || mw < 1) return null;
+  if (mw === 1) return 30;
+  if (mw === 2) return 50;
+  if (mw === 3) return 70;
+  return 100;
+}
+function hasAnyFact(employeeId, period) {
+  const f = factsFor(employeeId, period);
+  return !!(f && (f.operations != null || f.phoneNumbers != null || f.reviews != null));
+}
 
-  f({ employeeId:'emp-nurlanov', departmentId:'dep-dostyk', year:2026, month:5, operations:330, phoneNumbers:95, reviews:4 }),
-  f({ employeeId:'emp-nurlanov', departmentId:'dep-dostyk', year:2026, month:6, operations:500, phoneNumbers:150, reviews:6 }),
-  f({ employeeId:'emp-nurlanov', departmentId:'dep-dostyk', year:2026, month:7, operations:820, phoneNumbers:230, reviews:9 }),
+/**
+ * Показатель «отслеживается» для города+месяца:
+ * — операции/номера: отслеживаются всегда, как только по городу вообще есть данные;
+ * — отзывы: сверено с эталонным расчётом — начинают учитываться с ФЕВРАЛЯ 2026
+ *   для Алматы и Астаны (это дата, с которой отзывы стали частью норматива, а не
+ *   дата первого реального отзыва — до марта в Алматы фактических отзывов не было,
+ *   но с февраля 0 отзывов уже засчитывается как невыполнение, а не «нет данных»),
+ *   и никогда для Актобе (отзывы там не собираются вовсе).
+ * Если показатель отслеживается, а у кассира ячейка пуста — это факт 0
+ * (провал по метрике), а не пропуск/«нет данных».
+ */
+const REVIEWS_TRACKED_FROM = '2026-02';
+const trackedCache = {};
+function metricTracked(branch, period, metric) {
+  if (metric === 'reviews') {
+    return branch !== 'Актобе' && period >= REVIEWS_TRACKED_FROM;
+  }
+  const key = branch + '|' + period + '|' + metric;
+  if (trackedCache[key] !== undefined) return trackedCache[key];
+  const result = EMPLOYEES.some(e => {
+    if (e.branch !== branch) return false;
+    const f = factsFor(e.id, period);
+    return !!(f && f[metric] != null);
+  });
+  trackedCache[key] = result;
+  return result;
+}
 
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:2, operations:1250, phoneNumbers:370, reviews:16 }),
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:3, operations:1280, phoneNumbers:375, reviews:16 }),
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:4, operations:1300, phoneNumbers:380, reviews:17 }),
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:5, operations:1320, phoneNumbers:385, reviews:17 }),
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:6, operations:1350, phoneNumbers:390, reviews:18 }),
-  f({ employeeId:'emp-petrov', departmentId:'dep-apo', year:2026, month:7, operations:1400, phoneNumbers:400, reviews:19 }),
+/**
+ * Стаж считается ИСКЛЮЧИТЕЛЬНО по истории появления в «Общем» (сколько месяцев
+ * подряд у кассира есть хоть какие-то данные, считая назад от `period`) — сверено
+ * построчно с эталонным расчётом («Месяц работы подряд»), который делает так
+ * для ВСЕХ кассиров одинаково, даже для тех, у кого известна дата приёма из
+ * «Свод». Дата приёма в файле для норматива не используется вовсе (только
+ * показана в детальной информации как справочная). Если между появлениями был
+ * разрыв (месяц без данных) — отсчёт стажа начинается заново, кассир как будто
+ * только начал работать.
+ */
+function monthsWorkedFromHistory(employeeId, period) {
+  const idx = ALL_PERIODS.indexOf(period);
+  if (idx < 0 || !hasAnyFact(employeeId, period)) return null;
+  let run = 1;
+  for (let i = idx - 1; i >= 0; i--) {
+    if (hasAnyFact(employeeId, ALL_PERIODS[i])) run++; else break;
+  }
+  return run;
+}
 
-  f({ employeeId:'emp-akhmetova', departmentId:'dep-apo', year:2026, month:6, operations:1100, phoneNumbers:330, reviews:13 }),
-  f({ employeeId:'emp-akhmetova', departmentId:'dep-apo', year:2026, month:7, operations:1000, phoneNumbers:300, reviews:11 }),
+function normForMonth(metric, emp, period) {
+  const tf = tierFactor(monthsWorkedFromHistory(emp.id, period));
+  if (tf == null) return null;
+  return Math.round(BASE_NORMS[metric] * tf);
+}
 
-  f({ employeeId:'emp-baizhanov', departmentId:'dep-mega', year:2026, month:6, operations:1300, phoneNumbers:380, reviews:10 }),
-  f({ employeeId:'emp-baizhanov', departmentId:'dep-mega', year:2026, month:7, operations:1400, phoneNumbers:400, reviews:6 }),
+/**
+ * Aggregates fact + norm for one employee across a set of periods.
+ * Месяцы, в которых показатель вообще не отслеживался (см. metricTracked),
+ * пропускаются (честное «нет данных»). Месяцы, где показатель отслеживался,
+ * но у этого кассира пусто — считаются как факт 0 (реальный провал по метрике).
+ */
+function aggregateEmployee(emp, periods) {
+  const m = {};
+  METRICS.forEach(k => { m[k] = { fact: 0, norm: 0, hasFact: false, hasNorm: false }; });
+  let lastDataPeriod = null;
+  periods.forEach(p => {
+    const f = factsFor(emp.id, p);
+    if (f) lastDataPeriod = p;
+    METRICS.forEach(k => {
+      if (f && f[k] != null) {
+        m[k].fact += f[k]; m[k].hasFact = true;
+      } else if (metricTracked(emp.branch, p, k)) {
+        m[k].hasFact = true; // отслеживалось, но у кассира 0 — это тоже факт, не пропуск
+      }
+      const n = normForMonth(k, emp, p);
+      if (n != null) { m[k].norm += n; m[k].hasNorm = true; }
+    });
+  });
+  METRICS.forEach(k => {
+    m[k].percent = (m[k].hasFact && m[k].hasNorm && m[k].norm > 0) ? (m[k].fact / m[k].norm * 100) : null;
+  });
+  const available = METRICS.filter(k => m[k].percent != null);
+  // Общий % считается по показателям, каждый из которых предварительно "подрезан" до KPI_CAP.
+  const overall = available.length
+    ? available.reduce((s, k) => s + Math.min(m[k].percent, KPI_CAP), 0) / available.length
+    : null;
+  const tier = lastDataPeriod ? tierValue(monthsWorkedFromHistory(emp.id, lastDataPeriod)) : null;
 
-  f({ employeeId:'emp-ospanova', departmentId:'dep-dostyk', year:2026, month:6, operations:720, phoneNumbers:230, reviews:9 }),
-  f({ employeeId:'emp-ospanova', departmentId:'dep-dostyk', year:2026, month:7, operations:700, phoneNumbers:220, reviews:8 }),
+  // Рейтинг A требует выполнения НОРМАТИВА ПО КАЖДОМУ из трёх показателей, а не
+  // только хорошего среднего — иначе перевыполнение по одной метрике маскирует
+  // провал по другой. Плюс жёсткий пол: если хоть один показатель < 50% —
+  // рейтинг не может быть выше C, даже если по остальным сильное перевыполнение.
+  const allMet = available.length > 0 && available.every(k => m[k].percent >= 100);
+  const minPercent = available.length ? Math.min(...available.map(k => m[k].percent)) : null;
+  let status = 'nodata';
+  if (overall != null) {
+    if (minPercent < 50) status = 'bad';
+    else if (overall >= 100 && allMet) status = 'good';
+    else if (overall >= 80) status = 'warn';
+    else status = 'bad';
+  }
+  return { employee: emp, metrics: m, overall, overallCount: available.length, allMet, minPercent, tier, status };
+}
 
-  f({ employeeId:'emp-zhumabaeva', departmentId:'dep-apo', year:2026, month:7, operations:1250, phoneNumbers:365, reviews:16 }),
-
-  f({ employeeId:'emp-tulegenova', departmentId:'dep-mega', year:2026, month:6, operations:1150, phoneNumbers:340, reviews:14 }),
-
-  f({ employeeId:'emp-dyusembaeva', departmentId:'dep-mega', year:2026, month:3, operations:1150, phoneNumbers:345, reviews:14 }),
-  f({ employeeId:'emp-dyusembaeva', departmentId:'dep-apo', year:2026, month:4, operations:1180, phoneNumbers:350, reviews:14 }),
-  f({ employeeId:'emp-dyusembaeva', departmentId:'dep-apo', year:2026, month:5, operations:950, phoneNumbers:270, reviews:10, absenceDays:5 }),
-  f({ employeeId:'emp-dyusembaeva', departmentId:'dep-apo', year:2026, month:6, operations:0, phoneNumbers:0, reviews:0, hasData:false }),
-  f({ employeeId:'emp-dyusembaeva', departmentId:'dep-apo', year:2026, month:7, operations:1200, phoneNumbers:360, reviews:15 }),
-];
-
-const DEFAULT_SETTINGS = {
-  baseNorms: { operations:1200, phoneNumbers:359, reviews:15 },
-  adaptationPercents: { month1:0.30, month2:0.50, month3:0.70, fromMonth4:1 },
-  weights: { operations:1/3, phoneNumbers:1/3, reviews:1/3 },
-  ratingThresholds: { aMin:100, bMin:80 },
-  minMetricThreshold: 50,
-  roundingMode: 'ceil',
-  partialMonthMethod: 'calendarDays',
+/* ============================================================
+   FILTER STATE
+   ============================================================ */
+let filters = {
+  periods: [...ALL_PERIODS],
+  branch: 'all',
+  employeeId: 'all',
+  tier: 'all',
+  status: 'all',
+  bestWorst: 'all',
+  topN: 10,
 };
-let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
-/* ============================================================
-   CALC ENGINE — mirrors react/cashier-motivation/calc/{dates,engine}.ts
-   ============================================================ */
-function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
-
-function countCalendarDays(start, end){
-  if (start > end) return 0;
-  const s = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-  const e = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-  return Math.round((e - s) / 86400000) + 1;
+let periodDropdownOpen = false;
+function togglePeriodDropdown(e) {
+  if (e) e.stopPropagation();
+  periodDropdownOpen = !periodDropdownOpen;
+  render();
 }
-
-function countWorkDays(start, end){
-  if (start > end) return 0;
-  let count = 0;
-  const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-  while (cur <= last) { const d = cur.getDay(); if (d !== 0 && d !== 6) count++; cur.setDate(cur.getDate() + 1); }
-  return count;
-}
-
-function calcMonthsWorked(hireDateIso, reportYear, reportMonth){
-  if (!hireDateIso) return null;
-  const hd = new Date(hireDateIso);
-  const months = (reportYear - hd.getFullYear()) * 12 + (reportMonth - (hd.getMonth() + 1)) + 1;
-  return Math.max(1, months);
-}
-
-function calcProrationFactor({ year, month, hireDateIso, absenceDays, method }){
-  const monthStart = new Date(year, month - 1, 1);
-  const monthEnd = new Date(year, month - 1, daysInMonth(year, month));
-  const hireDate = hireDateIso ? new Date(hireDateIso) : null;
-  const periodStart = (hireDate && hireDate > monthStart) ? hireDate : monthStart;
-  if (periodStart > monthEnd) return 0;
-  const totalUnits = method === 'workDays' ? countWorkDays(monthStart, monthEnd) : countCalendarDays(monthStart, monthEnd);
-  const rawWorked = method === 'workDays' ? countWorkDays(periodStart, monthEnd) : countCalendarDays(periodStart, monthEnd);
-  const worked = Math.max(0, Math.min(rawWorked - absenceDays, totalUnits));
-  if (totalUnits === 0) return 1;
-  return worked / totalUnits;
-}
-
-function applyRounding(value, mode){
-  if (mode === 'floor') return Math.floor(value);
-  if (mode === 'round') return Math.round(value);
-  return Math.ceil(value); // default: "в большую сторону"
-}
-
-function calcAdaptationFactor(monthsWorked, s){
-  if (monthsWorked <= 1) return s.adaptationPercents.month1;
-  if (monthsWorked === 2) return s.adaptationPercents.month2;
-  if (monthsWorked === 3) return s.adaptationPercents.month3;
-  return s.adaptationPercents.fromMonth4;
-}
-
-function calcIndividualNorm(baseNorm, monthsWorked, s, prorationFactor){
-  if (prorationFactor === undefined) prorationFactor = 1;
-  const af = calcAdaptationFactor(monthsWorked, s);
-  return applyRounding(baseNorm * af * prorationFactor, s.roundingMode);
-}
-
-function calcPercent(fact, norm){ return norm > 0 ? (fact / norm) * 100 : null; }
-
-function calcOverallPercent(percents, weights){
-  const tw = weights.operations + weights.phoneNumbers + weights.reviews;
-  if (tw <= 0) return 0;
-  return (percents.operations * weights.operations + percents.phoneNumbers * weights.phoneNumbers + percents.reviews * weights.reviews) / tw;
-}
-
-function calcRating(overallPercent, percents, s){
-  let base = overallPercent >= s.ratingThresholds.aMin ? 'A' : overallPercent >= s.ratingThresholds.bMin ? 'B' : 'C';
-  const minP = Math.min(percents.operations, percents.phoneNumbers, percents.reviews);
-  const capped = minP < s.minMetricThreshold && base !== 'C';
-  return { rating: capped ? 'C' : base, capped };
-}
-
-function calcDynamics(cur, prev){
-  if (cur == null || prev == null) return { delta: null, direction: 'no-data' };
-  const d = cur - prev;
-  if (d > 0) return { delta: d, direction: 'up' };
-  if (d < 0) return { delta: d, direction: 'down' };
-  return { delta: 0, direction: 'flat' };
-}
-
-function findFact(employeeId, year, month){
-  return MONTHLY_FACTS.find(x => x.employeeId === employeeId && x.year === year && x.month === month);
-}
-function shiftMonth(year, month, delta){
-  const total = (month - 1) + delta;
-  const y = year + Math.floor(total / 12);
-  const m = ((total % 12) + 12) % 12 + 1;
-  return { year: y, month: m };
-}
-function deptName(id){ const d = DEPARTMENTS.find(x => x.id === id); return d ? d.name : '—'; }
-
-const METRIC_KEYS = ['operations', 'phoneNumbers', 'reviews'];
-
-function computeMonthlyResult(employee, year, month){
-  const fact = findFact(employee.id, year, month);
-  const prevM = shiftMonth(year, month, -1);
-  const previousFact = findFact(employee.id, prevM.year, prevM.month);
-  const hireDateMissing = !employee.hireDate;
-  const monthsWorkedRaw = calcMonthsWorked(employee.hireDate, year, month);
-  const monthsWorked = monthsWorkedRaw == null ? 4 : monthsWorkedRaw;
-
-  const base = {
-    employeeId: employee.id, employeeFullName: employee.fullName,
-    departmentId: fact ? fact.departmentId : employee.departmentId,
-    departmentName: deptName(fact ? fact.departmentId : employee.departmentId),
-    year, month, monthsWorked: monthsWorkedRaw,
-    isNewHire: monthsWorkedRaw != null && monthsWorkedRaw <= 3,
-    hireDateMissing,
-    hasData: !!(fact && fact.hasData),
-  };
-
-  if (!fact || !fact.hasData) {
-    const empty = { fact: 0, norm: 0, percent: null };
-    return Object.assign({}, base, {
-      metrics: { operations: empty, phoneNumbers: empty, reviews: empty },
-      overallPercent: null, rating: null, ratingCapped: false,
-      dynamicsOverall: { delta: null, direction: 'no-data' },
-      dynamicsMetrics: {
-        operations: { delta: null, direction: 'no-data' },
-        phoneNumbers: { delta: null, direction: 'no-data' },
-        reviews: { delta: null, direction: 'no-data' },
-      },
-    });
+document.addEventListener('click', (e) => {
+  if (periodDropdownOpen && !e.target.closest('#period-dropdown-wrap')) {
+    periodDropdownOpen = false;
+    render();
   }
-
-  const prorationFactor = calcProrationFactor({ year, month, hireDateIso: employee.hireDate, absenceDays: fact.absenceDays, method: settings.partialMonthMethod });
-  const baseNorms = settings.baseNorms;
-  const metrics = {}, percents = {};
-  METRIC_KEYS.forEach(key => {
-    const norm = calcIndividualNorm(baseNorms[key], monthsWorked, settings, prorationFactor);
-    const percent = calcPercent(fact[key], norm);
-    metrics[key] = { fact: fact[key], norm, percent };
-    percents[key] = percent == null ? 0 : percent;
-  });
-  const overallPercent = calcOverallPercent(percents, settings.weights);
-  const ratingResult = calcRating(overallPercent, percents, settings);
-
-  let prevPercents = null, prevOverall = null;
-  if (previousFact && previousFact.hasData) {
-    const prevMonthsWorkedRaw = calcMonthsWorked(employee.hireDate, previousFact.year, previousFact.month);
-    const prevMonthsWorked = prevMonthsWorkedRaw == null ? 4 : prevMonthsWorkedRaw;
-    const prevProration = calcProrationFactor({ year: previousFact.year, month: previousFact.month, hireDateIso: employee.hireDate, absenceDays: previousFact.absenceDays, method: settings.partialMonthMethod });
-    prevPercents = {};
-    METRIC_KEYS.forEach(key => {
-      const norm = calcIndividualNorm(baseNorms[key], prevMonthsWorked, settings, prevProration);
-      const p = calcPercent(previousFact[key], norm);
-      prevPercents[key] = p == null ? 0 : p;
-    });
-    prevOverall = calcOverallPercent(prevPercents, settings.weights);
-  }
-
-  const dynamicsMetrics = {};
-  METRIC_KEYS.forEach(key => {
-    dynamicsMetrics[key] = calcDynamics(metrics[key].percent, prevPercents ? prevPercents[key] : null);
-  });
-
-  return Object.assign({}, base, {
-    metrics, overallPercent, rating: ratingResult.rating, ratingCapped: ratingResult.capped,
-    dynamicsOverall: calcDynamics(overallPercent, prevOverall), dynamicsMetrics,
-  });
+});
+function toggleMonth(p, e) {
+  if (e) e.stopPropagation();
+  const i = filters.periods.indexOf(p);
+  if (i >= 0) filters.periods.splice(i, 1); else filters.periods.push(p);
+  filters.periods.sort();
+  render();
+}
+function selectAllMonths(e) { if (e) e.stopPropagation(); filters.periods = [...ALL_PERIODS]; render(); }
+function selectLastMonth(e) { if (e) e.stopPropagation(); filters.periods = [ALL_PERIODS[ALL_PERIODS.length - 1]]; render(); }
+function periodButtonLabel() {
+  if (filters.periods.length === ALL_PERIODS.length) return `Весь период (${ALL_PERIODS.length} мес.)`;
+  if (filters.periods.length === 1) return periodLabel(filters.periods[0]);
+  if (filters.periods.length === 0) return 'Не выбрано';
+  return `${filters.periods.length} мес. выбрано`;
 }
 
-function getResultsForMonth(year, month){ return EMPLOYEES.map(e => computeMonthlyResult(e, year, month)); }
-function getEmployeeHistory(employeeId, year, month, monthsBack){
-  const emp = EMPLOYEES.find(e => e.id === employeeId);
-  const points = [];
-  for (let i = monthsBack - 1; i >= 0; i--) { const s = shiftMonth(year, month, -i); points.push(computeMonthlyResult(emp, s.year, s.month)); }
-  return points;
+function renderFilters() {
+  const el = document.getElementById('filters');
+  el.innerHTML = `
+    <div class="panel-title"><span class="n">1</span>Общие фильтры</div>
+    <div class="filters-grid">
+      <div class="f-group wide period-dropdown-wrap" id="period-dropdown-wrap">
+        <span class="f-label">Период (выпадающий список, можно выбрать несколько месяцев)</span>
+        <button type="button" class="f-sel period-dropdown-btn" onclick="togglePeriodDropdown(event)">
+          <span>${periodButtonLabel()}</span><span>▾</span>
+        </button>
+        <div class="period-dropdown-panel" id="period-panel" style="display:${periodDropdownOpen ? 'block' : 'none'}">
+          <div class="f-actions">
+            <button class="f-btn" onclick="selectAllMonths(event)">Весь период</button>
+            <button class="f-btn" onclick="selectLastMonth(event)">Только последний месяц</button>
+          </div>
+          <div class="period-list">
+            ${ALL_PERIODS.map(p => `
+              <label class="period-item" onclick="event.stopPropagation()">
+                <input type="checkbox" ${filters.periods.includes(p) ? 'checked' : ''} onchange="toggleMonth('${p}', event)">
+                ${periodLabel(p)}
+              </label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Город</span>
+        <select class="f-sel" id="f-branch"></select>
+      </div>
+      <div class="f-group wide">
+        <span class="f-label">Сотрудник</span>
+        <select class="f-sel" id="f-employee"></select>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Норматив</span>
+        <select class="f-sel" id="f-tier">
+          <option value="all">Любой</option>
+          <option value="30">30%</option>
+          <option value="50">50%</option>
+          <option value="70">70%</option>
+          <option value="100">100%</option>
+          <option value="none">Не определён</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Статус выполнения</span>
+        <select class="f-sel" id="f-status">
+          <option value="all">Любой</option>
+          <option value="good">Выполнено (≥100%)</option>
+          <option value="warn">Близко (80–99.9%)</option>
+          <option value="bad">Не выполнено (&lt;80%)</option>
+          <option value="nodata">Нет данных</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Лучшие / худшие</span>
+        <select class="f-sel" id="f-bestworst">
+          <option value="all">Все сотрудники</option>
+          <option value="best">Только лучшие</option>
+          <option value="worst">Только худшие</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Размер рейтинга</span>
+        <select class="f-sel" id="f-topn">
+          <option value="5">Топ-5</option>
+          <option value="10">Топ-10</option>
+          <option value="20">Топ-20</option>
+          <option value="999">Все</option>
+        </select>
+      </div>
+    </div>`;
+
+  const branchSel = document.getElementById('f-branch');
+  branchSel.innerHTML = '<option value="all">Все города</option>' + BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('');
+  branchSel.value = filters.branch;
+  branchSel.onchange = e => { filters.branch = e.target.value; filters.employeeId = 'all'; render(); };
+
+  const empSel = document.getElementById('f-employee');
+  const empList = EMPLOYEES.filter(e => filters.branch === 'all' || e.branch === filters.branch).sort((a, b) => a.fullName.localeCompare(b.fullName, 'ru'));
+  empSel.innerHTML = '<option value="all">Все сотрудники</option>' + empList.map(e => `<option value="${e.id}">${e.fullName}</option>`).join('');
+  empSel.value = filters.employeeId;
+  empSel.onchange = e => { filters.employeeId = e.target.value; render(); };
+
+  document.getElementById('f-tier').value = filters.tier;
+  document.getElementById('f-tier').onchange = e => { filters.tier = e.target.value; render(); };
+  document.getElementById('f-status').value = filters.status;
+  document.getElementById('f-status').onchange = e => { filters.status = e.target.value; render(); };
+  document.getElementById('f-bestworst').value = filters.bestWorst;
+  document.getElementById('f-bestworst').onchange = e => { filters.bestWorst = e.target.value; render(); };
+  document.getElementById('f-topn').value = filters.topN;
+  document.getElementById('f-topn').onchange = e => { filters.topN = Number(e.target.value); render(); };
 }
 
 /* ============================================================
-   RENDER
+   COMPUTE FILTERED CONTEXT
    ============================================================ */
-const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-function fmtPct(v){ return v == null ? '—' : v.toFixed(1) + '%'; }
-function monthShortLabel(y, m){ return String(m).padStart(2,'0') + '.' + String(y).slice(2); }
+function computeContext() {
+  const periods = filters.periods.length ? filters.periods : ALL_PERIODS;
+  let pool = EMPLOYEES.filter(e => filters.branch === 'all' || e.branch === filters.branch);
+  if (filters.employeeId !== 'all') pool = pool.filter(e => e.id === filters.employeeId);
 
-let filters = { year: REPORT_YEAR, month: REPORT_MONTH, departmentId: 'all', employeeId: 'all', tenure: 'all', rating: 'all' };
+  let aggs = pool.map(e => aggregateEmployee(e, periods));
 
-function initFilterOptions(){
-  const monthSel = document.getElementById('f-month');
-  monthSel.innerHTML = MONTH_NAMES.map((n,i) => `<option value="${i+1}">${n}</option>`).join('');
-  monthSel.value = filters.month;
+  if (filters.tier !== 'all') {
+    aggs = aggs.filter(a => filters.tier === 'none' ? a.tier == null : a.tier === Number(filters.tier));
+  }
+  if (filters.status !== 'all') aggs = aggs.filter(a => a.status === filters.status);
 
-  const yearSel = document.getElementById('f-year');
-  yearSel.innerHTML = [REPORT_YEAR-1, REPORT_YEAR, REPORT_YEAR+1].map(y => `<option value="${y}">${y}</option>`).join('');
-  yearSel.value = filters.year;
+  if (filters.bestWorst !== 'all') {
+    const ranked = aggs.filter(a => a.overall != null).sort((a, b) => b.overall - a.overall);
+    const n = Math.min(filters.topN, ranked.length);
+    aggs = filters.bestWorst === 'best' ? ranked.slice(0, n) : ranked.slice(-n).reverse();
+  }
 
-  const deptSel = document.getElementById('f-dept');
-  deptSel.innerHTML = '<option value="all">Все</option>' + DEPARTMENTS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-
-  const empSel = document.getElementById('f-emp');
-  empSel.innerHTML = '<option value="all">Все</option>' + EMPLOYEES.map(e => `<option value="${e.id}">${e.fullName}</option>`).join('');
+  return { periods, aggs };
 }
 
-function readFiltersFromForm(){
-  filters.month = Number(document.getElementById('f-month').value);
-  filters.year = Number(document.getElementById('f-year').value);
-  filters.departmentId = document.getElementById('f-dept').value;
-  filters.employeeId = document.getElementById('f-emp').value;
-  filters.tenure = document.getElementById('f-tenure').value;
-  filters.rating = document.getElementById('f-rating').value;
-}
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+function renderSummaryCards(ctx) {
+  const { aggs, periods } = ctx;
+  const withOverall = aggs.filter(a => a.overall != null);
+  const avg = withOverall.length ? withOverall.reduce((s, a) => s + a.overall, 0) / withOverall.length : null;
+  const done = withOverall.filter(a => a.overall >= 100).length;
+  const notDone = withOverall.filter(a => a.overall < 100).length;
+  const noData = aggs.length - withOverall.length;
+  const totalOps = aggs.reduce((s, a) => s + a.metrics.operations.fact, 0);
+  const totalPhone = aggs.reduce((s, a) => s + a.metrics.phoneNumbers.fact, 0);
+  const totalReviews = aggs.reduce((s, a) => s + a.metrics.reviews.fact, 0);
 
-let lastAllResults = [], lastDeptScoped = [], lastSummary = [];
-
-function applyFilters(){
-  readFiltersFromForm();
-  lastAllResults = getResultsForMonth(filters.year, filters.month);
-  lastDeptScoped = lastAllResults.filter(r => filters.departmentId === 'all' || r.departmentId === filters.departmentId);
-  lastSummary = lastDeptScoped.filter(r => {
-    if (filters.employeeId !== 'all' && r.employeeId !== filters.employeeId) return false;
-    if (filters.tenure === 'new' && !r.isNewHire) return false;
-    if (filters.tenure === 'active' && r.isNewHire) return false;
-    if (filters.rating !== 'all' && r.rating !== filters.rating) return false;
-    return true;
-  });
-  renderStats(lastDeptScoped);
-  renderTable(lastSummary);
-}
-
-function renderStats(results){
-  const withData = results.filter(r => r.hasData);
-  const countA = withData.filter(r => r.rating === 'A').length;
-  const countB = withData.filter(r => r.rating === 'B').length;
-  const countC = withData.filter(r => r.rating === 'C').length;
-  const avg = withData.length ? withData.reduce((s,r) => s + (r.overallPercent||0), 0) / withData.length : null;
-  const best = withData.reduce((top,r) => (!top || (r.overallPercent??-Infinity) > (top.overallPercent??-Infinity)) ? r : top, null);
-  const declined = withData.filter(r => r.dynamicsOverall.direction === 'down').length;
-  const belowNorm = withData.filter(r => (r.overallPercent||0) < 100).length;
-
-  const tiles = [
-    { label:'Кассиров', val: results.length, color:'var(--brand)' },
-    { label:'Рейтинг A', val: countA, color:'#1BA85D' },
-    { label:'Рейтинг B', val: countB, color:'#F5A623' },
-    { label:'Рейтинг C', val: countC, color:'#D93025' },
-    { label:'Средний % выполнения', val: avg!=null?avg.toFixed(1)+'%':'—', color:'#1B6FBA' },
-    { label:'Лучший кассир месяца', val: best?best.employeeFullName:'—', color:'#1BA85D' },
-    { label:'Результат снизился', val: declined, color:'#D93025' },
-    { label:'Не выполнили норматив', val: belowNorm, color:'#F5A623' },
+  const cards = [
+    { l: 'Сотрудников в выборке', v: aggs.length, h: `${periods.length} мес. периода` },
+    { l: 'Средний общий %', v: avg != null ? avg.toFixed(1) + '%' : '—', h: `по ${withOverall.length} сотрудникам с нормативом` },
+    { l: 'Выполнили норматив', v: done, h: `не выполнили: ${notDone}` },
+    { l: 'Нет данных о нормативе', v: noData, h: 'нет фактов за период' },
+    { l: 'Операции (сумма)', v: totalOps.toLocaleString('ru-RU'), h: 'по выбранному периоду' },
+    { l: 'Номера (сумма)', v: totalPhone.toLocaleString('ru-RU'), h: 'уникальные, как в файле' },
+    { l: 'Отзывы (сумма)', v: totalReviews.toLocaleString('ru-RU'), h: 'только Алматы/Астана' },
   ];
-  document.getElementById('stats-row').innerHTML = tiles.map(t => `
-    <div class="stat-card">
-      <div class="stat-dot" style="background:${t.color}"></div>
-      <span class="stat-label">${t.label}</span>
-      <span class="stat-val" style="font-size:16px">${t.val}</span>
-    </div>`).join('');
+  document.getElementById('summary-cards').innerHTML = cards.map(c => `
+    <div class="card"><div class="lab">${c.l}</div><div class="val num">${c.v}</div><div class="hint">${c.h}</div></div>
+  `).join('');
 }
 
-function indicatorClass(percent, thresholds){
-  if (percent == null) return 'none';
-  if (percent >= thresholds.aMin) return 'good';
-  if (percent >= thresholds.bMin) return 'warn';
+/* ============================================================
+   STATUS PILL
+   ============================================================ */
+function ratingLetter(status) {
+  return status === 'good' ? 'A' : status === 'warn' ? 'B' : status === 'bad' ? 'C' : null;
+}
+function statusPill(a) {
+  const { status, overall } = a;
+  if (status === 'nodata') return `<span class="pill nodata"><span class="dot nodata"></span>Нет данных</span>`;
+  const letter = ratingLetter(status);
+  let label;
+  if (status === 'good') label = 'Выполнены все показатели';
+  else if (status === 'warn') label = a.overall >= 100 ? 'Не все показатели выполнены' : 'Близко к норме';
+  else label = a.minPercent != null && a.minPercent < 50 ? 'Провал по показателю' : 'Не выполнено';
+  return `<span class="pill ${status}"><span class="dot ${status}"></span><b class="grade ${letter}">${letter}</b> · ${label} (${overall.toFixed(1)}%)</span>`;
+}
+
+/* ============================================================
+   OVERALL SCORE BLOCK
+   ============================================================ */
+const GRADE_GROUPS = [
+  { key: 'good', letter: 'A', label: 'Рейтинг A — выполнены ВСЕ 3 показателя (≥100% каждый)' },
+  { key: 'warn', letter: 'B', label: 'Рейтинг B (средний % 80–99,9, либо не все показатели выполнены)' },
+  { key: 'bad', letter: 'C', label: 'Рейтинг C (средний % < 80, либо хоть один показатель < 50%)' },
+];
+
+/** Показывает ВСЕХ сотрудников с известным нормативом, без ограничения топ-N, разбитых по градациям A/B/C. */
+function renderOverallBlock(ctx) {
+  document.getElementById('overall-formula').innerHTML =
+    'Базовые нормативы на полный месяц: 1200 операций, 359 номеров, 22 отзыва (сверено с эталонным расчётом). ' +
+    'Веса — равные (33,33% на показатель). ' +
+    'Формула: <b>Общий % = (min(%операции,131) + min(%номера,131) + min(%отзывы,131)) / (кол-во отслеживаемых показателей)</b> — ' +
+    'каждый показатель при усреднении «подрезается» потолком 131%, чтобы огромное перевыполнение по одной метрике не маскировало провал по другой (в самих показателях 4–6 % показан без потолка, как факт). ' +
+    'Если показатель в это отделение/месяц не отслеживался вообще ни у кого (например, отзывы у Актобе) — он пропускается честно. ' +
+    'Но если показатель отслеживался, а у кассира пусто — это считается как факт 0, а не пропуск. ' +
+    '<b>Рейтинг A даётся только если выполнены (≥100%) все три отслеживаемых показателя</b> — высокое перевыполнение по одному не компенсирует провал по другому. ' +
+    'Если хотя бы один показатель &lt;50% — рейтинг не выше C, независимо от среднего. ' +
+    'Ниже — все сотрудники с известным нормативом, разбиты по градациям A/B/C (лимит «Размер рейтинга» здесь не применяется). ' +
+    'Три полосы на карточке каждого сотрудника — это факт по операциям/номерам/отзывам относительно 100% (метка на полосе), теми же цветами, что определяют рейтинг.';
+
+  const withGrade = ctx.aggs.filter(a => a.overall != null);
+
+  const legend = `<div class="mb-legend">
+    <span><span class="lg-dot" style="background:var(--good)"></span>≥100% — выполнено</span>
+    <span><span class="lg-dot" style="background:var(--warn)"></span>50–99,9% — близко</span>
+    <span><span class="lg-dot" style="background:var(--bad)"></span>&lt;50% — провал (жёсткий пол, рейтинг не выше C)</span>
+    <span><span class="lg-dot" style="background:var(--nodata-border)"></span>нет данных</span>
+  </div>`;
+
+  const sections = GRADE_GROUPS.map(g => {
+    const list = withGrade.filter(a => a.status === g.key)
+      .sort((a, b) => b.overall - a.overall || a.employee.fullName.localeCompare(b.employee.fullName, 'ru'));
+    return `<div style="margin-bottom:18px">
+      <div class="bw-col-title">${g.label}
+        <span class="grade-badges"><span class="bw-badge ${g.letter}">${g.letter}</span></span>
+        <span class="muted" style="font-weight:500;margin-left:6px">${list.length} чел.</span>
+      </div>
+      ${renderBreakdownList(list)}
+    </div>`;
+  }).join('');
+
+  const noData = ctx.aggs.length - withGrade.length;
+  document.getElementById('overall-block').innerHTML = withGrade.length
+    ? legend + sections + (noData ? `<div class="panel-sub" style="margin-top:0">Без известного норматива за выбранный период: ${noData} чел.</div>` : '')
+    : '<div class="empty">Нет сотрудников с известным нормативом в текущем фильтре</div>';
+}
+
+function renderLeaderboard(items, fmt) {
+  if (!items.length) return '<div class="empty">Нет данных</div>';
+  const max = Math.max(...items.map(i => i.value), 1);
+  const colorOf = s => s === 'good' ? 'var(--good)' : s === 'warn' ? 'var(--warn)' : s === 'bad' ? 'var(--bad)' : 'var(--accent)';
+  return '<div class="leaderboard">' + items.map((it, i) => `
+    <div class="lb-row">
+      <span class="lb-rank">${i + 1}</span>
+      <div class="lb-bar-wrap">
+        <div class="lb-bar" style="width:${Math.max(4, it.value / max * 100)}%;background:${colorOf(it.status)}"></div>
+        <span class="lb-name">${it.name}${it.sub ? ' · ' + it.sub : ''}</span>
+      </div>
+      <span class="lb-val num">${fmt(it.value)}</span>
+    </div>`).join('') + '</div>';
+}
+
+/** Цвет метрики по тем же порогам, что определяют рейтинг: ≥100% выполнено, 50–99,9% близко, <50% — провал (жёсткий пол, из-за которого рейтинг не может быть выше C). */
+function metricStatusClass(percent) {
+  if (percent == null) return 'nodata';
+  if (percent >= 100) return 'good';
+  if (percent >= 50) return 'warn';
   return 'bad';
 }
 
-function progressCellHtml(m){
-  const cls = indicatorClass(m.percent, settings.ratingThresholds);
-  return `<div class="progress-cell">
-    <span class="progress-dot ${cls}"></span>
-    <div>
-      <div class="progress-main">${fmtPct(m.percent)}</div>
-      <div class="progress-sub">${m.fact} / ${m.norm}</div>
-    </div>
-  </div>`;
-}
-
-function dynHtml(dyn, suffix){
-  suffix = suffix || ' п.п.';
-  if (dyn.direction === 'no-data') return '<span class="dyn nodata">—</span>';
-  const arrow = dyn.direction === 'up' ? '▲' : dyn.direction === 'down' ? '▼' : '–';
-  const sign = dyn.delta > 0 ? '+' : '';
-  return `<span class="dyn ${dyn.direction}">${arrow} ${sign}${dyn.delta.toFixed(1)}${suffix}</span>`;
-}
-
-function ratingChipHtml(r, capped){
-  if (!r) return '<span class="rating-chip none">нет данных</span>';
-  let html = `<span class="rating-chip ${r}">${r}</span>`;
-  if (capped) html += '<span class="rating-cap-note">ограничен показателем &lt;50%</span>';
-  return html;
-}
-
-function monthWorkLabel(mw){
-  if (mw == null) return '—';
-  if (mw <= 3) return mw + '-й мес.';
-  return 'действующий';
-}
-
-function renderTable(results){
-  const body = document.getElementById('tbl-body');
-  if (!results.length) {
-    body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🏆</div><div>Кассиры не найдены по фильтру</div></div></td></tr>';
-    return;
-  }
-  body.innerHTML = results.map(r => {
-    const warn = r.hireDateMissing ? '<div class="warn-inline">⚠ Не указана дата начала работы</div>' : '';
-    if (!r.hasData) {
-      return `<tr>
-        <td><span class="name-link" onclick="openCashierCard('${r.employeeId}')">${r.employeeFullName}</span>${warn}</td>
-        <td>${r.departmentName}</td>
-        <td>${monthWorkLabel(r.monthsWorked)}</td>
-        <td colspan="6" style="color:var(--text-mid)">Нет данных за отчётный месяц</td>
-      </tr>`;
-    }
-    return `<tr>
-      <td><span class="name-link" onclick="openCashierCard('${r.employeeId}')">${r.employeeFullName}</span>${warn}</td>
-      <td>${r.departmentName}</td>
-      <td>${monthWorkLabel(r.monthsWorked)}</td>
-      <td>${progressCellHtml(r.metrics.operations)}</td>
-      <td>${progressCellHtml(r.metrics.phoneNumbers)}</td>
-      <td>${progressCellHtml(r.metrics.reviews)}</td>
-      <td class="amount-cell">${fmtPct(r.overallPercent)}</td>
-      <td>${ratingChipHtml(r.rating, r.ratingCapped)}</td>
-      <td>${dynHtml(r.dynamicsOverall)}</td>
-    </tr>`;
-  }).join('');
+/**
+ * Наглядно показывает, ИЗ ЧЕГО состоит общий % и рейтинг: три мини-полосы
+ * (операции/номера/отзывы) с меткой 100% и цветом по тем же порогам, что и
+ * в формуле (≥100 зелёный, 50–99,9 жёлтый, <50 красный = "жёсткий пол").
+ * Шкала полосы — 0–200%, чтобы перевыполнение было видно, но не растягивало
+ * полосу до бесконечности; факт может превышать 200% — тогда полоса заполнена
+ * целиком, а точное число всё равно подписано справа.
+ */
+function renderBreakdownList(items) {
+  if (!items.length) return '<div class="empty">Нет данных</div>';
+  const SCALE = 200; // track represents 0..200%, marker at 100%
+  return items.map(a => `
+    <div class="mb-card">
+      <div class="mb-head">
+        <span class="mb-name">${a.employee.fullName} <span class="muted" style="font-weight:500">· ${a.employee.branch}</span></span>
+        <span class="mb-overall">Общий: ${a.overall.toFixed(1)}%</span>
+      </div>
+      ${METRICS.map(k => {
+        const m = a.metrics[k];
+        const cls = metricStatusClass(m.percent);
+        const width = m.percent == null ? 0 : Math.min(100, m.percent / SCALE * 100);
+        const label = m.percent == null ? 'нет данных' : m.percent.toFixed(0) + '%';
+        return `<div class="mb-row">
+          <span class="mb-label">${METRIC_LABELS[k]}</span>
+          <div class="mb-track"><div class="mb-marker"></div><div class="mb-fill ${cls}" style="width:${width}%"></div></div>
+          <span class="mb-val ${cls}">${label}</span>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
 }
 
 /* ============================================================
-   CASHIER CARD DRAWER + hand-rolled SVG charts
-   (no external chart library — mirrors this site's zero-dependency style)
+   METRIC BLOCKS (operations / phoneNumbers / reviews)
    ============================================================ */
-let cardPeriodMonths = 6;
-let cardEmployeeId = null;
+const METRIC_INDEX = { operations: 4, phoneNumbers: 5, reviews: 6 };
 
-function openCashierCard(employeeId){
-  cardEmployeeId = employeeId;
-  cardPeriodMonths = 6;
-  document.getElementById('drawer-overlay').classList.add('open');
-  document.getElementById('card-drawer').style.display = 'block';
-  renderCashierCard();
-}
-function closeCashierCard(){
-  cardEmployeeId = null;
-  document.getElementById('drawer-overlay').classList.remove('open');
-  document.getElementById('card-drawer').style.display = 'none';
-}
-function setCardPeriod(months){ cardPeriodMonths = months; renderCashierCard(); }
+function renderMetricBlock(metric, ctx) {
+  const { aggs } = ctx;
+  const withData = aggs.filter(a => a.metrics[metric].hasFact || a.metrics[metric].hasNorm);
+  const totalFact = aggs.reduce((s, a) => s + a.metrics[metric].fact, 0);
+  const withNorm = aggs.filter(a => a.metrics[metric].percent != null);
+  const totalNorm = withNorm.reduce((s, a) => s + a.metrics[metric].norm, 0);
+  const avgPercent = withNorm.length ? withNorm.reduce((s, a) => s + a.metrics[metric].percent, 0) / withNorm.length : null;
 
-function renderCashierCard(){
-  if (!cardEmployeeId) return;
-  const emp = EMPLOYEES.find(e => e.id === cardEmployeeId);
-  const cur = computeMonthlyResult(emp, filters.year, filters.month);
-  const history = getEmployeeHistory(cardEmployeeId, filters.year, filters.month, cardPeriodMonths);
-  const labels = history.map(r => monthShortLabel(r.year, r.month));
+  const ranked = aggs.filter(a => a.metrics[metric].hasFact).sort((a, b) => b.metrics[metric].fact - a.metrics[metric].fact);
+  const n = Math.min(filters.topN, ranked.length);
+  const shownFact = filters.bestWorst === 'worst' ? ranked.slice(-n).reverse() : ranked.slice(0, n);
 
-  const warn = cur.hireDateMissing
-    ? `<div class="warn-inline" style="margin-bottom:12px">⚠ Не указана дата начала работы — применён норматив 100%</div>` : '';
+  const rankedPct = aggs.filter(a => a.metrics[metric].percent != null).sort((a, b) => b.metrics[metric].percent - a.metrics[metric].percent);
+  const best = rankedPct[0], worst = rankedPct[rankedPct.length - 1];
 
-  const tenureLabel = cur.monthsWorked == null ? 'Действующий кассир'
-    : cur.monthsWorked <= 3 ? `Адаптация: ${cur.monthsWorked}-й месяц`
-    : 'Действующий кассир';
-
-  const metricLabels = { operations:'Операции', phoneNumbers:'Номера клиентов', reviews:'Отзывы' };
-  const metricTiles = cur.hasData ? METRIC_KEYS.map(key => `
-    <div class="metric-tile" style="background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:10px 12px">
-      <div class="metric-tile-label">${metricLabels[key]}</div>
-      ${progressCellHtml(cur.metrics[key])}
-      <div style="margin-top:6px">${dynHtml(cur.dynamicsMetrics[key])}</div>
-    </div>`).join('') : '';
-
-  const drawer = document.getElementById('card-drawer');
-  drawer.innerHTML = `
-    <div class="card-drawer-head">
+  const el = document.getElementById('metric-block-' + metric);
+  el.innerHTML = `
+    <div class="panel-title"><span class="n">${METRIC_INDEX[metric]}</span>${METRIC_LABELS[metric]}</div>
+    <div class="mini-stat-row">
+      <div class="mini-stat"><div class="l">Факт (сумма)</div><div class="v num">${totalFact.toLocaleString('ru-RU')}</div></div>
+      <div class="mini-stat"><div class="l">Норматив (сумма, где известен)</div><div class="v num">${totalNorm ? totalNorm.toLocaleString('ru-RU') : '—'}</div></div>
+      <div class="mini-stat"><div class="l">Средний % выполнения</div><div class="v num">${avgPercent != null ? avgPercent.toFixed(1) + '%' : '—'}</div></div>
+      <div class="mini-stat"><div class="l">Есть данные / без данных</div><div class="v num">${withData.length} / ${aggs.length - withData.length}</div></div>
+    </div>
+    <div class="metric-grid">
       <div>
-        <div class="card-drawer-title">${emp.fullName}</div>
-        <div class="card-drawer-sub">${cur.departmentName} · начало работы: ${emp.hireDate || '—'}</div>
+        <div class="panel-sub" style="margin-top:0">Рейтинг по факту (топ-${n}${filters.bestWorst === 'worst' ? ', худшие' : ''})</div>
+        ${renderLeaderboard(shownFact.map(a => ({ name: a.employee.fullName, value: a.metrics[metric].fact, status: a.metrics[metric].percent != null ? (a.metrics[metric].percent >= 100 ? 'good' : a.metrics[metric].percent >= 80 ? 'warn' : 'bad') : 'nodata' })), v => v.toLocaleString('ru-RU'))}
+        <div class="panel-sub" style="margin-top:14px">Лучший / худший по % от норматива (только с известным нормативом)</div>
+        <div style="font-size:12px;line-height:1.8">
+          ${best ? `<div>🏆 <b>${best.employee.fullName}</b> — ${best.metrics[metric].percent.toFixed(1)}%</div>` : '<div class="muted">нет данных</div>'}
+          ${worst && worst !== best ? `<div>⚠ <b>${worst.employee.fullName}</b> — ${worst.metrics[metric].percent.toFixed(1)}%</div>` : ''}
+        </div>
       </div>
-      <button class="card-drawer-close" onclick="closeCashierCard()">✕</button>
-    </div>
-    ${warn}
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="badge badge-pending" style="background:var(--surface-2);color:var(--text);border-color:var(--border)">${tenureLabel}</span>
-      ${ratingChipHtml(cur.rating, cur.ratingCapped)}
-      ${dynHtml(cur.dynamicsOverall)}
-    </div>
-    ${cur.hasData ? `
-      <div class="card" style="padding:16px 18px">
-        <div class="metric-grid">${metricTiles}</div>
-        <div class="card-sep" style="margin:14px -18px"></div>
-        <div style="font-size:11px;color:var(--text-mid);text-transform:uppercase;font-weight:700">Общий % выполнения</div>
-        <div style="font-size:28px;font-weight:800">${fmtPct(cur.overallPercent)}</div>
-      </div>` : `<div class="card" style="color:var(--text-mid)">Нет данных за отчётный месяц</div>`}
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px">
-      <div style="font-size:14px;font-weight:700">Динамика</div>
-      <div class="period-toggle">
-        <button class="period-btn ${cardPeriodMonths===6?'active':''}" onclick="setCardPeriod(6)">6 мес.</button>
-        <button class="period-btn ${cardPeriodMonths===12?'active':''}" onclick="setCardPeriod(12)">12 мес.</button>
+      <div>
+        <div class="panel-sub" style="margin-top:0">Динамика по месяцам (сумма факта по всем сотрудникам в текущем фильтре, весь период)</div>
+        <div class="chart-wrap"><div id="chart-${metric}"></div></div>
+        <div class="chart-legend"><span><span class="sw" style="color:#2f6f5e"></span>Факт</span><span><span class="sw dashed" style="color:#8a94a0"></span>Норматив (где известен)</span></div>
       </div>
-    </div>
+    </div>`;
 
-    <div class="chart-card"><div class="chart-title">Операции: факт / норматив</div><div id="chart-ops"></div>${chartLegendHtml()}</div>
-    <div class="chart-card"><div class="chart-title">Номера клиентов: факт / норматив</div><div id="chart-phone"></div>${chartLegendHtml()}</div>
-    <div class="chart-card"><div class="chart-title">Отзывы: факт / норматив</div><div id="chart-reviews"></div>${chartLegendHtml()}</div>
-    <div class="chart-card"><div class="chart-title">Общий % выполнения</div><div id="chart-overall"></div></div>
-    <div class="chart-card"><div class="chart-title">Рейтинг по месяцам</div><div id="chart-rating"></div></div>
-  `;
-
-  drawMetricChart('chart-ops', labels, history.map(r => r.hasData ? r.metrics.operations.fact : null), history.map(r => r.hasData ? r.metrics.operations.norm : null));
-  drawMetricChart('chart-phone', labels, history.map(r => r.hasData ? r.metrics.phoneNumbers.fact : null), history.map(r => r.hasData ? r.metrics.phoneNumbers.norm : null));
-  drawMetricChart('chart-reviews', labels, history.map(r => r.hasData ? r.metrics.reviews.fact : null), history.map(r => r.hasData ? r.metrics.reviews.norm : null));
-  drawOverallChart('chart-overall', labels, history.map(r => r.hasData ? r.overallPercent : null));
-  drawRatingChart('chart-rating', labels, history.map(r => r.hasData ? r.rating : null));
+  drawMetricTrend('chart-' + metric, metric, ctx);
 }
 
-function chartLegendHtml(){
-  return `<div class="chart-legend">
-    <span><span class="legend-swatch" style="color:#2a78d6"></span>Факт</span>
-    <span><span class="legend-swatch dashed" style="color:#898781"></span>Норматив</span>
-  </div>`;
+function drawMetricTrend(containerId, metric, ctx) {
+  const branchEmpIds = ctx.aggs.map(a => a.employee.id);
+  const factByPeriod = ALL_PERIODS.map(p => {
+    let sum = 0, has = false;
+    branchEmpIds.forEach(id => { const f = factsFor(id, p); if (f && f[metric] != null) { sum += f[metric]; has = true; } });
+    return has ? sum : null;
+  });
+  const normByPeriod = ALL_PERIODS.map(p => {
+    let sum = 0, has = false;
+    ctx.aggs.forEach(a => { const n = normForMonth(metric, a.employee, p); if (n != null) { sum += n; has = true; } });
+    return has ? sum : null;
+  });
+  svgLineChart(containerId, {
+    labels: ALL_PERIODS.map(periodLabel),
+    series: [
+      { values: normByPeriod, color: '#8a94a0', dashed: true, tooltipFn: (v, i) => periodLabel(ALL_PERIODS[i]) + ': норматив ' + Math.round(v) },
+      { values: factByPeriod, color: '#2f6f5e', tooltipFn: (v, i) => periodLabel(ALL_PERIODS[i]) + ': факт ' + Math.round(v) },
+    ],
+  });
 }
 
-/* Generic small line-chart renderer using inline SVG — no external chart lib. */
-function svgLineChart(containerId, opts){
+/* ============================================================
+   Generic small SVG line chart — no external chart library.
+   ============================================================ */
+function svgLineChart(containerId, opts) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  const width = Math.max(280, el.clientWidth || 560);
-  const height = opts.height || 170;
-  const padL = 30, padR = 10, padT = 10, padB = 20;
+  const width = Math.max(280, el.clientWidth || 520);
+  const height = opts.height || 160;
+  const padL = 40, padR = 10, padT = 10, padB = 20;
   const innerW = width - padL - padR, innerH = height - padT - padB;
   const labels = opts.labels;
-
   const allVals = [];
   opts.series.forEach(s => s.values.forEach(v => { if (v != null) allVals.push(v); }));
-  (opts.refLines || []).forEach(r => allVals.push(r.value));
-  const vMin = opts.yMin != null ? opts.yMin : Math.min(0, ...allVals);
-  const vMax = opts.yMax != null ? opts.yMax : (allVals.length ? Math.max(...allVals) * 1.15 : 1);
+  const vMin = 0;
+  const vMax = allVals.length ? Math.max(...allVals) * 1.15 : 1;
   const span = (vMax - vMin) || 1;
-
   const xStep = labels.length > 1 ? innerW / (labels.length - 1) : 0;
   const xPos = i => padL + i * xStep;
   const yPos = v => padT + innerH - ((v - vMin) / span) * innerH;
 
   let svg = `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}">`;
   for (let g = 0; g <= 2; g++) {
-    const gv = vMin + span * g / 2;
-    const gy = yPos(gv);
-    svg += `<line x1="${padL}" y1="${gy}" x2="${width-padR}" y2="${gy}" stroke="var(--border)" stroke-width="1"/>`;
-    svg += `<text x="${padL-5}" y="${gy+3}" font-size="9" fill="var(--text-mid)" text-anchor="end">${opts.yTickFormat ? opts.yTickFormat(gv) : Math.round(gv)}</text>`;
+    const gv = vMin + span * g / 2, gy = yPos(gv);
+    svg += `<line x1="${padL}" y1="${gy}" x2="${width - padR}" y2="${gy}" stroke="#e3e6ea" stroke-width="1"/>`;
+    svg += `<text x="${padL - 6}" y="${gy + 3}" font-size="9" fill="#8a94a0" text-anchor="end">${Math.round(gv).toLocaleString('ru-RU')}</text>`;
   }
-  labels.forEach((l, i) => { svg += `<text x="${xPos(i)}" y="${height-5}" font-size="9" fill="var(--text-mid)" text-anchor="middle">${l}</text>`; });
-
-  (opts.refLines || []).forEach(r => {
-    const ry = yPos(r.value);
-    svg += `<line x1="${padL}" y1="${ry}" x2="${width-padR}" y2="${ry}" stroke="${r.color}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    svg += `<text x="${width-padR}" y="${ry-3}" font-size="9" fill="${r.color}" text-anchor="end">${r.label}</text>`;
-  });
+  labels.forEach((l, i) => { svg += `<text x="${xPos(i)}" y="${height - 5}" font-size="9" fill="#8a94a0" text-anchor="middle">${l}</text>`; });
 
   opts.series.forEach(s => {
     let path = '', started = false;
@@ -826,223 +796,139 @@ function svgLineChart(containerId, opts){
     if (path) svg += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2" ${s.dashed ? 'stroke-dasharray="5 4"' : ''} stroke-linecap="round" stroke-linejoin="round"/>`;
     s.values.forEach((v, i) => {
       if (v == null) return;
-      const dotColor = s.dotColorFn ? s.dotColorFn(v, i) : s.color;
-      const title = (s.tooltipFn ? s.tooltipFn(v, i) : (labels[i] + ': ' + (opts.yTickFormat ? opts.yTickFormat(v) : v)));
-      svg += `<circle cx="${xPos(i)}" cy="${yPos(v)}" r="4" fill="${dotColor}" stroke="var(--surface)" stroke-width="2"><title>${title}</title></circle>`;
+      const title = s.tooltipFn ? s.tooltipFn(v, i) : (labels[i] + ': ' + v);
+      svg += `<circle cx="${xPos(i)}" cy="${yPos(v)}" r="3.5" fill="${s.color}" stroke="#fff" stroke-width="1.5"><title>${title}</title></circle>`;
     });
   });
   svg += '</svg>';
   el.innerHTML = svg;
 }
 
-function drawMetricChart(containerId, labels, factValues, normValues){
-  svgLineChart(containerId, {
-    labels,
-    series: [
-      { values: normValues, color: '#898781', dashed: true, tooltipFn: (v,i) => labels[i] + ': норматив ' + Math.round(v) },
-      { values: factValues, color: '#2a78d6', tooltipFn: (v,i) => labels[i] + ': факт ' + Math.round(v) },
-    ],
-  });
-}
-function drawOverallChart(containerId, labels, values){
-  svgLineChart(containerId, {
-    labels,
-    yTickFormat: v => Math.round(v) + '%',
-    series: [{ values, color: '#2a78d6', tooltipFn: (v,i) => labels[i] + ': ' + v.toFixed(1) + '%' }],
-    refLines: [
-      { value: settings.ratingThresholds.aMin, color: '#0ca30c', label: 'A ' + settings.ratingThresholds.aMin + '%' },
-      { value: settings.ratingThresholds.bMin, color: '#c98500', label: 'B ' + settings.ratingThresholds.bMin + '%' },
-    ],
-  });
-}
-function drawRatingChart(containerId, labels, ratings){
-  const RATING_VALUE = { C:1, B:2, A:3 };
-  const RATING_COLOR = { A:'#0ca30c', B:'#c98500', C:'#d03b3b' };
-  const values = ratings.map(r => r ? RATING_VALUE[r] : null);
-  svgLineChart(containerId, {
-    labels, height: 130, yMin: 0.5, yMax: 3.5,
-    yTickFormat: v => (v===1?'C':v===2?'B':v===3?'A':''),
-    series: [{
-      values, color: '#c3c2b7',
-      dotColorFn: (v,i) => RATING_COLOR[ratings[i]],
-      tooltipFn: (v,i) => labels[i] + ': ' + (ratings[i] || 'нет данных'),
-    }],
-  });
-}
-
 /* ============================================================
-   SETTINGS TAB
+   BEST / WORST BLOCK
    ============================================================ */
-function loadSettingsIntoForm(){
-  document.getElementById('s-norm-ops').value = settings.baseNorms.operations;
-  document.getElementById('s-norm-phone').value = settings.baseNorms.phoneNumbers;
-  document.getElementById('s-norm-reviews').value = settings.baseNorms.reviews;
-  document.getElementById('s-adapt-1').value = settings.adaptationPercents.month1 * 100;
-  document.getElementById('s-adapt-2').value = settings.adaptationPercents.month2 * 100;
-  document.getElementById('s-adapt-3').value = settings.adaptationPercents.month3 * 100;
-  document.getElementById('s-adapt-4').value = settings.adaptationPercents.fromMonth4 * 100;
-  document.getElementById('s-weight-ops').value = (settings.weights.operations * 100).toFixed(2);
-  document.getElementById('s-weight-phone').value = (settings.weights.phoneNumbers * 100).toFixed(2);
-  document.getElementById('s-weight-reviews').value = (settings.weights.reviews * 100).toFixed(2);
-  document.getElementById('s-rating-a').value = settings.ratingThresholds.aMin;
-  document.getElementById('s-rating-b').value = settings.ratingThresholds.bMin;
-  document.getElementById('s-min-metric').value = settings.minMetricThreshold;
-  document.getElementById('s-rounding').value = settings.roundingMode;
-  document.getElementById('s-partial-method').value = settings.partialMonthMethod;
-}
+function renderBestWorst(ctx) {
+  const withGrade = ctx.aggs.filter(a => a.overall != null);
+  const bestPool = withGrade.filter(a => a.status === 'good' || a.status === 'warn')
+    .sort((a, b) => b.overall - a.overall || a.employee.fullName.localeCompare(b.employee.fullName, 'ru'));
+  const worstPool = withGrade.filter(a => a.status === 'bad')
+    .sort((a, b) => a.overall - b.overall || a.employee.fullName.localeCompare(b.employee.fullName, 'ru'));
+  const nBest = Math.min(filters.topN, bestPool.length);
+  const nWorst = Math.min(filters.topN, worstPool.length);
+  const best = bestPool.slice(0, nBest);
+  const worst = worstPool.slice(0, nWorst);
 
-function saveSettings(){
-  settings = {
-    baseNorms: {
-      operations: Number(document.getElementById('s-norm-ops').value) || 0,
-      phoneNumbers: Number(document.getElementById('s-norm-phone').value) || 0,
-      reviews: Number(document.getElementById('s-norm-reviews').value) || 0,
-    },
-    adaptationPercents: {
-      month1: (Number(document.getElementById('s-adapt-1').value) || 0) / 100,
-      month2: (Number(document.getElementById('s-adapt-2').value) || 0) / 100,
-      month3: (Number(document.getElementById('s-adapt-3').value) || 0) / 100,
-      fromMonth4: (Number(document.getElementById('s-adapt-4').value) || 0) / 100,
-    },
-    weights: {
-      operations: (Number(document.getElementById('s-weight-ops').value) || 0) / 100,
-      phoneNumbers: (Number(document.getElementById('s-weight-phone').value) || 0) / 100,
-      reviews: (Number(document.getElementById('s-weight-reviews').value) || 0) / 100,
-    },
-    ratingThresholds: {
-      aMin: Number(document.getElementById('s-rating-a').value) || 0,
-      bMin: Number(document.getElementById('s-rating-b').value) || 0,
-    },
-    minMetricThreshold: Number(document.getElementById('s-min-metric').value) || 0,
-    roundingMode: document.getElementById('s-rounding').value,
-    partialMonthMethod: document.getElementById('s-partial-method').value,
-  };
-  applyFilters();
-  toast('💾', '', 'Настройки сохранены и применены к расчётам', 'ok', 2500);
-}
-
-function resetSettingsToDefaults(){
-  settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-  loadSettingsIntoForm();
-  applyFilters();
-  toast('↺', '', 'Настройки сброшены к значениям по умолчанию', 'ok', 2500);
-}
-
-/* ============================================================
-   EXCEL EXPORT (ExcelJS, loaded from CDN) — 7 sheets
-   ============================================================ */
-function monthWorkExportLabel(mw){
-  if (mw == null) return 'нет даты найма';
-  if (mw <= 3) return mw + '-й месяц (адаптация)';
-  return 'действующий';
-}
-function resultToRow(r){
-  if (!r.hasData) {
-    return [r.employeeFullName, r.departmentName, String(r.month).padStart(2,'0')+'.'+r.year, monthWorkExportLabel(r.monthsWorked),
-      0,0,'нет данных', 0,0,'нет данных', 0,0,'нет данных', 'нет данных','нет данных','нет данных'];
+  function table(list, title, badges) {
+    const head = `<div class="bw-col-title">${title}<span class="grade-badges">${badges.map(b => `<span class="bw-badge ${b}">${b}</span>`).join('')}</span></div>`;
+    if (!list.length) return `<div>${head}<div class="empty">Нет сотрудников в этой категории при текущих фильтрах</div></div>`;
+    return `<div>${head}
+      <div class="tbl-scroll"><table><thead><tr><th>ФИО</th><th>Город</th><th class="right">Общий %</th><th>Статус</th></tr></thead><tbody>
+      ${list.map(a => `<tr><td class="name-cell">${a.employee.fullName}</td><td>${a.employee.branch}</td><td class="right num">${a.overall.toFixed(1)}%</td><td>${statusPill(a)}</td></tr>`).join('')}
+      </tbody></table></div></div>`;
   }
-  const d = r.dynamicsOverall.delta;
-  return [
-    r.employeeFullName, r.departmentName, String(r.month).padStart(2,'0')+'.'+r.year, monthWorkExportLabel(r.monthsWorked),
-    r.metrics.operations.fact, r.metrics.operations.norm, r.metrics.operations.percent!=null?Number(r.metrics.operations.percent.toFixed(1)):'нет данных',
-    r.metrics.phoneNumbers.fact, r.metrics.phoneNumbers.norm, r.metrics.phoneNumbers.percent!=null?Number(r.metrics.phoneNumbers.percent.toFixed(1)):'нет данных',
-    r.metrics.reviews.fact, r.metrics.reviews.norm, r.metrics.reviews.percent!=null?Number(r.metrics.reviews.percent.toFixed(1)):'нет данных',
-    r.overallPercent!=null?Number(r.overallPercent.toFixed(1)):'нет данных',
-    r.rating || 'нет данных',
-    d!=null?Number(d.toFixed(1)):'нет данных',
-  ];
-}
-const EXPORT_HEADERS = ['ФИО','Отделение','Отчётный месяц','Месяц работы','Операции, факт','Операции, норматив','Операции, %','Номера, факт','Номера, норматив','Номера, %','Отзывы, факт','Отзывы, норматив','Отзывы, %','Общий %','Рейтинг','Динамика к пред. месяцу'];
 
-function addSheet(wb, name, results){
-  const sheet = wb.addWorksheet(name);
-  sheet.addRow(EXPORT_HEADERS).font = { bold: true };
-  results.forEach(r => sheet.addRow(resultToRow(r)));
-  sheet.columns.forEach(c => { c.width = 16; });
-  sheet.getColumn(1).width = 26;
-}
-
-async function exportExcel(){
-  const btn = document.getElementById('btn-export');
-  btn.disabled = true; btn.textContent = 'Формирование файла…';
-  try {
-    const wb = new ExcelJS.Workbook();
-    wb.creator = 'Ecash — Мотивация кассиров';
-    wb.created = new Date();
-
-    addSheet(wb, 'Сводка по кассирам', lastSummary);
-
-    const scopedIds = new Set(lastDeptScoped.map(r => r.employeeId));
-    const historyResults = EMPLOYEES.filter(e => scopedIds.has(e.id)).flatMap(e => getEmployeeHistory(e.id, filters.year, filters.month, 6));
-    addSheet(wb, 'Динамика по месяцам', historyResults);
-
-    addSheet(wb, 'Рейтинг A', lastDeptScoped.filter(r => r.rating === 'A'));
-    addSheet(wb, 'Рейтинг B', lastDeptScoped.filter(r => r.rating === 'B'));
-    addSheet(wb, 'Рейтинг C', lastDeptScoped.filter(r => r.rating === 'C'));
-    addSheet(wb, 'Невыполненные нормативы', lastDeptScoped.filter(r => r.hasData && (r.overallPercent||0) < 100));
-
-    const settingsSheet = wb.addWorksheet('Настройки нормативов');
-    settingsSheet.addRow(['Параметр','Значение']).font = { bold: true };
-    settingsSheet.addRows([
-      ['Норматив: операции', settings.baseNorms.operations],
-      ['Норматив: номера клиентов', settings.baseNorms.phoneNumbers],
-      ['Норматив: отзывы', settings.baseNorms.reviews],
-      ['Адаптация, 1-й месяц', settings.adaptationPercents.month1*100+'%'],
-      ['Адаптация, 2-й месяц', settings.adaptationPercents.month2*100+'%'],
-      ['Адаптация, 3-й месяц', settings.adaptationPercents.month3*100+'%'],
-      ['Адаптация, с 4-го месяца', settings.adaptationPercents.fromMonth4*100+'%'],
-      ['Вес: операции', (settings.weights.operations*100).toFixed(2)+'%'],
-      ['Вес: номера клиентов', (settings.weights.phoneNumbers*100).toFixed(2)+'%'],
-      ['Вес: отзывы', (settings.weights.reviews*100).toFixed(2)+'%'],
-      ['Рейтинг A от', settings.ratingThresholds.aMin+'%'],
-      ['Рейтинг B от', settings.ratingThresholds.bMin+'%'],
-      ['Мин. выполнение показателя', settings.minMetricThreshold+'%'],
-      ['Округление норматива', settings.roundingMode],
-      ['Расчёт неполного месяца', settings.partialMonthMethod],
-    ]);
-    settingsSheet.getColumn(1).width = 36; settingsSheet.getColumn(2).width = 18;
-
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'Мотивация кассиров — ' + String(filters.month).padStart(2,'0') + '.' + filters.year + '.xlsx';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    toast('⬇', '', 'Файл сформирован', 'ok', 2500);
-  } catch (e) {
-    console.error(e);
-    toast('⚠', '', 'Не удалось сформировать файл: ' + e.message, 'warn', 4000);
-  } finally {
-    btn.disabled = false; btn.textContent = '⬇ Экспорт в Excel';
-  }
+  document.getElementById('best-worst').innerHTML = `
+    <div class="metric-grid">
+      ${table(best, `Лучшие (топ-${nBest})`, ['A', 'B'])}
+      ${table(worst, `Худшие (топ-${nWorst})`, ['C'])}
+    </div>
+    <div class="panel-sub" style="margin-top:14px">Слева — рейтинг A (≥100%) и B (80–99,9%), по убыванию общего %. Справа — рейтинг C (&lt;80%), по возрастанию (сначала худшие). При равенстве % — по алфавиту ФИО. Сотрудники без известного норматива в это сравнение не входят.</div>`;
 }
 
 /* ============================================================
-   TABS / TOAST / THEME / SIDEBAR (same conventions as the rest of the site)
+   TIER GROUP BLOCKS (30 / 50 / 70 / 100 / не определён)
    ============================================================ */
-function switchTab(tab){
-  document.getElementById('tab-cashiers').classList.toggle('active', tab==='cashiers');
-  document.getElementById('tab-settings').classList.toggle('active', tab==='settings');
-  document.getElementById('pane-cashiers').classList.toggle('active', tab==='cashiers');
-  document.getElementById('pane-settings').classList.toggle('active', tab==='settings');
+const TIER_LIST = [30, 50, 70, 100];
+const TIER_TITLES = { 30: 'Норматив 30% (1-й месяц работы)', 50: 'Норматив 50% (2-й месяц)', 70: 'Норматив 70% (3-й месяц)', 100: 'Норматив 100% (4-й месяц и далее)' };
+
+function renderTierBlocks(ctx) {
+  const wrap = document.getElementById('tier-blocks');
+  wrap.innerHTML = TIER_LIST.map((t, idx) => `<div class="panel" id="tier-panel-${t}"></div>`).join('');
+
+  TIER_LIST.forEach((t, idx) => {
+    const group = ctx.aggs.filter(a => a.tier === t);
+    const withOverall = group.filter(a => a.overall != null);
+    const avg = withOverall.length ? withOverall.reduce((s, a) => s + a.overall, 0) / withOverall.length : null;
+    const done = withOverall.filter(a => a.overall >= 100).length;
+    const notDone = withOverall.length - done;
+    const share = withOverall.length ? done / withOverall.length * 100 : 0;
+    const bestOfGroup = withOverall.slice().sort((a, b) => b.overall - a.overall)[0];
+    const worstOfGroup = withOverall.slice().sort((a, b) => a.overall - b.overall)[0];
+
+    const el = document.getElementById('tier-panel-' + t);
+    el.innerHTML = `
+      <div class="panel-title"><span class="n">${8 + idx}</span>${TIER_TITLES[t]}</div>
+      <div class="tier-head">
+        <div class="tier-stats">
+          <div>Сотрудников: <b>${group.length}</b></div>
+          <div>Средний %: <b>${avg != null ? avg.toFixed(1) + '%' : '—'}</b></div>
+          <div>Выполнили: <b>${done}</b></div>
+          <div>Не выполнили: <b>${notDone}</b></div>
+          <div>Доля выполнивших: <b>${withOverall.length ? share.toFixed(0) + '%' : '—'}</b></div>
+        </div>
+      </div>
+      ${withOverall.length ? `<div class="share-bar"><div class="share-fill" style="width:${share}%"></div></div>` : ''}
+      <div style="font-size:12px;margin-bottom:12px">
+        ${bestOfGroup ? `🏆 Лучший в группе: <b>${bestOfGroup.employee.fullName}</b> (${bestOfGroup.overall.toFixed(1)}%)` : ''}
+        ${worstOfGroup && worstOfGroup !== bestOfGroup ? ` · ⚠ Наибольшее отставание: <b>${worstOfGroup.employee.fullName}</b> (${worstOfGroup.overall.toFixed(1)}%)` : ''}
+      </div>
+      ${renderGroupTable(group)}
+    `;
+  });
 }
 
-function toast(icon, title, msg, type, dur){
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.15);max-width:340px;font-family:inherit;display:flex;align-items:center;gap:10px;font-size:13px;';
-  t.innerHTML = '<span style="font-size:20px">'+icon+'</span><div><strong>'+title+'</strong><div style="color:var(--text-mid);font-size:12px">'+msg+'</div></div>';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), dur || 3000);
+function renderGroupTable(group) {
+  if (!group.length) return '<div class="empty">Нет сотрудников в этой группе при текущих фильтрах</div>';
+  const rows = group.slice().sort((a, b) => (b.overall ?? -1) - (a.overall ?? -1));
+  return `<div class="tbl-scroll"><table><thead><tr>
+    <th>ФИО</th><th>Город</th>
+    <th class="right">Операции</th><th class="right">Номера</th><th class="right">Отзывы</th>
+    <th class="right">Общий %</th><th class="right">Отклонение</th><th>Статус</th>
+  </tr></thead><tbody>
+    ${rows.map(a => `<tr>
+      <td class="name-cell">${a.employee.fullName}</td>
+      <td>${a.employee.branch}</td>
+      <td class="right num">${fmtMetricCell(a.metrics.operations)}</td>
+      <td class="right num">${fmtMetricCell(a.metrics.phoneNumbers)}</td>
+      <td class="right num">${fmtMetricCell(a.metrics.reviews)}</td>
+      <td class="right num">${a.overall != null ? a.overall.toFixed(1) + '%' : '—'}</td>
+      <td class="right num">${a.overall != null ? (a.overall - 100 >= 0 ? '+' : '') + (a.overall - 100).toFixed(1) + ' п.п.' : '—'}</td>
+      <td>${statusPill(a)}</td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
 }
 
+function fmtMetricCell(m) {
+  if (!m.hasFact && !m.hasNorm) return '<span class="muted">нет данных</span>';
+  const pct = m.percent != null ? ` (${m.percent.toFixed(0)}%)` : '';
+  return `${m.hasFact ? m.fact.toLocaleString('ru-RU') : '—'} / ${m.hasNorm ? m.norm.toLocaleString('ru-RU') : '—'}${pct}`;
+}
+
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
+function render() {
+  const ctx = computeContext();
+  renderFilters();
+  renderSummaryCards(ctx);
+  renderOverallBlock(ctx);
+  renderMetricBlock('operations', ctx);
+  renderMetricBlock('phoneNumbers', ctx);
+  renderMetricBlock('reviews', ctx);
+  renderBestWorst(ctx);
+  renderTierBlocks(ctx);
+}
+
+render();
+
+/* ============================================================
+   THEME / SIDEBAR (same conventions as the rest of the site)
+   ============================================================ */
 function toggleTheme(){
   const d = document.documentElement.dataset.theme === 'dark';
   document.documentElement.dataset.theme = d ? 'light' : 'dark';
   document.getElementById('btn-theme').textContent = d ? '🌙' : '☀️';
   localStorage.setItem('ecash-theme', d ? 'light' : 'dark');
-  if (cardEmployeeId) renderCashierCard();
-  else applyFilters();
 }
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); }
@@ -1053,10 +939,6 @@ window.onload = function(){
   document.getElementById('btn-theme').textContent = th === 'dark' ? '☀️' : '🌙';
   function tick(){ document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
   tick(); setInterval(tick, 30000);
-
-  initFilterOptions();
-  loadSettingsIntoForm();
-  applyFilters();
 };
 </script>
 </body>
