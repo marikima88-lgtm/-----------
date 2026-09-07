@@ -564,12 +564,15 @@
       '<div class="field-row"><div class="form-group"><label class="form-label">Валюта</label><select class="form-select" id="n-cur">'+curOpts+'</select></div><div class="form-group"><label class="form-label">Сумма</label><input class="form-input" id="n-amt" type="number" placeholder="500000"></div></div>'+
       '<div class="form-group"><label class="radio-opt" style="font-weight:700"><input type="checkbox" id="n-hasval"> Добавить ценность помимо денег</label><input class="form-input" id="n-valname" placeholder="Например: опись документов, 1 пакет" style="margin-top:8px;display:none"></div>'+
       '<div class="form-group"><label class="form-label">Плановая дата и время передачи</label><input class="form-input" id="n-planned" type="datetime-local"></div>'+
-      '<div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="n-comment" rows="2"></textarea></div></div>'+
+      '<div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="n-comment" rows="2"></textarea></div>'+
+      '<div id="n-error" style="display:none;color:var(--danger);background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:8px;padding:9px 12px;font-size:13px;font-weight:600"></div></div>'+
       '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="n-submit">Создать заявку</button></div></div></div>';
     var d=new Date(Date.now()+3600000); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); document.getElementById('n-planned').value=d.toISOString().slice(0,16);
     document.getElementById('n-hasval').onchange=function(e){ document.getElementById('n-valname').style.display=e.target.checked?'block':'none'; };
-    document.getElementById('n-submit').onclick=function(){ var from=document.getElementById('n-from').value, to=document.getElementById('n-to').value, amt=parseFloat(document.getElementById('n-amt').value);
-      if(from===to){ toast('Отделение-отправитель и получатель должны различаться.'); return; } if(!amt||amt<=0){ toast('Укажите сумму больше нуля.'); return; }
+    function showNErr(msg){ var el=document.getElementById('n-error'); el.textContent=msg; el.style.display='block'; }
+    document.getElementById('n-submit').onclick=function(){ var from=document.getElementById('n-from').value, to=document.getElementById('n-to').value, amtRaw=document.getElementById('n-amt').value, amt=parseFloat(amtRaw);
+      if(from===to){ showNErr('Отделение-отправитель и получатель должны различаться — сейчас выбрано одно и то же отделение.'); return; }
+      if(!amtRaw || isNaN(amt) || amt<=0){ showNErr('Укажите сумму больше нуля в поле «Сумма» — сейчас оно пустое или заполнено некорректно.'); return; }
       var items=[{type:'cash',currency:document.getElementById('n-cur').value,amount:amt}];
       if(document.getElementById('n-hasval').checked){ var vn=document.getElementById('n-valname').value.trim(); if(vn) items.push({type:'valuable',name:vn,qty:1}); }
       closeModal(); doCreate({from:from,to:to,items:items,comment:document.getElementById('n-comment').value.trim(),plannedAt:new Date(document.getElementById('n-planned').value).getTime()}); };
