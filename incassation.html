@@ -9,6 +9,35 @@
 <link rel="stylesheet" href="shared.css">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:16px; }
+.stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-card { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; min-width:160px; }
+.stat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.stat-label { font-size:12px; color:var(--text-mid); }
+.stat-val { font-size:20px; font-weight:800; color:var(--text); margin-left:auto; }
+.stat-card.warn { border-color:var(--warning-border); background:var(--warning-bg); }
+.stat-card.warn .stat-label, .stat-card.warn .stat-val { color:#92400E; }
+
+.filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px; }
+.f-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mid); white-space:nowrap; }
+.f-sel,.f-inp { padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--bg); outline:none; transition:border-color .13s; }
+.f-sel { padding-right:30px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='%23787878' d='M5 7L0 0h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.f-sel:focus,.f-inp:focus { border-color:var(--text); }
+.f-sep { width:1px; height:24px; background:var(--border); }
+
+.tbl-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.tbl { width:100%; border-collapse:collapse; }
+.tbl th { background:var(--surface-2); padding:11px 16px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-mid); border-bottom:2px solid var(--border); white-space:nowrap; }
+.tbl td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+
+.empty-state { text-align:center; padding:48px 24px; color:var(--text-mid); }
+.empty-icon { font-size:40px; margin-bottom:12px; }
+
+.id-cell { font-family:'Courier New',monospace; font-size:12px; font-weight:700; }
+.amount-cell { font-weight:700; white-space:nowrap; }
+.date-cell { color:var(--text-mid); font-size:12px; white-space:nowrap; }
+
 .role-card { margin:4px 8px; border-radius:10px; padding:9px 12px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:9px; border:1.5px solid transparent; background:transparent; }
 .role-card:hover { background:rgba(255,255,255,.08); }
 .role-card-avatar { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); }
