@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecash — Инкассация</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+.role-card { margin:4px 8px; border-radius:10px; padding:9px 12px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:9px; border:1.5px solid transparent; background:transparent; }
+.role-card:hover { background:rgba(255,255,255,.08); }
+.role-card-avatar { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); }
+.role-card-info { flex:1; min-width:0; }
+.role-card-title { font-size:12px; font-weight:700; color:rgba(255,255,255,.45); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.role-card-name { font-size:10px; color:rgba(255,255,255,.35); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.role-card.active .role-card-title { color:#fff; }
+.role-card.active .role-card-name { color:rgba(255,255,255,.7); }
+.role-active-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; display:none; }
+.role-card.active .role-active-dot { display:block; }
+
+.role-banner { color:white; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:14px; }
+.role-banner-icon { width:38px; height:38px; background:rgba(255,255,255,.15); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.role-banner-text .title { font-size:15px; font-weight:700; }
+.role-banner-text .sub { font-size:12px; opacity:.75; margin-top:2px; }
+
+.ic-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700; white-space:nowrap; border:1px solid transparent; }
+.ic-chip::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.ic-blue { background:#EAF2FB; color:#1B6FBA; border-color:#C9DEF2; }
+.ic-purple { background:#F1EDFF; color:#6B46E5; border-color:#DED2FA; }
+.ic-pending { background:var(--pending-bg); color:#8A6A00; border-color:var(--pending-border); }
+.ic-danger { background:var(--danger-bg); color:var(--danger); border-color:var(--danger-border); }
+.ic-success { background:var(--success-bg); color:var(--success); border-color:var(--success-border); }
+.ic-neutral { background:var(--surface-2); color:var(--text-mid); border-color:var(--border); }
+[data-theme="dark"] .ic-blue { background:#0F2138; color:#7FB3EA; border-color:#1D3B5C; }
+[data-theme="dark"] .ic-purple { background:#211A3D; color:#B7A3F5; border-color:#392C68; }
+
+.overdue-flag { display:inline-flex; align-items:center; gap:5px; color:var(--danger); font-weight:700; font-size:11.5px; margin-top:4px; }
+
+.rail { display:flex; align-items:flex-start; margin:6px 0 4px; }
+.rail-step { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:7px; position:relative; }
+.rail-step .node { width:15px; height:15px; border-radius:50%; border:2.5px solid var(--border); background:var(--surface); z-index:1; }
+.rail-step.done .node, .rail-step.current .node { background:var(--brand); border-color:var(--brand); }
+.rail-step.current .node { box-shadow:0 0 0 4px rgba(241,90,37,.18); }
+.rail-step.stopped .node { background:var(--danger); border-color:var(--danger); }
+.rail-step::before { content:''; position:absolute; top:6px; left:-50%; width:100%; height:2px; background:var(--border); z-index:0; }
+.rail-step:first-child::before { display:none; }
+.rail-step.done::before { background:var(--brand); }
+.rail-label { font-size:11px; font-weight:700; color:var(--text-mid); max-width:104px; }
+.rail-step.current .rail-label { color:var(--brand); }
+.rail-step.stopped .rail-label { color:var(--danger); }
+.rail-time { font-size:10px; color:var(--text-light); }
+
+.kv-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+.kv label { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-mid); font-weight:700; margin-bottom:3px; }
+.kv .val { font-size:14px; font-weight:600; }
+.fx-line { display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--border); }
+.fx-line:last-child { border-bottom:none; }
+
+.detail-grid { display:grid; grid-template-columns:1.6fr 1fr; gap:16px; align-items:start; }
+@media (max-width:920px){ .detail-grid{grid-template-columns:1fr;} }
+.stack { display:flex; flex-direction:column; gap:16px; }
+
+.qr-box { display:flex; gap:16px; align-items:center; background:var(--surface-2); border:1px dashed var(--border); border-radius:12px; padding:14px; }
+#qr-canvas-holder { background:#fff; padding:8px; border-radius:6px; flex-shrink:0; }
+.qr-meta { font-size:12.5px; color:var(--text-mid); line-height:1.6; }
+
+.incident-card { border:1px solid var(--danger-border); background:var(--danger-bg); border-radius:14px; padding:16px 20px; display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.incident-card h3 { color:var(--danger); font-size:14px; margin:0; }
+.incident-status { font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; background:rgba(0,0,0,.05); }
+
+.actions-bar { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
+.no-actions { color:var(--text-light); font-size:13px; }
+
+.history-item { display:grid; grid-template-columns:70px 1fr; gap:12px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13px; }
+.history-item:last-child { border-bottom:none; }
+.history-time { color:var(--text-light); font-size:11px; }
+.history-actor { color:var(--text-mid); font-size:11.5px; }
+
+.toast-stack2 { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:70; }
+.toast2 { background:var(--text); color:var(--surface); padding:11px 16px; border-radius:9px; font-size:13px; font-weight:600; box-shadow:var(--shadow); max-width:320px; }
+
+.overlay { position:fixed; inset:0; background:rgba(20,20,20,.45); display:flex; align-items:center; justify-content:center; z-index:60; padding:20px; }
+.modal-box { background:var(--surface); border-radius:14px; width:100%; max-width:480px; box-shadow:var(--shadow); max-height:88vh; overflow-y:auto; }
+.modal-box-head { padding:18px 22px 4px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.modal-box-title { font-size:16px; font-weight:800; }
+.modal-box-body { padding:10px 22px 22px; display:flex; flex-direction:column; gap:13px; }
+.modal-box-foot { display:flex; justify-content:flex-end; gap:10px; padding:0 22px 22px; }
+.close-x { background:none; border:none; color:var(--text-mid); font-size:20px; line-height:1; cursor:pointer; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.radio-row { display:flex; gap:16px; }
+.radio-opt { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+.hint2 { font-size:12px; color:var(--text-mid); }
+.otp-input2 { font-size:22px; letter-spacing:.3em; text-align:center; font-family:monospace; }
+
+.notif-panel2 { position:absolute; top:64px; right:24px; width:340px; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); z-index:55; max-height:420px; overflow-y:auto; }
+.notif-item2 { padding:12px 16px; border-bottom:1px solid var(--border); font-size:13px; }
+.notif-item2:last-child { border-bottom:none; }
+.notif-time2 { font-size:11px; color:var(--text-light); font-weight:700; margin-bottom:2px; }
+.notif-empty2 { padding:24px 16px; text-align:center; color:var(--text-light); font-size:13px; }
+.bell-wrap { position:relative; }
+.bell-badge { position:absolute; top:-4px; right:-4px; background:var(--danger); color:#fff; font-size:9px; font-weight:800; border-radius:99px; min-width:15px; height:15px; display:flex; align-items:center; justify-content:center; padding:0 3px; }
+.back-link2 { display:inline-flex; align-items:center; gap:6px; color:var(--text-mid); font-weight:600; font-size:13px; background:none; border:none; padding:0; margin-bottom:14px; cursor:pointer; }
+.back-link2:hover { color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="logo-mark">E</span><span class="logo-name">cash</span></div>
+  <nav class="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">⊞</span><span class="nav-label">Главная</span></div>
+    <div class="nav-item" onclick="location.href='operations.html'"><span class="nav-icon">↔</span><span class="nav-label">Операции</span></div>
+    <div class="nav-item" onclick="location.href='cash-orders.html'"><span class="nav-icon">📋</span><span class="nav-label">Кассовые ордера</span></div>
+    <div class="nav-item active"><span class="nav-icon">🔒</span><span class="nav-label">Инкассация</span></div>
+
+    <div class="nav-section nav-section-role">Активная роль</div>
+    <div class="role-card" id="rc-treasurer"><div class="role-card-avatar" id="rca-treasurer">МА</div><div class="role-card-info"><div class="role-card-title">Казначей</div><div class="role-card-name">Мұратова А.</div></div><div class="role-active-dot"></div></div>
+    <div class="role-card" id="rc-cashierA"><div class="role-card-avatar" id="rca-cashierA">ЕГ</div><div class="role-card-info"><div class="role-card-title">Кассир А</div><div class="role-card-name">Ерланова Г.</div></div><div class="role-active-dot"></div></div>
+    <div class="role-card" id="rc-collector"><div class="role-card-avatar" id="rca-collector">ИИ</div><div class="role-card-info"><div class="role-card-title">Инкассатор</div><div class="role-card-name">Иванов А.С.</div></div><div class="role-active-dot"></div></div>
+    <div class="role-card" id="rc-cashierB"><div class="role-card-avatar" id="rca-cashierB">СД</div><div class="role-card-info"><div class="role-card-title">Кассир Б</div><div class="role-card-name">Сарсенова Д.</div></div><div class="role-active-dot"></div></div>
+    <div class="role-card" id="rc-manager"><div class="role-card-avatar" id="rca-manager">АБ</div><div class="role-card-info"><div class="role-card-title">Руководитель</div><div class="role-card-name">Ахметов Б.</div></div><div class="role-active-dot"></div></div>
+
+    <div class="nav-section nav-section-role">Казначейство</div>
+    <div class="nav-item nav-treasury" onclick="window.open('treasury.html','treasury_window','width=1280,height=900')"><span class="nav-icon">⚖</span><span class="nav-label">Инд. курсы</span></div>
+    <div class="nav-section nav-section-role">Мотивация</div>
+    <div class="nav-item" onclick="location.href='motivation.html'"><span class="nav-icon">🏆</span><span class="nav-label">Мотивация кассиров</span></div>
+    <div class="nav-section nav-section-role">Комплаенс</div>
+    <div class="nav-item" onclick="location.href='afm-reconciliation.html'"><span class="nav-icon">🔍</span><span class="nav-label">Сверка АФМ</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="header-branch">
+      <span class="header-location">Все отделения</span>
+      <span class="header-cashier" id="hdr-role-name">Казначей <span class="caret">▾</span></span>
+    </div>
+    <div id="role-chip-header"></div>
+    <div class="header-right">
+      <span class="header-meta">🕐 <strong id="hdr-time"></strong></span>
+      <button class="btn-theme" onclick="toggleTheme()" id="btn-theme">🌙</button>
+      <div class="bell-wrap">
+        <button class="btn-theme" onclick="toggleNotif()" title="Уведомления">🔔<span class="bell-badge" id="notif-count" style="display:none">0</span></button>
+      </div>
+      <div class="header-user"><div class="avatar" id="hdr-avatar">МА</div><div class="user-info"><div class="user-name" id="hdr-user-name">Мұратова А.</div><div class="user-role" id="hdr-user-role">Казначей</div></div></div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Инкассация</h1>
+        <div class="page-sub">Перемещение денежных средств и ценностей между отделениями</div>
+      </div>
+      <button class="btn-primary" id="new-req-btn" onclick="openNewRequestModal()" style="display:none">＋ Новая заявка</button>
+    </div>
+
+    <div class="role-banner" id="role-banner"></div>
+
+    <div class="stats-row" id="stats-row"></div>
+
+    <div class="tabs" id="view-tabs">
+      <button class="tab active" onclick="switchTab('registry')" id="tab-btn-registry">Реестр заявок</button>
+      <button class="tab" onclick="switchTab('audit')" id="tab-btn-audit">Журнал действий</button>
+    </div>
+
+    <div id="tab-registry"></div>
+    <div id="tab-audit" style="display:none"></div>
+    <div id="detail-view" style="display:none"></div>
+  </div>
+
+  <footer class="footer">
+    <span style="font-size:13px;color:var(--text-mid)">Ecash · Инкассация</span>
+    <div class="footer-space"></div>
+  </footer>
+</div>
+
+<div id="notif-panel-root"></div>
+<div id="modal-root"></div>
+<div class="toast-stack2" id="toast-root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var BRANCHES = ['Алматы, АПОРТ','Шымкент, Мега','Караганда, Керуен','Астана, Хан Шатыр'];
+  var CURRENCIES = ['KZT','USD','EUR'];
+  var HOME_A = BRANCHES[0], HOME_B = BRANCHES[3];
+  var ROLE_META = {
+    treasurer:{name:'Мұратова А.', title:'Казначей', avatar:'МА', tone:'#F15A25', note:'Видит все заявки, создаёт новые, вправе отменить до передачи инкассатору.'},
+    cashierA:{name:'Ерланова Г.', title:'Кассир А', avatar:'ЕГ', tone:'#1B6FBA', note:'Видит и готовит заявки только своего отделения — '+HOME_A+'.'},
+    collector:{name:'Иванов А.С.', title:'Инкассатор', avatar:'ИИ', tone:'#6B46E5', note:'Видит доступные и назначенные перевозки, подтверждает получение и передачу.'},
+    cashierB:{name:'Сарсенова Д.', title:'Кассир Б', avatar:'СД', tone:'#1BA85D', note:'Видит ожидаемые поступления отделения '+HOME_B+' и принимает средства.'},
+    manager:{name:'Ахметов Б.', title:'Руководитель', avatar:'АБ', tone:'#434343', note:'Полный обзор, разбор инцидентов, контроль нормативов доставки.'}
+  };
+  var STATUS_META = {
+    CREATED:{label:'Заявка создана', cls:'ic-blue'},
+    PREPARING:{label:'На подготовке', cls:'ic-blue'},
+    WAITING_FOR_PICKUP:{label:'Ожидает отправки', cls:'ic-pending'},
+    IN_TRANSIT:{label:'В пути', cls:'ic-purple'},
+    WAITING_FOR_ACCEPTANCE:{label:'Ожидает приёмки', cls:'ic-pending'},
+    DISCREPANCY_REVIEW:{label:'Расхождение · на разборе', cls:'ic-danger'},
+    COMPLETED:{label:'Исполнено', cls:'ic-success'},
+    CANCELLED:{label:'Отменена', cls:'ic-neutral'},
+    CASHIER_REJECTED:{label:'Отклонена кассиром', cls:'ic-neutral'}
+  };
+  var RAIL = [['CREATED','Заявка создана'],['PREPARING','Готовится'],['WAITING_FOR_PICKUP','Готова к отправке'],['IN_TRANSIT','В пути'],['WAITING_FOR_ACCEPTANCE','У получателя'],['COMPLETED','Исполнено']];
+  var H=3600000, M=60000, now0=Date.now();
+
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function fmtMoney(n,cur){ cur=cur||'KZT'; var s=Math.round(n).toLocaleString('ru-RU'); return cur==='KZT'? s+' ₸' : s+' '+cur; }
+  function fmtDT(ts){ var d=new Date(ts); return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+  function fmtDur(ms){ if(ms<0) ms=0; var mins=Math.floor(ms/60000), h=Math.floor(mins/60), m=mins%60; return (h>0?h+' ч ':'')+m+' мин'; }
+  function otp(){ return String(Math.floor(100000+Math.random()*900000)); }
+  function shortBranch(b){ return b.split(',')[1]?b.split(',')[1].trim():b; }
+
+  function seed(){
+    var reqs=[];
+    reqs.push({id:uid(), number:'INC-000118', from:BRANCHES[0], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:500000}], comment:'Плановая инкассация выручки', plannedAt:now0-6*H, status:'COMPLETED', bag:'№12547', seal:'№784521', collector:'Иванов А.С.', currentResponsible:'Сарсенова Д. (Кассир Б)', transitStartedAt:now0-4.9*H, arrivedAt:now0-4*H, preparedAmounts:{KZT:500000}, receivedAmounts:{KZT:500000}, sealIntact:true,
+      history:[{at:now0-6*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-5.7*H,from:'CREATED',to:'PREPARING',by:'Ерланова Г. (Кассир А)'},{at:now0-5*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Ерланова Г. (Кассир А)'},{at:now0-4.9*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'},{at:now0-4*H,from:'IN_TRANSIT',to:'WAITING_FOR_ACCEPTANCE',by:'Иванов А.С. (Инкассатор)'},{at:now0-3.8*H,from:'WAITING_FOR_ACCEPTANCE',to:'RECEIVED',by:'Сарсенова Д. (Кассир Б)'},{at:now0-3.8*H,from:'RECEIVED',to:'COMPLETED',by:'система · автоматически'}], otpUsed:true});
+    reqs.push({id:uid(), number:'INC-000124', from:BRANCHES[1], to:BRANCHES[0], items:[{type:'cash',currency:'USD',amount:15000}], comment:'', plannedAt:now0-1*H, status:'IN_TRANSIT', bag:'№12588', seal:'№784599', collector:'Сериков Д.М.', currentResponsible:'Сериков Д.М. (Инкассатор)', transitStartedAt:now0-40*M, preparedAmounts:{USD:15000},
+      history:[{at:now0-2*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-1.8*H,from:'CREATED',to:'PREPARING',by:'Кассир отделения Мега'},{at:now0-1.2*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Кассир отделения Мега'},{at:now0-40*M,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Сериков Д.М. (Инкассатор)'}], otpUsed:true});
+    reqs.push({id:uid(), number:'INC-000109', from:BRANCHES[2], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:2300000}], comment:'Крупная сумма — сопровождение усилено', plannedAt:now0-6*H, status:'IN_TRANSIT', bag:'№12490', seal:'№784410', collector:'Иванов А.С.', currentResponsible:'Иванов А.С. (Инкассатор)', transitStartedAt:now0-5*H, preparedAmounts:{KZT:2300000},
+      history:[{at:now0-7*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-6.7*H,from:'CREATED',to:'PREPARING',by:'Кассир отделения Керуен'},{at:now0-6*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Кассир отделения Керуен'},{at:now0-5*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'}], otpUsed:true});
+    reqs.push({id:uid(), number:'INC-000131', from:BRANCHES[0], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:940000}], comment:'', plannedAt:now0-3*H, status:'WAITING_FOR_ACCEPTANCE', bag:'№12601', seal:'№784620', collector:'Иванов А.С.', currentResponsible:'Иванов А.С. (Инкассатор)', transitStartedAt:now0-2*H, arrivedAt:now0-25*M, preparedAmounts:{KZT:940000},
+      history:[{at:now0-3*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-2.8*H,from:'CREATED',to:'PREPARING',by:'Ерланова Г. (Кассир А)'},{at:now0-2.3*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Ерланова Г. (Кассир А)'},{at:now0-2*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'},{at:now0-25*M,from:'IN_TRANSIT',to:'WAITING_FOR_ACCEPTANCE',by:'Иванов А.С. (Инкассатор)'}], otpUsed:true});
+    reqs.push({id:uid(), number:'INC-000126', from:BRANCHES[0], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:800000}], comment:'', plannedAt:now0-9*H, status:'DISCREPANCY_REVIEW', bag:'№12550', seal:'№784530', collector:'Иванов А.С.', currentResponsible:'Сарсенова Д. (Кассир Б)', transitStartedAt:now0-8*H, arrivedAt:now0-7*H, preparedAmounts:{KZT:800000}, receivedAmounts:{KZT:780000}, sealIntact:true,
+      history:[{at:now0-9*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-8.8*H,from:'CREATED',to:'PREPARING',by:'Ерланова Г. (Кассир А)'},{at:now0-8.4*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Ерланова Г. (Кассир А)'},{at:now0-8*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'},{at:now0-7*H,from:'IN_TRANSIT',to:'WAITING_FOR_ACCEPTANCE',by:'Иванов А.С. (Инкассатор)'},{at:now0-6.8*H,from:'WAITING_FOR_ACCEPTANCE',to:'DISCREPANCY_REVIEW',by:'Сарсенова Д. (Кассир Б)',note:'Зафиксирована недостача при приёмке'}], otpUsed:true,
+      incident:{id:uid(), type:'amount', status:'Открыто', currency:'KZT', requested:800000, actual:780000, deviation:-20000, sealIntact:true, comment:'При пересчёте в кассе отделения Хан Шатыр обнаружена недостача.', createdAt:now0-6.8*H}});
+    reqs.push({id:uid(), number:'INC-000133', from:BRANCHES[2], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:1200000},{type:'valuable',name:'Опись документарных акций, 1 пакет',qty:1}], comment:'Сопроводить актом приёма-передачи ценностей', plannedAt:now0+2*H, status:'CREATED', bag:null, seal:null, collector:null, currentResponsible:BRANCHES[2],
+      history:[{at:now0-15*M,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'}]});
+    reqs.push({id:uid(), number:'INC-000102', from:BRANCHES[1], to:BRANCHES[0], items:[{type:'cash',currency:'EUR',amount:6000}], comment:'', plannedAt:now0-30*H, status:'CASHIER_REJECTED', bag:null, seal:null, collector:null, currentResponsible:'—', rejectReason:'Заявленная сумма не подтверждена сверкой кассы на момент приёма в работу.',
+      history:[{at:now0-30*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-29*H,from:'CREATED',to:'CASHIER_REJECTED',by:'Кассир отделения Мега',note:'Заявленная сумма не подтверждена сверкой кассы на момент приёма в работу.'}]});
+    reqs.push({id:uid(), number:'INC-000135', from:BRANCHES[3], to:BRANCHES[1], items:[{type:'cash',currency:'KZT',amount:350000}], comment:'', plannedAt:now0-2*H, status:'CANCELLED', bag:null, seal:null, collector:null, currentResponsible:'—', cancelReason:'Перенос по договорённости с отделением-получателем на следующую неделю.',
+      history:[{at:now0-2*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-1.5*H,from:'CREATED',to:'CANCELLED',by:'Мұратова А. (Казначей)',note:'Перенос по договорённости с отделением-получателем на следующую неделю.'}]});
+    return reqs;
+  }
+
+  function loadState(){ try{ var raw=localStorage.getItem('ecash-incassation-v1'); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+  function saveState(){ try{ localStorage.setItem('ecash-incassation-v1', JSON.stringify(state)); }catch(e){} }
+  var loaded = loadState();
+  var state = loaded || { requests:seed(), nextNumber:136, role:'treasurer', view:'registry', tab:'registry', selectedId:null, notifications:[], settings:{maxTransitMinutes:180}, notifOpen:false, filters:{} };
+  if(!state.notifications) state.notifications=[];
+  if(!state.settings) state.settings={maxTransitMinutes:180};
+  if(!state.filters) state.filters={};
+
+  function notify(target,text){ state.notifications.unshift({id:uid(), target:target, text:text, at:Date.now()}); }
+  function toast(text){ var root=document.getElementById('toast-root'); var el=document.createElement('div'); el.className='toast2'; el.textContent=text; root.appendChild(el); setTimeout(function(){el.remove();},3800); }
+  function reqById(id){ return state.requests.find(function(r){return r.id===id;}); }
+  function cashTotal(req,cur){ return req.items.filter(function(i){return i.type==='cash'&&i.currency===cur;}).reduce(function(s,i){return s+i.amount;},0); }
+  function requestCurrencies(req){ var set={}; req.items.forEach(function(i){ if(i.type==='cash') set[i.currency]=true; }); return Object.keys(set); }
+  function isOverdue(req){ if(req.status!=='IN_TRANSIT') return false; return (Date.now()-req.transitStartedAt) > state.settings.maxTransitMinutes*M; }
+  function visibleTo(req,role){
+    if(role==='treasurer'||role==='manager') return true;
+    if(role==='cashierA') return req.from===HOME_A;
+    if(role==='cashierB') return req.to===HOME_B;
+    if(role==='collector') return ['WAITING_FOR_PICKUP','IN_TRANSIT','WAITING_FOR_ACCEPTANCE'].indexOf(req.status)>-1;
+    return true;
+  }
+  function pushHistory(req,from,to,by,note){ req.history.push({at:Date.now(), from:from, to:to, by:by, note:note||undefined}); }
+
+  function doAccept(id){ var r=reqById(id); if(!r||r.status!=='CREATED') return; r.status='PREPARING'; r.currentResponsible='Ерланова Г. (Кассир А)'; pushHistory(r,'CREATED','PREPARING','Ерланова Г. (Кассир А)'); toast('Заявка '+r.number+' принята в работу'); render(); }
+  function doReject(id,reason){ var r=reqById(id); if(!r||r.status!=='CREATED') return; r.status='CASHIER_REJECTED'; r.rejectReason=reason; r.currentResponsible='—'; pushHistory(r,'CREATED','CASHIER_REJECTED','Ерланова Г. (Кассир А)',reason); notify('treasurer','Заявка '+r.number+' отклонена кассиром: '+reason); toast('Заявка '+r.number+' отклонена'); render(); }
+  function doCancel(id,reason){ var r=reqById(id); if(!r||['CREATED','PREPARING','WAITING_FOR_PICKUP'].indexOf(r.status)===-1) return; var prev=r.status; r.status='CANCELLED'; r.cancelReason=reason; r.currentResponsible='—'; pushHistory(r,prev,'CANCELLED','Мұратова А. (Казначей)',reason); notify('treasurer','Заявка '+r.number+' отменена'); toast('Заявка '+r.number+' отменена'); render(); }
+  function doPrepare(id,data){ var r=reqById(id); if(!r||r.status!=='PREPARING') return; r.bag=data.bag; r.seal=data.seal; r.preparedAmounts=data.amounts; r.prepComment=data.comment; r.status='WAITING_FOR_PICKUP'; r.qrToken=uid()+uid(); r.otpCode=otp(); r.otpExpiresAt=Date.now()+15*M; r.otpAttempts=0; r.otpLocked=false; pushHistory(r,'PREPARING','WAITING_FOR_PICKUP','Ерланова Г. (Кассир А)'); notify('collector','Средства подготовлены и ожидают получения — заявка '+r.number); toast('Заявка '+r.number+' готова к отправке. QR-код и код подтверждения сформированы.'); render(); }
+  function doOtpSubmit(id,code){ var r=reqById(id); if(!r||r.status!=='WAITING_FOR_PICKUP'||r.otpLocked) return {ok:false,msg:'Операция недоступна.'};
+    if(Date.now()>r.otpExpiresAt) return {ok:false,msg:'Срок действия кода истёк. Обратитесь к кассиру за новым кодом.'};
+    if(code!==r.otpCode){ r.otpAttempts=(r.otpAttempts||0)+1; if(r.otpAttempts>=5){ r.otpLocked=true; render(); return {ok:false,msg:'Код заблокирован после 5 неверных попыток. Требуется вмешательство руководителя.'}; } render(); return {ok:false,msg:'Неверный код. Осталось попыток: '+(5-r.otpAttempts)+'.'}; }
+    r.collector=ROLE_META.collector.name; r.currentResponsible='Иванов А.С. (Инкассатор)'; r.transitStartedAt=Date.now(); r.otpUsed=true; r.status='IN_TRANSIT'; pushHistory(r,'WAITING_FOR_PICKUP','IN_TRANSIT','Иванов А.С. (Инкассатор)'); toast('Средства приняты. Заявка '+r.number+' — «В пути».'); render(); return {ok:true}; }
+  function doResetOtp(id){ var r=reqById(id); if(!r) return; r.otpCode=otp(); r.otpAttempts=0; r.otpLocked=false; r.otpExpiresAt=Date.now()+15*M; toast('Руководитель сбросил код подтверждения по заявке '+r.number); render(); }
+  function doHandover(id){ var r=reqById(id); if(!r||r.status!=='IN_TRANSIT') return; r.arrivedAt=Date.now(); r.status='WAITING_FOR_ACCEPTANCE'; pushHistory(r,'IN_TRANSIT','WAITING_FOR_ACCEPTANCE','Иванов А.С. (Инкассатор)'); notify('cashierB','Инкассаторская сумка доставлена. Требуется приём — заявка '+r.number); toast('Кассир Б уведомлён. Ответственность остаётся у инкассатора до подтверждения приёма.'); render(); }
+  function doReceive(id,data){ var r=reqById(id); if(!r||r.status!=='WAITING_FOR_ACCEPTANCE') return; r.receivedAmounts=data.amounts; r.sealIntact=data.sealIntact; r.receiveComment=data.comment; r.currentResponsible='Сарсенова Д. (Кассир Б)';
+    var hasDev=false, devLines=[]; requestCurrencies(r).forEach(function(cur){ var req=r.preparedAmounts[cur]||0, act=data.amounts[cur]||0; if(req!==act){ hasDev=true; devLines.push((act-req>0?'излишек ':'недостача ')+fmtMoney(Math.abs(act-req),cur)); } });
+    if(!data.sealIntact||hasDev){ r.status='DISCREPANCY_REVIEW'; pushHistory(r,'WAITING_FOR_ACCEPTANCE','DISCREPANCY_REVIEW','Сарсенова Д. (Кассир Б)', !data.sealIntact?'Пломба повреждена':devLines.join(', '));
+      var mc=requestCurrencies(r)[0]; r.incident={id:uid(), type: !data.sealIntact?'seal':'amount', status:'Открыто', currency:mc, requested:r.preparedAmounts[mc]||0, actual:data.amounts[mc]||0, deviation:(data.amounts[mc]||0)-(r.preparedAmounts[mc]||0), sealIntact:data.sealIntact, comment:data.comment||(!data.sealIntact?'Пломба повреждена при приёмке.':devLines.join(', ')), createdAt:Date.now()};
+      notify('manager', (!data.sealIntact?'Повреждена пломба':'Расхождение при приёмке')+' — заявка '+r.number); notify('treasurer','По заявке '+r.number+' выявлено расхождение при приёмке'); toast('Зафиксировано расхождение. Заявка '+r.number+' переведена в разбор, деньги учтены по факту.');
+    } else { pushHistory(r,'WAITING_FOR_ACCEPTANCE','RECEIVED','Сарсенова Д. (Кассир Б)'); r.status='COMPLETED'; pushHistory(r,'RECEIVED','COMPLETED','система · автоматически'); notify('treasurer','Заявка '+r.number+' исполнена'); toast('Приём подтверждён. Заявка '+r.number+' — «Исполнено».'); }
+    render(); }
+  function doIncidentReview(id){ var r=reqById(id); if(!r||!r.incident) return; r.incident.status='На рассмотрении'; toast('Инцидент по заявке '+r.number+' взят в рассмотрение'); render(); }
+  function doIncidentResolve(id,note){ var r=reqById(id); if(!r||!r.incident) return; r.incident.status='Закрыто'; r.incident.resolution=note; r.status='COMPLETED'; pushHistory(r,'DISCREPANCY_REVIEW','COMPLETED','Ахметов Б. (Руководитель)','Урегулировано: '+note); notify('treasurer','Расхождение по заявке '+r.number+' урегулировано, заявка исполнена'); toast('Инцидент закрыт. Заявка '+r.number+' — «Исполнено».'); render(); }
+  function doCreate(data){ var num='INC-'+String(state.nextNumber++).padStart(6,'0'); var r={id:uid(), number:num, from:data.from, to:data.to, items:data.items, comment:data.comment, plannedAt:data.plannedAt, status:'CREATED', bag:null, seal:null, collector:null, currentResponsible:data.from, history:[{at:Date.now(),from:null,to:'CREATED',by:'Мұратова А. (Казначей)'}]}; state.requests.unshift(r); notify('cashierA','Создана новая заявка на подготовку средств — '+num); toast('Заявка '+num+' создана и направлена в отделение-отправитель'); render(); }
+
+  function chip(status){ var m=STATUS_META[status]; return '<span class="ic-chip '+m.cls+'">'+m.label+'</span>'; }
+
+  function setRole(role){
+    state.role=role; state.view='registry'; state.tab='registry'; state.selectedId=null; state.notifOpen=false;
+    render();
+  }
+
+  function applyHeaderAndSidebar(){
+    Object.keys(ROLE_META).forEach(function(k){
+      var card=document.getElementById('rc-'+k), av=document.getElementById('rca-'+k), dot=card.querySelector('.role-active-dot');
+      var active = k===state.role, m=ROLE_META[k];
+      card.classList.toggle('active', active);
+      card.style.background = active ? hexA(m.tone,0.18) : '';
+      card.style.borderColor = active ? hexA(m.tone,0.5) : 'transparent';
+      av.style.background = active ? m.tone : 'rgba(255,255,255,.07)';
+      av.style.color = active ? '#fff' : 'rgba(255,255,255,.45)';
+      dot.style.background = m.tone;
+    });
+    var rm = ROLE_META[state.role];
+    document.getElementById('hdr-role-name').innerHTML = rm.title+' <span class="caret">▾</span>';
+    document.getElementById('role-chip-header').innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:'+hexA(rm.tone,0.12)+';border:1px solid '+hexA(rm.tone,0.35)+';border-radius:20px;font-size:11px;font-weight:700;color:'+rm.tone+'">'+rm.title+'</span>';
+    document.getElementById('hdr-avatar').textContent = rm.avatar;
+    document.getElementById('hdr-user-name').textContent = rm.name;
+    document.getElementById('hdr-user-role').textContent = rm.title;
+    document.getElementById('new-req-btn').style.display = state.role==='treasurer' ? 'inline-flex' : 'none';
+    document.getElementById('role-banner').innerHTML = '<div class="role-banner-icon">👤</div><div class="role-banner-text"><div class="title">Режим: '+rm.title+' — '+rm.name+'</div><div class="sub">'+rm.note+'</div></div>';
+    document.getElementById('role-banner').style.background = rm.tone;
+    var unread = state.notifications.filter(function(n){return matchesRole(n.target,state.role);}).length;
+    var badge=document.getElementById('notif-count'); badge.style.display = unread? 'flex':'none'; badge.textContent=unread;
+  }
+  function hexA(hex,a){ var h=hex.replace('#',''); var r=parseInt(h.substring(0,2),16), g=parseInt(h.substring(2,4),16), b=parseInt(h.substring(4,6),16); return 'rgba('+r+','+g+','+b+','+a+')'; }
+  function matchesRole(target,role){ return target==='all'||target===role; }
+
+  Object.keys(ROLE_META).forEach(function(k){ document.getElementById('rc-'+k).addEventListener('click', function(){ setRole(k); }); });
+
+  window.switchTab = function(tab){ state.tab=tab; state.view='registry'; state.selectedId=null; render(); };
+  window.toggleNotif = function(){ state.notifOpen=!state.notifOpen; renderNotif(); };
+  window.toggleTheme = function(){ var d=document.documentElement.dataset.theme==='dark'; document.documentElement.dataset.theme=d?'light':'dark'; document.getElementById('btn-theme').textContent=d?'🌙':'☀️'; try{localStorage.setItem('ecash-theme',d?'light':'dark');}catch(e){} };
+  window.toggleSidebar = function(){ document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('overlay').classList.toggle('show'); };
+  window.closeSidebar = function(){ document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('overlay').classList.remove('show'); };
+
+  function renderStats(){
+    var reqs=state.requests, startToday=new Date(); startToday.setHours(0,0,0,0);
+    var todayCount=reqs.filter(function(r){return r.history[0].at>=startToday.getTime();}).length;
+    var inTransit=reqs.filter(function(r){return r.status==='IN_TRANSIT';});
+    var overdue=inTransit.filter(isOverdue).length;
+    var waitingAccept=reqs.filter(function(r){return r.status==='WAITING_FOR_ACCEPTANCE';}).length;
+    var completedToday=reqs.filter(function(r){return r.status==='COMPLETED'&&r.history[r.history.length-1].at>=startToday.getTime();}).length;
+    var discrepancy=reqs.filter(function(r){return r.status==='DISCREPANCY_REVIEW';}).length;
+    document.getElementById('stats-row').innerHTML =
+      '<div class="stat-card"><div class="stat-dot" style="background:#1B6FBA"></div><span class="stat-label">Заявок сегодня</span><span class="stat-val">'+todayCount+'</span></div>'+
+      '<div class="stat-card"><div class="stat-dot" style="background:#6B46E5"></div><span class="stat-label">В пути</span><span class="stat-val">'+inTransit.length+'</span></div>'+
+      '<div class="stat-card'+(overdue?' warn':'')+'"><div class="stat-dot" style="background:'+(overdue?'#F59E0B':'#1BA85D')+'"></div><span class="stat-label">Просрочено</span><span class="stat-val">'+overdue+'</span></div>'+
+      '<div class="stat-card"><div class="stat-dot" style="background:#8A6A00"></div><span class="stat-label">Ожидают приёмки</span><span class="stat-val">'+waitingAccept+'</span></div>'+
+      '<div class="stat-card"><div class="stat-dot" style="background:#1BA85D"></div><span class="stat-label">Исполнено сегодня</span><span class="stat-val">'+completedToday+'</span></div>'+
+      '<div class="stat-card'+(discrepancy?' warn':'')+'"><div class="stat-dot" style="background:'+(discrepancy?'#D93025':'#1BA85D')+'"></div><span class="stat-label">С расхождением</span><span class="stat-val">'+discrepancy+'</span></div>';
+  }
+
+  function renderRegistry(){
+    var f=state.filters;
+    var list=state.requests.filter(function(r){return visibleTo(r,state.role);});
+    if(f.status) list=list.filter(function(r){return r.status===f.status;});
+    if(f.currency) list=list.filter(function(r){return requestCurrencies(r).indexOf(f.currency)>-1;});
+    if(f.discOnly) list=list.filter(function(r){return r.status==='DISCREPANCY_REVIEW';});
+    if(f.overOnly) list=list.filter(isOverdue);
+    list=list.slice().sort(function(a,b){return b.history[0].at-a.history[0].at;});
+
+    var statusOpts=Object.keys(STATUS_META).map(function(k){return '<option value="'+k+'"'+(f.status===k?' selected':'')+'>'+STATUS_META[k].label+'</option>';}).join('');
+    var curOpts=CURRENCIES.map(function(c){return '<option value="'+c+'"'+(f.currency===c?' selected':'')+'>'+c+'</option>';}).join('');
+
+    var rows=list.map(function(r){
+      var curs=requestCurrencies(r);
+      var amountCell=curs.map(function(c){return '<div>'+fmtMoney(cashTotal(r,c),c)+'</div>';}).join('')+(r.items.some(function(i){return i.type==='valuable';})?'<div style="font-size:11px;color:var(--text-mid)">+ ценность</div>':'');
+      var duration=r.transitStartedAt?fmtDur((r.arrivedAt||Date.now())-r.transitStartedAt):'—';
+      return '<tr onclick="openRequest(\''+r.id+'\')" style="cursor:pointer">'+
+        '<td class="id-cell">'+r.number+'</td>'+
+        '<td>'+shortBranch(r.from)+' <span style="color:var(--text-light)">→</span> '+shortBranch(r.to)+'</td>'+
+        '<td class="amount-cell">'+amountCell+'</td>'+
+        '<td>'+chip(r.status)+(isOverdue(r)?'<div class="overdue-flag">⚠ просрочено</div>':'')+'</td>'+
+        '<td style="font-size:12px">'+(r.currentResponsible||'—')+'</td>'+
+        '<td>'+(r.bag?('<div class="id-cell">'+r.bag+'</div><div style="font-size:11px;color:var(--text-mid)">'+r.seal+'</div>'):'<span style="color:var(--text-light)">—</span>')+'</td>'+
+        '<td class="date-cell">'+duration+'</td>'+
+      '</tr>';
+    }).join('');
+
+    document.getElementById('tab-registry').innerHTML =
+      '<div class="filters">'+
+        '<span class="f-label">Статус</span><select class="f-sel" id="f-status"><option value="">Все</option>'+statusOpts+'</select>'+
+        '<span class="f-sep"></span><span class="f-label">Валюта</span><select class="f-sel" id="f-currency"><option value="">Все</option>'+curOpts+'</select>'+
+        '<span class="f-sep"></span>'+
+        '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-mid);font-weight:600"><input type="checkbox" id="f-disc" '+(f.discOnly?'checked':'')+'> С расхождением</label>'+
+        '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-mid);font-weight:600"><input type="checkbox" id="f-over" '+(f.overOnly?'checked':'')+'> Просроченные</label>'+
+      '</div>'+
+      '<div class="tbl-wrap" style="overflow-x:auto"><table class="tbl"><thead><tr><th>№ заявки</th><th>Маршрут</th><th>Сумма</th><th>Статус</th><th>Ответственный</th><th>Сумка / пломба</th><th>В пути</th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📋</div><div>Заявок по этим фильтрам нет</div></div></td></tr>')+'</tbody></table></div>';
+
+    document.getElementById('f-status').onchange=function(e){ f.status=e.target.value; render(); };
+    document.getElementById('f-currency').onchange=function(e){ f.currency=e.target.value; render(); };
+    document.getElementById('f-disc').onchange=function(e){ f.discOnly=e.target.checked; render(); };
+    document.getElementById('f-over').onchange=function(e){ f.overOnly=e.target.checked; render(); };
+  }
+
+  function renderAudit(){
+    var rows=[]; state.requests.forEach(function(r){ r.history.forEach(function(h){ rows.push({number:r.number,id:r.id,h:h}); }); });
+    rows.sort(function(a,b){return b.h.at-a.h.at;});
+    document.getElementById('tab-audit').innerHTML = '<div class="tbl-wrap" style="overflow-x:auto"><table class="tbl"><thead><tr><th>Время</th><th>Заявка</th><th>Переход</th><th>Инициатор</th><th>Комментарий</th></tr></thead><tbody>'+
+      rows.map(function(x){ return '<tr onclick="openRequest(\''+x.id+'\')" style="cursor:pointer"><td class="date-cell">'+fmtDT(x.h.at)+'</td><td class="id-cell">'+x.number+'</td><td>'+(x.h.from?STATUS_META[x.h.from].label+' → ':'')+STATUS_META[x.h.to].label+'</td><td style="font-size:12px">'+x.h.by+'</td><td style="font-size:12px;color:var(--text-mid)">'+(x.h.note||'—')+'</td></tr>'; }).join('')+
+      '</tbody></table></div>';
+  }
+
+  function getActions(r){
+    var role=state.role, acts=[];
+    if(r.status==='CREATED'){
+      if(role==='cashierA'&&r.from===HOME_A){ acts.push({label:'Принять в работу', cls:'btn-primary', fn:function(){doAccept(r.id);}}); acts.push({label:'Отклонить', cls:'btn-danger', fn:function(){openReasonModal(r.id,'reject','Отклонить заявку','Причина отказа кассиром');}}); }
+      if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
+    }
+    if(r.status==='PREPARING'){
+      if(role==='cashierA'&&r.from===HOME_A) acts.push({label:'Готово к передаче', cls:'btn-primary', fn:function(){openPrepareModal(r.id);}});
+      if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
+    }
+    if(r.status==='WAITING_FOR_PICKUP'){
+      if(role==='collector'){ if(r.otpLocked) acts.push({label:'Код заблокирован — ждём руководителя', cls:'btn-secondary', disabled:true}); else acts.push({label:'Сканировать QR / принять', cls:'btn-primary', fn:function(){openOtpModal(r.id);}}); }
+      if(role==='manager'&&r.otpLocked) acts.push({label:'Сбросить код подтверждения', cls:'btn-danger', fn:function(){doResetOtp(r.id);}});
+      if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
+    }
+    if(r.status==='IN_TRANSIT' && role==='collector') acts.push({label:'Передать кассиру', cls:'btn-primary', fn:function(){openHandoverModal(r.id);}});
+    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='cashierB' && r.to===HOME_B) acts.push({label:'Подтвердить получение', cls:'btn-primary', fn:function(){openReceiveModal(r.id);}});
+    if(r.status==='DISCREPANCY_REVIEW' && role==='manager'){
+      if(r.incident.status==='Открыто') acts.push({label:'Взять в рассмотрение', cls:'btn-secondary', fn:function(){doIncidentReview(r.id);}});
+      acts.push({label:'Урегулировать и закрыть', cls:'btn-primary', fn:function(){openReasonModal(r.id,'resolve','Урегулировать расхождение','Решение и основание для закрытия');}});
+    }
+    return acts;
+  }
+
+  window.openRequest = function(id){ state.selectedId=id; state.view='detail'; render(); };
+  window.backToRegistry = function(){ state.view='registry'; state.selectedId=null; render(); };
+
+  function renderDetail(){
+    var r=reqById(state.selectedId); if(!r){ state.view='registry'; return; }
+    var curIndex=RAIL.findIndex(function(s){return s[0]===r.status;});
+    var stopped=['CANCELLED','CASHIER_REJECTED'].indexOf(r.status)>-1;
+    var railHtml=RAIL.map(function(s,i){
+      var cls='rail-step';
+      if(stopped){ if(i===0) cls+=' done'; if(i===1&&r.status==='CASHIER_REJECTED') cls='rail-step stopped'; }
+      else if(r.status==='DISCREPANCY_REVIEW'){ cls+= i<=4?' done':''; if(i===4) cls='rail-step stopped'; }
+      else if(i<curIndex) cls+=' done'; else if(i===curIndex) cls+=' current';
+      var evt=r.history.find(function(h){return h.to===s[0];});
+      return '<div class="'+cls+'"><div class="node"></div><div class="rail-label">'+s[1]+'</div>'+(evt?'<div class="rail-time">'+new Date(evt.at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</div>':'')+'</div>';
+    }).join('');
+
+    var itemsHtml=r.items.map(function(i){ return i.type==='cash' ? '<div class="fx-line"><span>Денежные средства ('+i.currency+')</span><span class="amount-cell">'+fmtMoney(i.amount,i.currency)+'</span></div>' : '<div class="fx-line"><span>Ценность</span><span>'+i.name+(i.qty?' × '+i.qty:'')+'</span></div>'; }).join('');
+
+    var qrHtml='';
+    if(r.status==='WAITING_FOR_PICKUP'&&r.qrToken){
+      qrHtml='<div class="card"><h3 style="margin-bottom:12px;font-size:14px">QR-код передачи</h3><div class="qr-box"><div id="qr-canvas-holder"></div><div class="qr-meta">Токен операции: <b>'+r.qrToken.slice(0,10)+'…</b><br>QR не содержит суммы и других финансовых данных — только защищённую ссылку на операцию.<br>Код подтверждения действует до '+new Date(r.otpExpiresAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'. После использования — повторно недействителен.</div></div></div>';
+    }
+
+    var incidentHtml='';
+    if(r.incident){ var inc=r.incident;
+      incidentHtml='<div class="incident-card"><div style="display:flex;justify-content:space-between;align-items:center"><h3>⚠ '+(inc.type==='seal'?'Повреждение пломбы':'Расхождение при приёмке')+'</h3><span class="incident-status">'+inc.status+'</span></div>'+
+      (inc.type==='amount'?'<div style="font-size:13px">По заявке: <b>'+fmtMoney(inc.requested,inc.currency)+'</b> · Принято фактически: <b>'+fmtMoney(inc.actual,inc.currency)+'</b> · Отклонение: <b>'+(inc.deviation>0?'+':'')+fmtMoney(inc.deviation,inc.currency)+'</b> ('+(inc.deviation<0?'недостача':inc.deviation>0?'излишек':'нет')+')</div>':'')+
+      '<div style="font-size:13px">Пломба: '+(inc.sealIntact?'целая':'повреждена')+'</div><div style="font-size:13px">'+inc.comment+'</div>'+(inc.resolution?'<div style="font-size:13px"><b>Решение:</b> '+inc.resolution+'</div>':'')+'</div>'; }
+
+    var actions=getActions(r);
+    var actionsHtml=actions.length ? '<div class="actions-bar">'+actions.map(function(a,i){return '<button class="'+a.cls+'" data-act="'+i+'" '+(a.disabled?'disabled':'')+'>'+a.label+'</button>';}).join('')+'</div>' : '<div class="no-actions">Для вашей роли сейчас нет доступных действий по этой заявке.</div>';
+
+    var historyHtml=r.history.slice().reverse().map(function(h){ return '<div class="history-item"><div class="history-time">'+fmtDT(h.at)+'</div><div><div>'+(h.from?STATUS_META[h.from].label+' → ':'')+'<b>'+STATUS_META[h.to].label+'</b></div><div class="history-actor">'+h.by+(h.note?' · '+h.note:'')+'</div></div></div>'; }).join('');
+
+    var reasonBlock = r.rejectReason?('<div style="font-size:12px;color:var(--text-mid);margin-top:4px">Причина отказа: '+r.rejectReason+'</div>') : r.cancelReason?('<div style="font-size:12px;color:var(--text-mid);margin-top:4px">Причина отмены: '+r.cancelReason+'</div>') : '';
+
+    document.getElementById('detail-view').innerHTML =
+      '<button class="back-link2" onclick="backToRegistry()">← Реестр заявок</button>'+
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><h2 style="font-size:19px" class="id-cell">'+r.number+'</h2>'+chip(r.status)+(isOverdue(r)?'<span class="overdue-flag">⚠ просрочено</span>':'')+'</div>'+
+      '<div style="font-size:13px;color:var(--text-mid);margin-bottom:16px">'+shortBranch(r.from)+' → '+shortBranch(r.to)+' · создана '+fmtDT(r.history[0].at)+reasonBlock+'</div>'+
+      '<div class="card"><div class="rail">'+railHtml+'</div></div>'+
+      '<div class="detail-grid">'+
+        '<div class="stack">'+
+          '<div class="card"><h3 style="margin-bottom:10px;font-size:14px">Денежные средства и ценности</h3>'+itemsHtml+(r.comment?'<div style="font-size:12.5px;color:var(--text-mid);margin-top:8px">'+r.comment+'</div>':'')+'</div>'+
+          '<div class="card"><h3 style="margin-bottom:12px;font-size:14px">Сумка и пломба</h3><div class="kv-grid">'+
+            '<div class="kv"><label>Номер сумки</label><div class="val">'+(r.bag||'—')+'</div></div>'+
+            '<div class="kv"><label>Номер пломбы</label><div class="val">'+(r.seal||'—')+'</div></div>'+
+            '<div class="kv"><label>Инкассатор</label><div class="val">'+(r.collector||'—')+'</div></div>'+
+            '<div class="kv"><label>Пломба при приёмке</label><div class="val">'+(r.sealIntact===undefined?'—':(r.sealIntact?'Целая':'Повреждена'))+'</div></div>'+
+          '</div></div>'+
+          qrHtml+incidentHtml+
+          '<div class="card"><h3 style="margin-bottom:6px;font-size:14px">История</h3>'+historyHtml+'</div>'+
+        '</div>'+
+        '<div class="stack">'+
+          '<div class="card"><h3 style="margin-bottom:8px;font-size:14px">Ответственный сейчас</h3><div style="font-size:16px;font-weight:800">'+(r.currentResponsible||'—')+'</div><div style="font-size:12px;color:var(--text-mid);margin-top:6px">Ответственность переходит только по явному подтверждению принимающей стороны.</div></div>'+
+          '<div class="card"><h3 style="margin-bottom:12px;font-size:14px">Маршрут</h3><div class="kv-grid"><div class="kv"><label>Отправитель</label><div class="val">'+r.from+'</div></div><div class="kv"><label>Получатель</label><div class="val">'+r.to+'</div></div></div></div>'+
+        '</div>'+
+      '</div>'+actionsHtml;
+
+    if(qrHtml && window.QRCode) new QRCode(document.getElementById('qr-canvas-holder'), {text:'INCQR:'+r.qrToken, width:100, height:100, colorDark:'#434343', colorLight:'#ffffff'});
+    document.querySelectorAll('[data-act]').forEach(function(btn){ btn.onclick=function(){ actions[+btn.dataset.act].fn(); }; });
+  }
+
+  function openReasonModal(id,purpose,title,label){
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">'+title+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div class="form-group"><label class="form-label">'+label+'</label><textarea class="form-textarea" id="reason-text" rows="3" placeholder="Опишите причину…"></textarea></div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="reason-submit">Подтвердить</button></div></div></div>';
+    document.getElementById('reason-submit').onclick=function(){ var v=document.getElementById('reason-text').value.trim(); if(!v){ toast('Укажите причину — поле обязательно.'); return; } closeModal();
+      if(purpose==='reject') doReject(id,v); if(purpose==='cancel') doCancel(id,v); if(purpose==='resolve') doIncidentResolve(id,v); };
+  }
+  function openPrepareModal(id){
+    var r=reqById(id), curs=requestCurrencies(r);
+    var fields=curs.map(function(c){ return '<div class="form-group"><label class="form-label">Фактическая сумма ('+c+')</label><input type="number" class="form-input amt-input" data-cur="'+c+'" value="'+cashTotal(r,c)+'"></div>'; }).join('');
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Готово к передаче — '+r.number+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body">'+fields+'<div class="field-row"><div class="form-group"><label class="form-label">Номер сумки</label><input class="form-input" id="p-bag" placeholder="№12345"></div><div class="form-group"><label class="form-label">Номер пломбы</label><input class="form-input" id="p-seal" placeholder="№784000"></div></div>'+
+      '<div class="form-group"><label class="form-label">Комментарий (необязательно)</label><textarea class="form-textarea" id="p-comment" rows="2"></textarea></div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="p-submit">Готово к передаче</button></div></div></div>';
+    document.getElementById('p-submit').onclick=function(){ var bag=document.getElementById('p-bag').value.trim(), seal=document.getElementById('p-seal').value.trim(); if(!bag||!seal){ toast('Укажите номер сумки и пломбы.'); return; }
+      var amounts={}; document.querySelectorAll('.amt-input').forEach(function(i){ amounts[i.dataset.cur]=parseFloat(i.value)||0; }); closeModal(); doPrepare(id,{bag:bag,seal:seal,amounts:amounts,comment:document.getElementById('p-comment').value.trim()}); };
+  }
+  function openOtpModal(id){
+    var r=reqById(id);
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Приём средств — '+r.number+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div style="font-size:13px;color:var(--text-mid)">Сумка <b>'+r.bag+'</b> · пломба <b>'+r.seal+'</b>. Сверьте с сумкой на месте.</div>'+
+      '<div class="form-group"><label class="form-label">Код подтверждения (можно ввести вручную, если сканирование недоступно)</label><input class="form-input otp-input2" id="otp-in" maxlength="6" placeholder="——————"></div>'+
+      '<div class="hint2" id="otp-hint">Демо-подсказка: код — <b>'+r.otpCode+'</b></div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="otp-submit">Принять средства</button></div></div></div>';
+    document.getElementById('otp-submit').onclick=function(){ var res=doOtpSubmit(id, document.getElementById('otp-in').value.trim()); if(res.ok) closeModal(); else { var h=document.getElementById('otp-hint'); h.textContent=res.msg; h.style.color='var(--danger)'; } };
+  }
+  function openHandoverModal(id){
+    var r=reqById(id);
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Передать кассиру — '+r.number+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div style="font-size:13px;color:var(--text-mid)">Это действие уведомит кассира отделения-получателя. Ответственность за средства остаётся на инкассаторе до подтверждения приёма.</div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="h-submit">Подтвердить прибытие</button></div></div></div>';
+    document.getElementById('h-submit').onclick=function(){ closeModal(); doHandover(id); };
+  }
+  function openReceiveModal(id){
+    var r=reqById(id), curs=requestCurrencies(r);
+    var fields=curs.map(function(c){ return '<div class="form-group"><label class="form-label">Фактически получено ('+c+')</label><input type="number" class="form-input ramt-input" data-cur="'+c+'" value="'+cashTotal(r,c)+'"></div>'; }).join('');
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Подтвердить получение — '+r.number+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div class="form-group"><label class="form-label">Состояние пломбы</label><div class="radio-row"><label class="radio-opt"><input type="radio" name="seal" value="1" checked> Целая</label><label class="radio-opt"><input type="radio" name="seal" value="0"> Повреждена</label></div></div>'+
+      fields+'<div class="form-group"><label class="form-label">Комментарий (обязателен при расхождении)</label><textarea class="form-textarea" id="r-comment" rows="2"></textarea></div>'+
+      '<div class="hint2">Фото повреждений — потребуется подключение хранилища файлов, в этом прототипе не показано.</div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="r-submit">Подтвердить получение</button></div></div></div>';
+    document.getElementById('r-submit').onclick=function(){ var sealIntact=document.querySelector('input[name=seal]:checked').value==='1'; var amounts={}; document.querySelectorAll('.ramt-input').forEach(function(i){ amounts[i.dataset.cur]=parseFloat(i.value)||0; }); var comment=document.getElementById('r-comment').value.trim();
+      var hasDev=curs.some(function(c){ return (r.preparedAmounts[c]||0)!==(amounts[c]||0); }); if((!sealIntact||hasDev)&&!comment){ toast('При расхождении или повреждении пломбы комментарий обязателен.'); return; }
+      closeModal(); doReceive(id,{sealIntact:sealIntact,amounts:amounts,comment:comment}); };
+  }
+  window.openNewRequestModal = function(){
+    var branchOpts=BRANCHES.map(function(b){return '<option>'+b+'</option>';}).join('');
+    var curOpts=CURRENCIES.map(function(c){return '<option>'+c+'</option>';}).join('');
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Новая заявка на перемещение</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div class="field-row"><div class="form-group"><label class="form-label">Отделение-отправитель</label><select class="form-select" id="n-from">'+branchOpts+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Отделение-получатель</label><select class="form-select" id="n-to">'+BRANCHES.map(function(b,i){return '<option'+(i===3?' selected':'')+'>'+b+'</option>';}).join('')+'</select></div></div>'+
+      '<div class="field-row"><div class="form-group"><label class="form-label">Валюта</label><select class="form-select" id="n-cur">'+curOpts+'</select></div><div class="form-group"><label class="form-label">Сумма</label><input class="form-input" id="n-amt" type="number" placeholder="500000"></div></div>'+
+      '<div class="form-group"><label class="radio-opt" style="font-weight:700"><input type="checkbox" id="n-hasval"> Добавить ценность помимо денег</label><input class="form-input" id="n-valname" placeholder="Например: опись документов, 1 пакет" style="margin-top:8px;display:none"></div>'+
+      '<div class="form-group"><label class="form-label">Плановая дата и время передачи</label><input class="form-input" id="n-planned" type="datetime-local"></div>'+
+      '<div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="n-comment" rows="2"></textarea></div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="n-submit">Создать заявку</button></div></div></div>';
+    var d=new Date(Date.now()+3600000); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); document.getElementById('n-planned').value=d.toISOString().slice(0,16);
+    document.getElementById('n-hasval').onchange=function(e){ document.getElementById('n-valname').style.display=e.target.checked?'block':'none'; };
+    document.getElementById('n-submit').onclick=function(){ var from=document.getElementById('n-from').value, to=document.getElementById('n-to').value, amt=parseFloat(document.getElementById('n-amt').value);
+      if(from===to){ toast('Отделение-отправитель и получатель должны различаться.'); return; } if(!amt||amt<=0){ toast('Укажите сумму больше нуля.'); return; }
+      var items=[{type:'cash',currency:document.getElementById('n-cur').value,amount:amt}];
+      if(document.getElementById('n-hasval').checked){ var vn=document.getElementById('n-valname').value.trim(); if(vn) items.push({type:'valuable',name:vn,qty:1}); }
+      closeModal(); doCreate({from:from,to:to,items:items,comment:document.getElementById('n-comment').value.trim(),plannedAt:new Date(document.getElementById('n-planned').value).getTime()}); };
+  };
+  window.closeModal = function(){ document.getElementById('modal-root').innerHTML=''; };
+
+  function renderNotif(){
+    var root=document.getElementById('notif-panel-root');
+    if(!state.notifOpen){ root.innerHTML=''; return; }
+    var list=state.notifications.filter(function(n){return matchesRole(n.target,state.role);}).slice(0,20);
+    root.innerHTML='<div class="notif-panel2">'+(list.length?list.map(function(n){return '<div class="notif-item2"><div class="notif-time2">'+fmtDT(n.at)+'</div>'+n.text+'</div>';}).join(''):'<div class="notif-empty2">Уведомлений нет</div>')+'</div>';
+  }
+
+  function render(){
+    saveState();
+    applyHeaderAndSidebar();
+    document.getElementById('tab-btn-registry').classList.toggle('active', state.tab==='registry');
+    document.getElementById('tab-btn-audit').classList.toggle('active', state.tab==='audit');
+    var isDetail = state.view==='detail';
+    document.getElementById('view-tabs').style.display = isDetail? 'none':'inline-flex';
+    document.getElementById('stats-row').style.display = isDetail? 'none':'flex';
+    document.getElementById('detail-view').style.display = isDetail? 'block':'none';
+    document.getElementById('tab-registry').style.display = (!isDetail && state.tab==='registry')? 'block':'none';
+    document.getElementById('tab-audit').style.display = (!isDetail && state.tab==='audit')? 'block':'none';
+    renderStats();
+    renderRegistry();
+    renderAudit();
+    if(isDetail) renderDetail();
+    renderNotif();
+  }
+
+  document.addEventListener('click', function(e){
+    if(e.target.id==='ov') closeModal();
+    if(state.notifOpen && !e.target.closest('.notif-panel2') && !e.target.closest('.bell-wrap')){ state.notifOpen=false; renderNotif(); }
+  });
+
+  window.onload=function(){
+    var th=(function(){ try{return localStorage.getItem('ecash-theme');}catch(e){return null;} })()||'light';
+    document.documentElement.dataset.theme=th;
+    document.getElementById('btn-theme').textContent = th==='dark'?'☀️':'🌙';
+    function tick(){ document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+    tick(); setInterval(tick,30000);
+    render();
+    if(typeof lucide!=='undefined') lucide.createIcons();
+  };
+})();
+</script>
+</body>
+</html>
