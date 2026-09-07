@@ -256,6 +256,7 @@
     reqs.push({id:uid(), number:'INC-000109', from:BRANCHES[2], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:2300000}], comment:'Крупная сумма — сопровождение усилено', plannedAt:now0-6*H, status:'IN_TRANSIT', bag:'№12490', seal:'№784410', collector:'Иванов А.С.', currentResponsible:'Иванов А.С. (Инкассатор)', transitStartedAt:now0-5*H, preparedAmounts:{KZT:2300000},
       history:[{at:now0-7*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-6.7*H,from:'CREATED',to:'PREPARING',by:'Кассир отделения Керуен'},{at:now0-6*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Кассир отделения Керуен'},{at:now0-5*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'}], otpUsed:true});
     reqs.push({id:uid(), number:'INC-000131', from:BRANCHES[0], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:940000}], comment:'', plannedAt:now0-3*H, status:'WAITING_FOR_ACCEPTANCE', bag:'№12601', seal:'№784620', collector:'Иванов А.С.', currentResponsible:'Иванов А.С. (Инкассатор)', transitStartedAt:now0-2*H, arrivedAt:now0-25*M, preparedAmounts:{KZT:940000},
+      deliveryQrToken:uid()+uid(), deliveryOtpCode:otp(), deliveryOtpExpiresAt:now0+10*M, deliveryOtpAttempts:0, deliveryOtpLocked:false, deliveryCodeVerified:false,
       history:[{at:now0-3*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-2.8*H,from:'CREATED',to:'PREPARING',by:'Ерланова Г. (Кассир А)'},{at:now0-2.3*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Ерланова Г. (Кассир А)'},{at:now0-2*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'},{at:now0-25*M,from:'IN_TRANSIT',to:'WAITING_FOR_ACCEPTANCE',by:'Иванов А.С. (Инкассатор)'}], otpUsed:true});
     reqs.push({id:uid(), number:'INC-000126', from:BRANCHES[0], to:BRANCHES[3], items:[{type:'cash',currency:'KZT',amount:800000}], comment:'', plannedAt:now0-9*H, status:'DISCREPANCY_REVIEW', bag:'№12550', seal:'№784530', collector:'Иванов А.С.', currentResponsible:'Сарсенова Д. (Кассир Б)', transitStartedAt:now0-8*H, arrivedAt:now0-7*H, preparedAmounts:{KZT:800000}, receivedAmounts:{KZT:780000}, sealIntact:true,
       history:[{at:now0-9*H,from:null,to:'CREATED',by:'Мұратова А. (Казначей)'},{at:now0-8.8*H,from:'CREATED',to:'PREPARING',by:'Ерланова Г. (Кассир А)'},{at:now0-8.4*H,from:'PREPARING',to:'WAITING_FOR_PICKUP',by:'Ерланова Г. (Кассир А)'},{at:now0-8*H,from:'WAITING_FOR_PICKUP',to:'IN_TRANSIT',by:'Иванов А.С. (Инкассатор)'},{at:now0-7*H,from:'IN_TRANSIT',to:'WAITING_FOR_ACCEPTANCE',by:'Иванов А.С. (Инкассатор)'},{at:now0-6.8*H,from:'WAITING_FOR_ACCEPTANCE',to:'DISCREPANCY_REVIEW',by:'Сарсенова Д. (Кассир Б)',note:'Зафиксирована недостача при приёмке'}], otpUsed:true,
@@ -301,7 +302,14 @@
     if(code!==r.otpCode){ r.otpAttempts=(r.otpAttempts||0)+1; if(r.otpAttempts>=5){ r.otpLocked=true; render(); return {ok:false,msg:'Код заблокирован после 5 неверных попыток. Требуется вмешательство руководителя.'}; } render(); return {ok:false,msg:'Неверный код. Осталось попыток: '+(5-r.otpAttempts)+'.'}; }
     r.collector=ROLE_META.collector.name; r.currentResponsible='Иванов А.С. (Инкассатор)'; r.transitStartedAt=Date.now(); r.otpUsed=true; r.status='IN_TRANSIT'; pushHistory(r,'WAITING_FOR_PICKUP','IN_TRANSIT','Иванов А.С. (Инкассатор)'); toast('Средства приняты. Заявка '+r.number+' — «В пути».'); render(); return {ok:true}; }
   function doResetOtp(id){ var r=reqById(id); if(!r) return; r.otpCode=otp(); r.otpAttempts=0; r.otpLocked=false; r.otpExpiresAt=Date.now()+15*M; toast('Руководитель сбросил код подтверждения по заявке '+r.number); render(); }
-  function doHandover(id){ var r=reqById(id); if(!r||r.status!=='IN_TRANSIT') return; r.arrivedAt=Date.now(); r.status='WAITING_FOR_ACCEPTANCE'; pushHistory(r,'IN_TRANSIT','WAITING_FOR_ACCEPTANCE','Иванов А.С. (Инкассатор)'); notify('cashierB','Инкассаторская сумка доставлена. Требуется приём — заявка '+r.number); toast('Кассир Б уведомлён. Ответственность остаётся у инкассатора до подтверждения приёма.'); render(); }
+  function doHandover(id){ var r=reqById(id); if(!r||r.status!=='IN_TRANSIT') return; r.arrivedAt=Date.now(); r.status='WAITING_FOR_ACCEPTANCE';
+    r.deliveryQrToken=uid()+uid(); r.deliveryOtpCode=otp(); r.deliveryOtpExpiresAt=Date.now()+15*M; r.deliveryOtpAttempts=0; r.deliveryOtpLocked=false; r.deliveryCodeVerified=false;
+    pushHistory(r,'IN_TRANSIT','WAITING_FOR_ACCEPTANCE','Иванов А.С. (Инкассатор)'); notify('cashierB','Инкассаторская сумка доставлена. Требуется приём — заявка '+r.number); toast('Кассир Б уведомлён. Сформирован QR-код и код подтверждения приёмки. Ответственность остаётся у инкассатора до подтверждения приёма.'); render(); }
+  function doDeliveryOtpSubmit(id,code){ var r=reqById(id); if(!r||r.status!=='WAITING_FOR_ACCEPTANCE'||r.deliveryOtpLocked) return {ok:false,msg:'Операция недоступна.'};
+    if(Date.now()>r.deliveryOtpExpiresAt) return {ok:false,msg:'Срок действия кода истёк. Обратитесь к инкассатору за новым кодом.'};
+    if(code!==r.deliveryOtpCode){ r.deliveryOtpAttempts=(r.deliveryOtpAttempts||0)+1; if(r.deliveryOtpAttempts>=5){ r.deliveryOtpLocked=true; render(); return {ok:false,msg:'Код заблокирован после 5 неверных попыток. Требуется вмешательство руководителя.'}; } render(); return {ok:false,msg:'Неверный код. Осталось попыток: '+(5-r.deliveryOtpAttempts)+'.'}; }
+    r.deliveryCodeVerified=true; render(); return {ok:true}; }
+  function doResetDeliveryOtp(id){ var r=reqById(id); if(!r) return; r.deliveryOtpCode=otp(); r.deliveryOtpAttempts=0; r.deliveryOtpLocked=false; r.deliveryOtpExpiresAt=Date.now()+15*M; toast('Руководитель сбросил код подтверждения приёмки по заявке '+r.number); render(); }
   function doReceive(id,data){ var r=reqById(id); if(!r||r.status!=='WAITING_FOR_ACCEPTANCE') return; r.receivedAmounts=data.amounts; r.sealIntact=data.sealIntact; r.receiveComment=data.comment; r.currentResponsible='Сарсенова Д. (Кассир Б)';
     var hasDev=false, devLines=[]; requestCurrencies(r).forEach(function(cur){ var req=r.preparedAmounts[cur]||0, act=data.amounts[cur]||0; if(req!==act){ hasDev=true; devLines.push((act-req>0?'излишек ':'недостача ')+fmtMoney(Math.abs(act-req),cur)); } });
     if(!data.sealIntact||hasDev){ r.status='DISCREPANCY_REVIEW'; pushHistory(r,'WAITING_FOR_ACCEPTANCE','DISCREPANCY_REVIEW','Сарсенова Д. (Кассир Б)', !data.sealIntact?'Пломба повреждена':devLines.join(', '));
@@ -439,7 +447,11 @@
       if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
     }
     if(r.status==='IN_TRANSIT' && role==='collector') acts.push({label:'Передать кассиру', cls:'btn-primary', fn:function(){openHandoverModal(r.id);}});
-    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='cashierB' && r.to===HOME_B) acts.push({label:'Подтвердить получение', cls:'btn-primary', fn:function(){openReceiveModal(r.id);}});
+    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='cashierB' && r.to===HOME_B){
+      if(!r.deliveryCodeVerified){ if(r.deliveryOtpLocked) acts.push({label:'Код заблокирован — ждём руководителя', cls:'btn-secondary', disabled:true}); else acts.push({label:'Сканировать QR / принять', cls:'btn-primary', fn:function(){openDeliveryOtpModal(r.id);}}); }
+      else acts.push({label:'Подтвердить получение', cls:'btn-primary', fn:function(){openReceiveModal(r.id);}});
+    }
+    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='manager' && r.deliveryOtpLocked) acts.push({label:'Сбросить код подтверждения приёмки', cls:'btn-danger', fn:function(){doResetDeliveryOtp(r.id);}});
     if(r.status==='DISCREPANCY_REVIEW' && role==='manager'){
       if(r.incident.status==='Открыто') acts.push({label:'Взять в рассмотрение', cls:'btn-secondary', fn:function(){doIncidentReview(r.id);}});
       acts.push({label:'Урегулировать и закрыть', cls:'btn-primary', fn:function(){openReasonModal(r.id,'resolve','Урегулировать расхождение','Решение и основание для закрытия');}});
@@ -465,9 +477,13 @@
 
     var itemsHtml=r.items.map(function(i){ return i.type==='cash' ? '<div class="fx-line"><span>Денежные средства ('+i.currency+')</span><span class="amount-cell">'+fmtMoney(i.amount,i.currency)+'</span></div>' : '<div class="fx-line"><span>Ценность</span><span>'+i.name+(i.qty?' × '+i.qty:'')+'</span></div>'; }).join('');
 
-    var qrHtml='';
+    var qrHtml='', qrTokenForDisplay=null;
     if(r.status==='WAITING_FOR_PICKUP'&&r.qrToken){
-      qrHtml='<div class="card"><h3 style="margin-bottom:12px;font-size:14px">QR-код передачи</h3><div class="qr-box"><div id="qr-canvas-holder"></div><div class="qr-meta">Токен операции: <b>'+r.qrToken.slice(0,10)+'…</b><br>QR не содержит суммы и других финансовых данных — только защищённую ссылку на операцию.<br>Код подтверждения действует до '+new Date(r.otpExpiresAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'. После использования — повторно недействителен.</div></div></div>';
+      qrTokenForDisplay=r.qrToken;
+      qrHtml='<div class="card"><h3 style="margin-bottom:12px;font-size:14px">QR-код передачи — кассир А → инкассатор</h3><div class="qr-box"><div id="qr-canvas-holder"></div><div class="qr-meta">Токен операции: <b>'+r.qrToken.slice(0,10)+'…</b><br>QR не содержит суммы и других финансовых данных — только защищённую ссылку на операцию.<br>Сканирует и вводит код инкассатор, принимающий сумку. Код действует до '+new Date(r.otpExpiresAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'. После использования — повторно недействителен.</div></div></div>';
+    } else if(r.status==='WAITING_FOR_ACCEPTANCE'&&r.deliveryQrToken&&!r.deliveryCodeVerified){
+      qrTokenForDisplay=r.deliveryQrToken;
+      qrHtml='<div class="card"><h3 style="margin-bottom:12px;font-size:14px">QR-код приёмки — инкассатор → кассир Б</h3><div class="qr-box"><div id="qr-canvas-holder"></div><div class="qr-meta">Токен операции: <b>'+r.deliveryQrToken.slice(0,10)+'…</b><br>QR не содержит суммы и других финансовых данных — только защищённую ссылку на операцию.<br>Сканирует и вводит код кассир Б, принимающий сумку у инкассатора. Код действует до '+new Date(r.deliveryOtpExpiresAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'. После использования — повторно недействителен.</div></div></div>';
     }
 
     var incidentHtml='';
@@ -506,7 +522,7 @@
         '</div>'+
       '</div>'+actionsHtml;
 
-    if(qrHtml && window.QRCode) new QRCode(document.getElementById('qr-canvas-holder'), {text:'INCQR:'+r.qrToken, width:100, height:100, colorDark:'#434343', colorLight:'#ffffff'});
+    if(qrHtml && window.QRCode && qrTokenForDisplay) new QRCode(document.getElementById('qr-canvas-holder'), {text:'INCQR:'+qrTokenForDisplay, width:100, height:100, colorDark:'#434343', colorLight:'#ffffff'});
     document.querySelectorAll('[data-act]').forEach(function(btn){ btn.onclick=function(){ actions[+btn.dataset.act].fn(); }; });
   }
 
@@ -535,6 +551,15 @@
       '<div class="hint2" id="otp-hint">Демо-подсказка: код — <b>'+r.otpCode+'</b></div></div>'+
       '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="otp-submit">Принять средства</button></div></div></div>';
     document.getElementById('otp-submit').onclick=function(){ var res=doOtpSubmit(id, document.getElementById('otp-in').value.trim()); if(res.ok) closeModal(); else { var h=document.getElementById('otp-hint'); h.textContent=res.msg; h.style.color='var(--danger)'; } };
+  }
+  function openDeliveryOtpModal(id){
+    var r=reqById(id);
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="ov"><div class="modal-box"><div class="modal-box-head"><div class="modal-box-title">Приёмка сумки — '+r.number+'</div><button class="close-x" onclick="closeModal()">×</button></div>'+
+      '<div class="modal-box-body"><div style="font-size:13px;color:var(--text-mid)">Сумка <b>'+r.bag+'</b> · пломба <b>'+r.seal+'</b>. Сверьте с сумкой на месте, прежде чем принимать.</div>'+
+      '<div class="form-group"><label class="form-label">Код подтверждения от инкассатора (можно ввести вручную, если сканирование недоступно)</label><input class="form-input otp-input2" id="dotp-in" maxlength="6" placeholder="——————"></div>'+
+      '<div class="hint2" id="dotp-hint">Демо-подсказка: код — <b>'+r.deliveryOtpCode+'</b></div></div>'+
+      '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="dotp-submit">Далее — подтвердить получение</button></div></div></div>';
+    document.getElementById('dotp-submit').onclick=function(){ var res=doDeliveryOtpSubmit(id, document.getElementById('dotp-in').value.trim()); if(res.ok){ closeModal(); openReceiveModal(id); } else { var h=document.getElementById('dotp-hint'); h.textContent=res.msg; h.style.color='var(--danger)'; } };
   }
   function openHandoverModal(id){
     var r=reqById(id);
