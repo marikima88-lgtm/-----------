@@ -221,9 +221,9 @@
   var HOME_A = BRANCHES[0], HOME_B = BRANCHES[3];
   var ROLE_META = {
     treasurer:{name:'Мұратова А.', title:'Казначей', avatar:'МА', tone:'#F15A25', note:'Видит все заявки, создаёт новые, вправе отменить до передачи инкассатору.'},
-    cashierA:{name:'Ерланова Г.', title:'Кассир А', avatar:'ЕГ', tone:'#1B6FBA', note:'Видит и готовит заявки только своего отделения — '+HOME_A+'.'},
+    cashierA:{name:'Ерланова Г.', title:'Кассир А', avatar:'ЕГ', tone:'#1B6FBA', note:'Видит и готовит заявки любого отделения-отправителя (в демо-версии — для удобства тестирования).'},
     collector:{name:'Иванов А.С.', title:'Инкассатор', avatar:'ИИ', tone:'#6B46E5', note:'Видит доступные и назначенные перевозки, подтверждает получение и передачу.'},
-    cashierB:{name:'Сарсенова Д.', title:'Кассир Б', avatar:'СД', tone:'#1BA85D', note:'Видит ожидаемые поступления отделения '+HOME_B+' и принимает средства.'},
+    cashierB:{name:'Сарсенова Д.', title:'Кассир Б', avatar:'СД', tone:'#1BA85D', note:'Видит ожидаемые поступления в любое отделение и принимает средства (в демо-версии — для удобства тестирования).'},
     manager:{name:'Ахметов Б.', title:'Руководитель', avatar:'АБ', tone:'#434343', note:'Полный обзор, разбор инцидентов, контроль нормативов доставки.'}
   };
   var STATUS_META = {
@@ -287,8 +287,8 @@
   function isOverdue(req){ if(req.status!=='IN_TRANSIT') return false; return (Date.now()-req.transitStartedAt) > state.settings.maxTransitMinutes*M; }
   function visibleTo(req,role){
     if(role==='treasurer'||role==='manager') return true;
-    if(role==='cashierA') return req.from===HOME_A;
-    if(role==='cashierB') return req.to===HOME_B;
+    if(role==='cashierA') return true;
+    if(role==='cashierB') return true;
     if(role==='collector') return ['WAITING_FOR_PICKUP','IN_TRANSIT','WAITING_FOR_ACCEPTANCE'].indexOf(req.status)>-1;
     return true;
   }
@@ -435,11 +435,11 @@
   function getActions(r){
     var role=state.role, acts=[];
     if(r.status==='CREATED'){
-      if(role==='cashierA'&&r.from===HOME_A){ acts.push({label:'Принять в работу', cls:'btn-primary', fn:function(){doAccept(r.id);}}); acts.push({label:'Отклонить', cls:'btn-danger', fn:function(){openReasonModal(r.id,'reject','Отклонить заявку','Причина отказа кассиром');}}); }
+      if(role==='cashierA'){ acts.push({label:'Принять в работу', cls:'btn-primary', fn:function(){doAccept(r.id);}}); acts.push({label:'Отклонить', cls:'btn-danger', fn:function(){openReasonModal(r.id,'reject','Отклонить заявку','Причина отказа кассиром');}}); }
       if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
     }
     if(r.status==='PREPARING'){
-      if(role==='cashierA'&&r.from===HOME_A) acts.push({label:'Готово к передаче', cls:'btn-primary', fn:function(){openPrepareModal(r.id);}});
+      if(role==='cashierA') acts.push({label:'Готово к передаче', cls:'btn-primary', fn:function(){openPrepareModal(r.id);}});
       if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
     }
     if(r.status==='WAITING_FOR_PICKUP'){
@@ -448,7 +448,7 @@
       if(role==='treasurer') acts.push({label:'Отменить заявку', cls:'btn-secondary', fn:function(){openReasonModal(r.id,'cancel','Отменить заявку','Причина отмены');}});
     }
     if(r.status==='IN_TRANSIT' && role==='collector') acts.push({label:'Передать кассиру', cls:'btn-primary', fn:function(){openHandoverModal(r.id);}});
-    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='cashierB' && r.to===HOME_B){
+    if(r.status==='WAITING_FOR_ACCEPTANCE' && role==='cashierB'){
       if(!r.deliveryCodeVerified){ if(r.deliveryOtpLocked) acts.push({label:'Код заблокирован — ждём руководителя', cls:'btn-secondary', disabled:true}); else acts.push({label:'Сканировать QR / принять', cls:'btn-primary', fn:function(){openDeliveryOtpModal(r.id);}}); }
       else acts.push({label:'Подтвердить получение', cls:'btn-primary', fn:function(){openReceiveModal(r.id);}});
     }
