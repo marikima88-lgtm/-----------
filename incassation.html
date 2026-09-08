@@ -542,7 +542,7 @@
       '<div class="form-group"><label class="form-label">Комментарий (необязательно)</label><textarea class="form-textarea" id="p-comment" rows="2"></textarea></div></div>'+
       '<div class="modal-box-foot"><button class="btn-secondary" onclick="closeModal()">Отмена</button><button class="btn-primary" id="p-submit">Готово к передаче</button></div></div></div>';
     document.getElementById('p-submit').onclick=function(){ var bag=document.getElementById('p-bag').value.trim(), seal=document.getElementById('p-seal').value.trim(); if(!bag||!seal){ toast('Укажите номер сумки и пломбы.'); return; }
-      var amounts={}; document.querySelectorAll('.amt-input').forEach(function(i){ amounts[i.dataset.cur]=parseFloat(i.value)||0; }); closeModal(); doPrepare(id,{bag:bag,seal:seal,amounts:amounts,comment:document.getElementById('p-comment').value.trim()}); };
+      var amounts={}; document.querySelectorAll('.amt-input').forEach(function(i){ amounts[i.dataset.cur]=parseFloat(i.value)||0; }); var comment=document.getElementById('p-comment').value.trim(); closeModal(); doPrepare(id,{bag:bag,seal:seal,amounts:amounts,comment:comment}); };
   }
   function openOtpModal(id){
     var r=reqById(id);
@@ -601,7 +601,8 @@
       if(!amtRaw || isNaN(amt) || amt<=0){ showNErr('Укажите сумму больше нуля в поле «Сумма» — сейчас оно пустое или заполнено некорректно.'); return; }
       var items=[{type:'cash',currency:document.getElementById('n-cur').value,amount:amt}];
       if(document.getElementById('n-hasval').checked){ var vn=document.getElementById('n-valname').value.trim(); if(vn) items.push({type:'valuable',name:vn,qty:1}); }
-      closeModal(); doCreate({from:from,to:to,items:items,comment:document.getElementById('n-comment').value.trim(),plannedAt:new Date(document.getElementById('n-planned').value).getTime()}); };
+      var comment=document.getElementById('n-comment').value.trim(); var plannedAt=new Date(document.getElementById('n-planned').value).getTime();
+      closeModal(); doCreate({from:from,to:to,items:items,comment:comment,plannedAt:plannedAt}); };
   };
   window.closeModal = function(){ document.getElementById('modal-root').innerHTML=''; };
 
